@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 07.04.2013 20:05:10 by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="com.cantor.db.Puser" table="PUSER">
+        <id name="puserId" type="int">
+            <column name="PUSER_ID" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="puser" class="com.cantor.db.Puser" fetch="select">
+            <column name="OWNER_PUSER_ID" />
+        </many-to-one>
+        <property name="puserLogin" type="string">
+            <column name="PUSER_LOGIN" length="320" not-null="true" />
+        </property>
+        <set name="bargains" table="BARGAIN" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="PUSER_ID" not-null="true" />
+            </key>
+            <one-to-many class="com.cantor.db.Bargain" />
+        </set>
+        <set name="statuses" table="STATUS" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="PUSER_ID" not-null="true" />
+            </key>
+            <one-to-many class="com.cantor.db.Status" />
+        </set>
+        <set name="pusers" table="PUSER" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="OWNER_PUSER_ID" />
+            </key>
+            <one-to-many class="com.cantor.db.Puser" />
+        </set>
+    </class>
+</hibernate-mapping>

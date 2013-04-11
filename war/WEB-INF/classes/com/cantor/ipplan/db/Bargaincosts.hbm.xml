@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 07.04.2013 20:05:10 by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="com.cantor.db.Bargaincosts" table="BARGAINCOSTS">
+        <id name="bargaincostsId" type="int">
+            <column name="BARGAINCOSTS_ID" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="costs" class="com.cantor.db.Costs" fetch="select">
+            <column name="COSTS_ID" not-null="true" />
+        </many-to-one>
+        <many-to-one name="bargain" class="com.cantor.db.Bargain" fetch="select">
+            <column name="BARGAIN_ID" not-null="true" />
+        </many-to-one>
+        <property name="bargaincostsValue" type="int">
+            <column name="BARGAINCOSTS_VALUE" not-null="true" />
+        </property>
+        <property name="bargaincostsPayment" type="java.lang.Integer">
+            <column name="BARGAINCOSTS_PAYMENT" />
+        </property>
+        <property name="bargaincostsNote" type="string">
+            <column name="BARGAINCOSTS_NOTE" length="120" />
+        </property>
+    </class>
+</hibernate-mapping>

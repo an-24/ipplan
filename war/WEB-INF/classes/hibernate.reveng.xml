@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-reverse-engineering PUBLIC "-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd" >
+
+<hibernate-reverse-engineering>
+  <table-filter match-name="AGREED"/>
+  <table-filter match-name="BARGAIN"/>
+  <table-filter match-name="BARGAINCOSTS"/>
+  <table-filter match-name="CALENDAR"/>
+  <table-filter match-name="CONTRACT"/>
+  <table-filter match-name="COSTS"/>
+  <table-filter match-name="CUSTOMER"/>
+  <table-filter match-name="PUSER"/>
+  <table-filter match-name="STATUS"/>
+</hibernate-reverse-engineering>

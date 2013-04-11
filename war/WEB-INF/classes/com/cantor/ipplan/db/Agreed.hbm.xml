@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 07.04.2013 20:05:10 by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="com.cantor.db.Agreed" table="AGREED">
+        <id name="agreedId" type="int">
+            <column name="AGREED_ID" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="bargain" class="com.cantor.db.Bargain" fetch="select">
+            <column name="BARGAIN_ID" not-null="true" />
+        </many-to-one>
+        <property name="agreedDate" type="date">
+            <column name="AGREED_DATE" length="10" not-null="true" />
+        </property>
+        <property name="agreedNote" type="string">
+            <column name="AGREED_NOTE" length="200" />
+        </property>
+    </class>
+</hibernate-mapping>

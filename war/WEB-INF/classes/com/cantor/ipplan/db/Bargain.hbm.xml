@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 07.04.2013 20:05:10 by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="com.cantor.db.Bargain" table="BARGAIN">
+        <id name="bargainId" type="int">
+            <column name="BARGAIN_ID" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="contract" class="com.cantor.db.Contract" fetch="select">
+            <column name="CONTRACT_ID" />
+        </many-to-one>
+        <many-to-one name="customer" class="com.cantor.db.Customer" fetch="select">
+            <column name="CUSTOMER_ID" not-null="true" />
+        </many-to-one>
+        <many-to-one name="puser" class="com.cantor.db.Puser" fetch="select">
+            <column name="PUSER_ID" not-null="true" />
+        </many-to-one>
+        <many-to-one name="bargain" class="com.cantor.db.Bargain" fetch="select">
+            <column name="ROOT_BARGAIN_ID" not-null="true" />
+        </many-to-one>
+        <many-to-one name="status" class="com.cantor.db.Status" fetch="select">
+            <column name="STATUS_ID" />
+        </many-to-one>
+        <property name="bargainVer" type="int">
+            <column name="BARGAIN_VER" not-null="true" />
+        </property>
+        <property name="bargainStart" type="date">
+            <column name="BARGAIN_START" length="10" not-null="true" />
+        </property>
+        <property name="bargainFinish" type="date">
+            <column name="BARGAIN_FINISH" length="10" not-null="true" />
+        </property>
+        <property name="bargainRevenue" type="java.lang.Integer">
+            <column name="BARGAIN_REVENUE" />
+        </property>
+        <property name="bargainPrepayment" type="java.lang.Integer">
+            <column name="BARGAIN_PREPAYMENT" />
+        </property>
+        <property name="bargainCosts" type="java.lang.Integer">
+            <column name="BARGAIN_COSTS" />
+        </property>
+        <property name="bargainPaymentCosts" type="java.lang.Integer">
+            <column name="BARGAIN_PAYMENT_COSTS" />
+        </property>
+        <property name="bargainFine" type="java.lang.Integer">
+            <column name="BARGAIN_FINE" />
+        </property>
+        <property name="bargainTax" type="java.lang.Integer">
+            <column name="BARGAIN_TAX" />
+        </property>
+        <one-to-one name="calendar" class="com.cantor.db.Calendar"></one-to-one>
+        <set name="bargaincostses" table="BARGAINCOSTS" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="BARGAIN_ID" not-null="true" />
+            </key>
+            <one-to-many class="com.cantor.db.Bargaincosts" />
+        </set>
+        <set name="bargains" table="BARGAIN" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="ROOT_BARGAIN_ID" not-null="true" />
+            </key>
+            <one-to-many class="com.cantor.db.Bargain" />
+        </set>
+        <set name="agreeds" table="AGREED" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="BARGAIN_ID" not-null="true" />
+            </key>
+            <one-to-many class="com.cantor.db.Agreed" />
+        </set>
+    </class>
+</hibernate-mapping>
