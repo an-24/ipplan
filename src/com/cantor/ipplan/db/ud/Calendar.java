@@ -1,4 +1,4 @@
-package com.cantor.ipplan.db;
+package com.cantor.ipplan.db.ud;
 
 // Generated 12.04.2013 19:58:46 by Hibernate Tools 3.4.0.CR1
 

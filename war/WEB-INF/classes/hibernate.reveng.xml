@@ -11,4 +11,6 @@
   <table-filter match-name="CUSTOMER"/>
   <table-filter match-name="PUSER"/>
   <table-filter match-name="STATUS"/>
+  <table-filter match-name="PAYMENTS"/>
+  <table-filter match-name="SYNC"/>
 </hibernate-reverse-engineering>

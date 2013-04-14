@@ -6,7 +6,7 @@
     <session-factory>
         <property name="hibernate.connection.driver_class">org.firebirdsql.jdbc.FBDriver</property>
         <property name="hibernate.connection.password">masterkey</property>
-        <property name="hibernate.connection.url">jdbc:firebirdsql:localhost:D:\DATABASE\ipplan_ud.fdb</property>
+        <property name="hibernate.connection.url">jdbc:firebirdsql:localhost:D:\DATABASE\ipplan_up.fdb</property>
         <property name="hibernate.connection.username">sysdba</property>
     </session-factory>
 </hibernate-configuration>
