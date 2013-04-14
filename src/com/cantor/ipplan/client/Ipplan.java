@@ -1,5 +1,12 @@
 package com.cantor.ipplan.client;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.validation.ValidatorFactory;
+
 import com.cantor.ipplan.shared.HttpStatusText;
 import com.cantor.ipplan.db.up.PUser;
 import com.google.gwt.core.client.EntryPoint;
@@ -13,14 +20,13 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.validation.client.impl.Validation;
 
 public class Ipplan implements EntryPoint {
 
-
-	private PUser user = null;
-	private DialogBox eventBox = null;
-	
+	private static Logger rootLogger = Logger.getLogger("iPPlan");
 	
 	public void onModuleLoad() {
 		// логирование
@@ -80,47 +86,67 @@ public class Ipplan implements EntryPoint {
 		nameField.addKeyUpHandler(handler);
 		*/
 	}
+	
+	public static void log(Level l, String message) {
+		rootLogger.log(l,message);
+	}
+	
+	public static void info(String message) {
+		rootLogger.log(Level.INFO,message);
+	}
 
-	private void configEventBox(String errtext) {
+	public static void warning(String message) {
+		rootLogger.log(Level.WARNING,message);
+	}
+	
+	public static void error(String message) {
+		rootLogger.log(Level.SEVERE,message);
+	}
+
+	public static void error(Throwable e) {
+		rootLogger.log(Level.SEVERE,e.getMessage(),e);
+	}
+
+	public static void error(String message, Throwable e) {
+		rootLogger.log(Level.SEVERE,message,e);
+	}
+	
+	private static DialogBox configEventBox(String errtext) {
 		Button closeButton = null;
 		Label textToServerLabel = null;
-		if(eventBox==null) {
-			eventBox = new DialogBox();
-			eventBox.setText("Сообщение сервера");
-			eventBox.setAnimationEnabled(true);
-			closeButton = new Button("Закрыть");
-			closeButton.getElement().setId("closeButton");
+		final DialogBox eventBox = new DialogBox();
+		eventBox.setText("Сообщение сервера");
+		eventBox.setAnimationEnabled(true);
+		closeButton = new Button("Закрыть");
+		closeButton.getElement().setId("closeButton");
 
-			textToServerLabel = new Label();
-			textToServerLabel.addStyleName("serverResponseLabelError");
+		textToServerLabel = new Label();
+		textToServerLabel.addStyleName("serverResponseLabelError");
 
-			VerticalPanel dialogVPanel = new VerticalPanel();
-			dialogVPanel.addStyleName("dialogVPanel");
-			dialogVPanel.add(new HTML("<b>С сервера пришло сообщение:</b>"));
-			dialogVPanel.add(textToServerLabel);
-			dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
-			dialogVPanel.add(closeButton);
-			eventBox.setWidget(dialogVPanel);
-			closeButton.addClickHandler(new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					eventBox.hide();
-				}
-			});
-		} else {
-			VerticalPanel panel = (VerticalPanel) eventBox.getWidget();
-			textToServerLabel = (Label) panel.getWidget(1);
-			closeButton = (Button) panel.getWidget(2);
-		}
+		VerticalPanel dialogVPanel = new VerticalPanel();
+		dialogVPanel.addStyleName("dialogVPanel");
+		dialogVPanel.add(new HTML("<b>С сервера пришло сообщение:</b>"));
+		dialogVPanel.add(textToServerLabel);
+		dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
+		dialogVPanel.add(closeButton);
+		eventBox.setWidget(dialogVPanel);
+		closeButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				eventBox.hide();
+			}
+		});
 			
 		textToServerLabel.setText(errtext);
 		closeButton.setFocus(true);
+		return eventBox;
 	}
 
-	private HandlerRegistration configEventBox(String errtext, ClickHandler click) {
-		configEventBox(errtext);
+	private static DialogBox configEventBox(String errtext, ClickHandler click) {
+		DialogBox eventBox = configEventBox(errtext);
 		VerticalPanel panel = (VerticalPanel) eventBox.getWidget();
 		Button closeButton = (Button) panel.getWidget(2);
-		return closeButton.addClickHandler(click);
+		closeButton.addClickHandler(click);
+		return eventBox;
 		
 	}
 	
@@ -130,8 +156,13 @@ public class Ipplan implements EntryPoint {
 			
 			@Override
 			public void onSuccess(PUser user) {
-				if(user==null) new LoginForm(Ipplan.this).show(); else
-					new ProfileForm(Ipplan.this).show();
+				if(user==null) {
+					FormLogin f = new FormLogin(RootPanel.get("formContainer"));
+					f.show();
+				} else {
+					FormProfile f = new FormProfile(RootPanel.get("formContainer"),user);
+					f.show();
+				}
 			}
 			
 			@Override
@@ -143,13 +174,13 @@ public class Ipplan implements EntryPoint {
 		
 	}
 
-	private void showError(Throwable e) {
+	public static void showError(Throwable e) {
 		String s = e.getMessage();
 		if (e instanceof StatusCodeException) {
 			int code = ((StatusCodeException) e).getStatusCode();
 			s = "Ошибка сети. Код "+code+":"+HttpStatusText.get(code);
 		};	
-		configEventBox(s);
+		DialogBox eventBox = configEventBox(s);
 		eventBox.center();
 	}
 

@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -87,7 +88,8 @@ public class PUser implements java.io.Serializable {
 	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEWRECORDID")
+	@javax.persistence.SequenceGenerator(name="newRec", sequenceName="NEWRECORDID")	
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "newRec")
 	@Column(name = "PUSER_ID", unique = true, nullable = false)
 	public int getPuserId() {
 		return this.puserId;

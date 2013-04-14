@@ -41,7 +41,8 @@ public class Payments implements java.io.Serializable {
 	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEWRECORDID")
+	@javax.persistence.SequenceGenerator(name="newRec", sequenceName="NEWRECORDID")	
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "newRec")
 	@Column(name = "PAYMENTS_ID", unique = true, nullable = false)
 	public int getPaymentsId() {
 		return this.paymentsId;

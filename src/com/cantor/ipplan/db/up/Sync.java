@@ -38,7 +38,8 @@ public class Sync implements java.io.Serializable {
 	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NEWRECORDID")
+	@javax.persistence.SequenceGenerator(name="newRec", sequenceName="NEWRECORDID")	
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "newRec")
 	@Column(name = "SYNC_ID", unique = true, nullable = false)
 	public int getSyncId() {
 		return this.syncId;

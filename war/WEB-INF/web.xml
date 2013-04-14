@@ -21,4 +21,7 @@
     <welcome-file>Ipplan.html</welcome-file>
   </welcome-file-list>
 
+  <listener>
+    <listener-class>com.cantor.ipplan.server.ContextEventHandler</listener-class>
+  </listener>
 </web-app>
