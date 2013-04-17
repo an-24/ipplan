@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javax.validation.ValidatorFactory;
 
 import com.cantor.ipplan.shared.HttpStatusText;
+import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.db.up.PUser;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -152,10 +153,10 @@ public class Ipplan implements EntryPoint {
 	
 	private void login() {
 		LoginServiceAsync service = GWT.create(LoginService.class);
-		service.isLogged(new AsyncCallback<PUser>() {
+		service.isLogged(new AsyncCallback<PUserWrapper>() {
 			
 			@Override
-			public void onSuccess(PUser user) {
+			public void onSuccess(PUserWrapper user) {
 				if(user==null) {
 					FormLogin f = new FormLogin(RootPanel.get("formContainer"));
 					f.show();

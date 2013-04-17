@@ -1,9 +1,11 @@
 package com.cantor.ipplan.client;
 
-import javax.validation.ValidatorFactory;
+import java.util.Date;
 
-import com.cantor.ipplan.db.up.PUser;
+import com.cantor.ipplan.shared.PUserWrapper;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Button;
@@ -15,12 +17,13 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Hyperlink;
-import com.google.gwt.validation.client.impl.Validation;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.user.client.ui.DecoratorPanel;
-import com.google.gwt.user.client.ui.SuggestBox;
+import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.InlineHyperlink;
 
 public class FormLogin extends Form {
 	
@@ -31,14 +34,32 @@ public class FormLogin extends Form {
 
 	public FormLogin(RootPanel root) {
 		super(root);
+		final FormPanel form = new FormPanel();
+		form.setEncoding(FormPanel.ENCODING_MULTIPART);
+		form.setMethod(FormPanel.METHOD_POST);
+		form.setWidth("600px");
+		form.setAction("/login");
+		
+		initWidget(form);
 		
 		VerticalPanel verticalPanel = new VerticalPanel();
-		initWidget(verticalPanel);
-		verticalPanel.setHeight("316px");
+		form.setWidget(verticalPanel);
+		verticalPanel.setSize("598px", "316px");
+		setStyleName("gwt-Form");
+		
+		HorizontalPanel horizontalPanel = new HorizontalPanel();
+		verticalPanel.add(horizontalPanel);
+		horizontalPanel.setWidth("100%");
 		
 		Label l1 = new Label("Вход в систему");
+		horizontalPanel.add(l1);
+		l1.setSize("328px", "100%");
 		l1.setStyleName("gwt-FormCaption");
-		verticalPanel.add(l1);
+		
+		InlineHyperlink inlineHyperlink = new InlineHyperlink("Зарегистрироваться", false, "register");
+		horizontalPanel.add(inlineHyperlink);
+		horizontalPanel.setCellHorizontalAlignment(inlineHyperlink, HasHorizontalAlignment.ALIGN_RIGHT);
+		horizontalPanel.setCellVerticalAlignment(inlineHyperlink, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		flexTable = new FlexTable();
 		flexTable.setCellSpacing(4);
@@ -51,21 +72,29 @@ public class FormLogin extends Form {
 		l2.setWidth("190px");
 		
 		tbLogin = new TextBox();
-		tbLogin.setName("edtLogin");
+		tbLogin.setName("userid");
 		tbLogin.setMaxLength(320);
 		flexTable.setWidget(0, 1, tbLogin);
 		tbLogin.setWidth("331px");
+		
+		String remlogin = Cookies.getCookie("userid");
+		if(remlogin!=null)
+			tbLogin.setText(remlogin);
 		
 		Label l3 = new Label("* Пароль");
 		flexTable.setWidget(1, 0, l3);
 		
 		tbPassword = new PasswordTextBox();
-		tbPassword.setName("edtPassword");
+		tbPassword.setName("password");
 		flexTable.setWidget(1, 1, tbPassword);
 		flexTable.getCellFormatter().setHeight(1, 1, "");
 		tbPassword.setWidth("184px");
 		
-		CheckBox cb1 = new CheckBox("Запомнить меня");
+		final CheckBox cb1 = new CheckBox("Запомнить меня");
+		cb1.setName("rememberme");
+		if(remlogin!=null)
+			cb1.setValue(true);
+		
 		flexTable.setWidget(2, 1, cb1);
 		flexTable.getCellFormatter().setHeight(2, 1, "");
 		flexTable.getCellFormatter().setVerticalAlignment(2, 1, HasVerticalAlignment.ALIGN_TOP);
@@ -73,15 +102,31 @@ public class FormLogin extends Form {
 		flexTable.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		Button button = new Button("Войти");
+		button.getElement().setAttribute("type", "submit");
 		button.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				form.submit();
+			}
+		});
+		
+		form.addSubmitHandler(new SubmitHandler() {
+			public void onSubmit(SubmitEvent event) {
+				event.cancel();
+				
+				if(cb1.getValue()!=null && cb1.getValue()) {
+					Date now = new Date();
+					long nowLong = now.getTime();
+					nowLong = nowLong + (1000 * 60 * 60 * 24 * 7);//seven days
+					now.setTime(nowLong);
+					Cookies.setCookie("userid", tbLogin.getText(), now);
+				}
 				
 				if(!validate()) return;
 				
 				LoginServiceAsync service = GWT.create(LoginService.class);
-				service.login(tbLogin.getText(), tbPassword.getText(), new AsyncCallback<PUser>() {
+				service.login(tbLogin.getText(), tbPassword.getText(), new AsyncCallback<PUserWrapper>() {
 					
-					public void onSuccess(PUser result) {
+					public void onSuccess(PUserWrapper result) {
 						if(result==null) {
 							showError(3, "Введен неверный пароль или имя или адрес электронной почты.");
 						} else {
@@ -94,7 +139,6 @@ public class FormLogin extends Form {
 						Ipplan.showError(caught);
 					}
 				});
-				
 			}
 		});
 		
@@ -104,13 +148,12 @@ public class FormLogin extends Form {
 		verticalPanel.setCellHorizontalAlignment(button, HasHorizontalAlignment.ALIGN_CENTER);
 		flexTable.getFlexCellFormatter().setColSpan(3, 0, 2);
 		
-		Hyperlink hlRegister = new Hyperlink("Забыли пароль?", false, "register");
+		Hyperlink hlRegister = new Hyperlink("Забыли пароль?", false, "remember");
 		flexTable.setWidget(4, 0, hlRegister);
 		flexTable.getFlexCellFormatter().setColSpan(4, 0, 2);
 		flexTable.getCellFormatter().setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		flexTable.getCellFormatter().setVerticalAlignment(4, 0, HasVerticalAlignment.ALIGN_TOP);
-		setStyleName("gwt-Form");
-		
+
 		setFirstFocusedWidget(tbLogin);
 	}
 

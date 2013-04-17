@@ -1,12 +1,13 @@
 package com.cantor.ipplan.client;
 
-import com.cantor.ipplan.db.up.PUser;
+import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("login")
 public interface LoginService extends RemoteService {
-	public PUser login(String nameOrEmail, String pswd);
-	public PUser isLogged();
+	public PUserWrapper login(String nameOrEmail, String pswd);
+	public PUserWrapper isLogged();
+	public void logout();
 
 }
