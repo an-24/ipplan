@@ -68,9 +68,7 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
 	private String hashPassword(String pswd) throws NoSuchAlgorithmException {
 		MessageDigest digest = MessageDigest.getInstance("MD5");
 		digest.update(pswd.getBytes(), 0, pswd.length());
-		
 		pswd = new BigInteger(1, digest.digest()).toString(16);
-		//Ipplan.info(pswd);
 		return pswd;
 	}
 
