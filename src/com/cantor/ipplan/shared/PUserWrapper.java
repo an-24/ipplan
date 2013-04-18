@@ -3,6 +3,7 @@ package com.cantor.ipplan.shared;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import com.google.gwt.i18n.shared.CustomDateTimeFormat;
 
 public class PUserWrapper implements java.io.Serializable {
 	public int puserId;
@@ -21,4 +22,13 @@ public class PUserWrapper implements java.io.Serializable {
 	public Set<SyncWrapper> syncs = new HashSet<SyncWrapper>(0);
 	public Set<PaymentsWrapper> paymentses = new HashSet<PaymentsWrapper>(0);
 	public Set<PUserWrapper> children = new HashSet<PUserWrapper>(0);
+	
+	public String getName() {
+		return puserLogin!=null?puserLogin:puserEmail; 
+	}
+	
+	@CustomDateTimeFormat.Pattern(value = "dd.MM.yyyy HH:mm:ss")
+	public Date getLastAccess() {
+		return puserLastaccess;
+	}
 }
