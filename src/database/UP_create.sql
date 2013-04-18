@@ -37,7 +37,7 @@ constraint PK_PUSER primary key (puser_id),
 constraint AK_KEY_2_PUSER unique (puser_email)
 );
 
-insert into puser values (-1,NULL,'ipplan2013@gmail.com','ipplan2013','rol','ipplan2013-gmail-com',1,'NOW','NOW',NULL,0,NULL,1);
+insert into puser values (-1,NULL,'ipplan2013@gmail.com','ipplan2013','875b854107b408d2899cce9dff917e70','ipplan2013-gmail-com',1,'NOW','NOW',NULL,0,NULL,1);
 commit;
 
 /*==============================================================*/
