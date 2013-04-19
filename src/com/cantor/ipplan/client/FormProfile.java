@@ -1,27 +1,30 @@
 package com.cantor.ipplan.client;
 
 import com.cantor.ipplan.shared.PUserWrapper;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.LongBox;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.TabPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.DateLabel;
-import com.google.gwt.user.client.ui.ToggleButton;
-import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Frame;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.SimpleCheckBox;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.ValueListBox;
+import com.google.gwt.text.client.IntegerRenderer;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.CaptionPanel;
 
 
 public class FormProfile extends Form {
@@ -72,7 +75,7 @@ public class FormProfile extends Form {
 		lblUser.addStyleName("lpad10");
 		lblUser.addStyleName("bold-text");
 		lblUser.setWordWrap(false);
-		lblUser.setText("user");
+		lblUser.setText(user.getFullName());
 		p3.add(lblUser);
 		p3.setCellVerticalAlignment(lblUser, HasVerticalAlignment.ALIGN_MIDDLE);
 		
@@ -80,16 +83,29 @@ public class FormProfile extends Form {
 		p3.add(l2);
 		p3.setCellVerticalAlignment(l2, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		DateLabel lbLastaccess = new DateLabel();
-		lbLastaccess.setValue(user.getLastAccess());
+		Label lbLastaccess = new Label(DateTimeFormat.getMediumDateTimeFormat().format(user.puserLastaccess));
 		p3.add(lbLastaccess);
 		p3.setCellVerticalAlignment(lbLastaccess, HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		user.puserLock=1;
+		user.puserLockReason = "просрочена оплата";
+		
+		CaptionPanel pMessage = new CaptionPanel("Вам сообщение");
+		pMessage.setStyleName("messageToUser");
+		p0.add(pMessage);
+
+		if(user.puserLock!=0) {
+			HTML htm = new HTML("Аккаунт временно заблокирован. Причина: "+user.puserLockReason);
+			pMessage.add(htm);
+		} else
+			pMessage.setVisible(false);
 		
 		VerticalPanel p2 = new VerticalPanel();
 		p0.add(p2);
 		p2.setSize("100%", "45px");
 		
 		Button btnOpenDB = new Button("Открыть базу данных");
+		btnOpenDB.setEnabled(user.puserLock!=0);
 		p2.add(btnOpenDB);
 		btnOpenDB.setWidth("162px");
 		p2.setCellVerticalAlignment(btnOpenDB, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -101,8 +117,66 @@ public class FormProfile extends Form {
 		tabPanel.setSize("100%", "434px");
 		
 		FlexTable Tabl1 = new FlexTable();
+		Tabl1.setCellSpacing(4);
+		Tabl1.setCellPadding(10);
 		tabPanel.add(Tabl1, "Общие сведения", false);
 		Tabl1.setSize("100%", "3cm");
+		
+		Label label = new Label("Дата создания");
+		Tabl1.setWidget(0, 0, label);
+		
+		Label lDateCreated = new Label(DateTimeFormat.getMediumDateFormat().format(user.puserCreated));
+		lDateCreated.setStyleName("gwt-TextBox");
+		Tabl1.setWidget(0, 1, lDateCreated);
+		lDateCreated.setWidth("132px");
+		
+		Label l3 = new Label("Имя пользователя");
+		Tabl1.setWidget(1, 0, l3);
+		
+		TextBox tbName = new TextBox();
+		Tabl1.setWidget(1, 1, tbName);
+		tbName.setWidth("300px");
+		tbName.setText(user.puserLogin);
+		
+		Label l4 = new Label("* Адрес электронной почты");
+		Tabl1.setWidget(2, 0, l4);
+		
+		TextBox tbEmail = new TextBox();
+		Tabl1.setWidget(2, 1, tbEmail);
+		tbEmail.setWidth("300px");
+		tbEmail.setText(user.puserEmail);
+		
+		CheckBox cbBoss = new CheckBox("Босс-аккаунт");
+		Tabl1.setWidget(3, 1, cbBoss);
+		cbBoss.setChecked(user.puserBoss!=0);
+		
+		Label l5 = new Label("Вам подчиняются");
+		Tabl1.setWidget(4, 0, l5);
+		
+		ListBox lbChildren = new ListBox();
+		Tabl1.setWidget(4, 1, lbChildren);
+		lbChildren.setWidth("300px");
+		lbChildren.setVisibleItemCount(5);
+		if(user.children!=null) 
+		for (PUserWrapper child : user.children) {
+			lbChildren.addItem(child.getFullName());
+		}
+		
+		
+		Label l6 = new Label("Вы подчинены");
+		Tabl1.setWidget(5, 0, l6);
+		
+		Label lOwner = new Label(" ");
+		lOwner.setStyleName("gwt-TextBox");
+		Tabl1.setWidget(5, 1, lOwner);
+		lOwner.setWidth("234px");
+		if(user.owner==null) lOwner.setText("никому"); else
+			lOwner.setText(user.getFullName());
+		
+		Button btnSave = new Button("Сохранить изменения");
+		Tabl1.setWidget(6, 0, btnSave);
+		Tabl1.getFlexCellFormatter().setColSpan(6, 0, 2);
+		Tabl1.getCellFormatter().setHorizontalAlignment(6, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		FlexTable Tab2 = new FlexTable();
 		tabPanel.add(Tab2, "Оплата сервиса", false);
@@ -115,6 +189,8 @@ public class FormProfile extends Form {
 		FlexTable Tab4 = new FlexTable();
 		tabPanel.add(Tab4, "Синхронизация", false);
 		Tab4.setSize("100%", "3cm");
+		
+		tabPanel.getTabBar().selectTab(0);
 	}
 
 }

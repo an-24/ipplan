@@ -10,7 +10,6 @@ public class PUserWrapper implements java.io.Serializable {
 	public PUserWrapper owner;
 	public String puserEmail;
 	public String puserLogin;
-	public String puserPswd;
 	public String puserDbname;
 	public int puserBoss;
 	public Date puserCreated;
@@ -23,12 +22,9 @@ public class PUserWrapper implements java.io.Serializable {
 	public Set<PaymentsWrapper> paymentses = new HashSet<PaymentsWrapper>(0);
 	public Set<PUserWrapper> children = new HashSet<PUserWrapper>(0);
 	
-	public String getName() {
-		return puserLogin!=null?puserLogin:puserEmail; 
+	public String getFullName() {
+		if(puserLogin==null) return puserEmail;else
+			return puserLogin+"("+puserEmail+")";
 	}
 	
-	@CustomDateTimeFormat.Pattern(value = "dd.MM.yyyy HH:mm:ss")
-	public Date getLastAccess() {
-		return puserLastaccess;
-	}
 }

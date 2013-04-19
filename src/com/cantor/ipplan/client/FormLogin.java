@@ -105,7 +105,7 @@ public class FormLogin extends Form {
 		button.getElement().setAttribute("type", "submit");
 		button.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				form.submit();
+				//form.submit();
 			}
 		});
 		

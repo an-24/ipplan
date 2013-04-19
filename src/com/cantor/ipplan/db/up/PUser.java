@@ -249,7 +249,6 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		u.owner = owner!=null?owner.toClient():null;
 		u.puserEmail = puserEmail;
 		u.puserLogin = puserLogin;
-		u.puserPswd = puserPswd;
 		u.puserDbname = puserDbname;
 		u.puserBoss = puserBoss;
 		u.puserCreated = puserCreated;
