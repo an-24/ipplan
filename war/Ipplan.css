@@ -10,12 +10,6 @@ h1 {
   text-align: center;
 }
 
-.sendButton {
-  display: block;
-  font-size: 16pt;
-}
-
-
 /** Most GWT widgets already have a style name defined */
 .gwt-DialogBox {
   width: 400px;
@@ -26,7 +20,8 @@ h1 {
 }
 
 .serverResponseLabelError {
-  color: red;
+	color: red;
+	font-weight: normal;
 }
 
 /** Set ids using widget.getElement().setId("idOfElement") */
@@ -71,3 +66,32 @@ h1 {
 	font-weight: bold;
 	background-color: lemonchiffon;
 }
+.serverResponseSuccess {
+	color: forestgreen;
+	font-weight: bold;
+}
+
+
+.baloonPanel {
+    background: linear-gradient(#F9D835, #F3961C) repeat scroll 0 0 transparent;
+    border-radius: 10px 10px 10px 10px;
+    color: #000000;
+    margin-bottom:15px;
+    padding: 15px;
+    position: relative;
+    max-width:400px;
+}
+
+.baloonPanel:after {
+    border-color: #F3961C transparent;
+    border-style: solid;
+    border-width: 15px 15px 0;
+    bottom: -15px;
+    content: "";
+    display: block;
+    left: 50px;
+    position: absolute;
+    width: 0;
+}
+
+

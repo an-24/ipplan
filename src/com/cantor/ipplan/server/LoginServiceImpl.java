@@ -3,6 +3,7 @@ package com.cantor.ipplan.server;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpSession;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
 import com.cantor.ipplan.client.Ipplan;
 import com.cantor.ipplan.client.LoginService;
@@ -26,7 +28,7 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
 		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
     	Session session = sessionFactory.openSession();
     	try {
-    		//Transaction tx = session.beginTransaction();
+    		Transaction tx = session.beginTransaction();
     		try {
     			Query q = session.createQuery("select u from PUser u "+
     		                                  "where (u.puserLogin=:login OR u.puserEmail=:login)AND u.puserPswd=:pswd");
@@ -41,19 +43,23 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     				
     				HttpSession sess = this.getThreadLocalRequest().getSession();
     				sess.setAttribute("user", u);
-    				return u.toClient();
+    				
+    				PUserWrapper uclient = u.toClient(); 
+    				
+    				// модмфицируем lastaccess
+    				u.setPuserLastaccess(new Date());
+    				session.update(u);
+        			tx.commit();
+    				
+    				return uclient;
     			}	
-    			//tx.commit();
     		} catch (Exception e) {
-    			//tx.rollback();
+    			tx.rollback();
     			Ipplan.error("Ошибка входа в систему пользователя "+nameOrEmail,e);
 			}
     	} finally {
     		session.close();
     	}
-		
-		
-		// TODO Auto-generated method stub
 		return null;
 	}
 

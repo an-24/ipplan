@@ -179,5 +179,5 @@ public class FormLogin extends Form {
 		flexTable.setWidget(rowError, 0, l);
 		flexTable.getFlexCellFormatter().setColSpan(rowError, 0, 2);
 	}
-
+	
 }

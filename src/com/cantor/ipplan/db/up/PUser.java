@@ -17,6 +17,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.Hibernate;
@@ -44,6 +45,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 	private int puserLock;
 	private String puserLockReason;
 	private int puserTrial;
+	private int puserFlags;
 	private Set<Sync> syncs = new HashSet<Sync>(0);
 	private Set<Payments> paymentses = new HashSet<Payments>(0);
 	private Set<PUser> children = new HashSet<PUser>(0);
@@ -214,6 +216,15 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		this.puserTrial = puserTrial;
 	}
 
+	@Column(name = "PUSER_FLAGS", nullable = true)
+	public int getPuserFlags() {
+		return this.puserFlags;
+	}
+
+	public void setPuserFlags(int puserFlags) {
+		this.puserFlags = puserFlags;
+	}
+	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "puser")
 	public Set<Sync> getSyncs() {
 		return this.syncs;
@@ -247,9 +258,8 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		PUserWrapper u = new PUserWrapper();
 		u.puserId = puserId;
 		u.owner = owner!=null?owner.toClient():null;
-		u.puserEmail = puserEmail;
 		u.puserLogin = puserLogin;
-		u.puserDbname = puserDbname;
+		u.puserEmail = puserEmail;
 		u.puserBoss = puserBoss;
 		u.puserCreated = puserCreated;
 		u.puserLastaccess = puserLastaccess;
@@ -257,6 +267,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		u.puserLock = puserLock;
 		u.puserLockReason = puserLockReason;
 		u.puserTrial = puserTrial;
+		u.puserFlags = puserFlags;
 		for (Sync item : syncs) {
 			u.syncs.add(item.toClient());
 		}
@@ -271,8 +282,6 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 
 	@Override
 	public void fromClient(PUserWrapper data) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -284,5 +293,10 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		if(deep) {
 			//TODO
 		}
+	}
+
+	@Transient
+	public String getFullName() {
+		return puserLogin==null?puserEmail:puserLogin+"("+puserEmail+")";
 	}
 }

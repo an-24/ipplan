@@ -10,10 +10,19 @@
     <servlet-name>loginServlet</servlet-name>
     <servlet-class>com.cantor.ipplan.server.LoginServiceImpl</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>profileServlet</servlet-name>
+    <servlet-class>com.cantor.ipplan.server.ProfileServiceImpl</servlet-class>
+  </servlet>
   
   <servlet-mapping>
     <servlet-name>loginServlet</servlet-name>
     <url-pattern>ipplan/login</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>profileServlet</servlet-name>
+    <url-pattern>ipplan/profile</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->
@@ -24,4 +33,5 @@
   <listener>
     <listener-class>com.cantor.ipplan.server.ContextEventHandler</listener-class>
   </listener>
+  
 </web-app>

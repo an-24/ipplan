@@ -13,9 +13,22 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     07.04.2013 18:26:11                          */
+/* Created on:     20.04.2013 18:19:08                          */
 /*==============================================================*/
 
+
+/*==============================================================*/
+/* Table: messages                                              */
+/*==============================================================*/
+create table messages (
+messages_id          INTEGER                        not null,
+puser_r_id           INTEGER,
+puser_s_id           INTEGER                        not null,
+messages_date        DATE                           not null,
+messages_text        VARCHAR(256)                   not null,
+messages_type        INTEGER                        not null,
+constraint PK_MESSAGES primary key (messages_id)
+);
 
 /*==============================================================*/
 /* Table: payments                                              */
@@ -46,11 +59,13 @@ puser_lastaccess_device VARCHAR(20),
 puser_lock           INTEGER                        not null,
 puser_lock_reason    VARCHAR(256),
 puser_trial          INTEGER                        not null,
+puser_flags          INTEGER                        default 0,
 constraint PK_PUSER primary key (puser_id),
 constraint AK_KEY_2_PUSER unique (puser_email)
 );
 
-insert into puser values (-1,NULL,'ipplan2013@gmail.com','ipplan2013','rol','ipplan2013-gmail-com',1,'NOW','NOW',NULL,0,NULL,1);
+insert into puser values (-2,NULL,'kav-1@bk.ru','Andr','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,1,0);
+insert into puser values (-1,NULL,'ipplan2013@gmail.com','ipplan2013','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,1,0);
 commit;
 
 /*==============================================================*/
@@ -63,6 +78,18 @@ sync_imei            VARCHAR(20)                    not null,
 sync_last            DATE                           not null,
 constraint PK_SYNC primary key (sync_id)
 );
+
+alter table messages
+   add constraint FK_MESSAGES_REFERENCE_PUSER_R foreign key (puser_r_id)
+      references puser (puser_id)
+      on delete set null
+      on update set null;
+
+alter table messages
+   add constraint FK_MESSAGES_REFERENCE_PUSER_S foreign key (puser_s_id)
+      references puser (puser_id)
+      on delete cascade
+      on update cascade;
 
 alter table payments
    add constraint FK_PAYMENTS_REFERENCE_PUSER foreign key (puser_id)

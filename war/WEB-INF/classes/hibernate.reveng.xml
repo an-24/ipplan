@@ -13,4 +13,5 @@
   <table-filter match-name="STATUS"/>
   <table-filter match-name="PAYMENTS"/>
   <table-filter match-name="SYNC"/>
+  <table-filter match-name="MESSAGES"/>
 </hibernate-reverse-engineering>

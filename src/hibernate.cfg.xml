@@ -16,5 +16,6 @@
         <mapping class="com.cantor.ipplan.db.up.PUser"/>
         <mapping class="com.cantor.ipplan.db.up.Payments"/>
         <mapping class="com.cantor.ipplan.db.up.Sync"/>
+        <mapping class="com.cantor.ipplan.db.up.Messages"/>
     </session-factory>
 </hibernate-configuration>
