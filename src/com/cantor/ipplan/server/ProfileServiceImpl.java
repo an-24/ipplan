@@ -14,7 +14,9 @@
  *******************************************************************************/
 package com.cantor.ipplan.server;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
@@ -25,6 +27,7 @@ import org.hibernate.Transaction;
 
 import com.cantor.ipplan.client.Ipplan;
 import com.cantor.ipplan.client.ProfileService;
+import com.cantor.ipplan.db.up.Messages;
 import com.cantor.ipplan.db.up.PUser;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -42,14 +45,29 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
     		try {
     			user.setPuserLogin(data.puserLogin);
     			user.setPuserEmail(data.puserEmail);
-    			
-    			if(data.puserBoss!=0 && user.getPuserTrial()!=0)
+    			user.setPuserTarif(data.puserTarif);
+    			// устанавливаем Босс-аккаунт
+    			if(data.puserBoss!=0 && user.getPuserTarif()<=0)
     				throw new Exception("Профиль не может быть изменен, так как для включения "+
-    			                        "опции Босс-аккаунт требуется другой тарифный план."); 
-    				
+    			                        "опции Босс-аккаунт требуется другой тарифный план (начиная со Стандартного)."); 
     			user.setPuserBoss(data.puserBoss);
-    			
+
     			// модификация списка подчиненых
+    			
+				// удаляем которых нет
+    			for (PUser child : user.getChildren()) {
+    				if(!containsChildren(child,data.children)) {
+    					user.getChildren().remove(child);
+    					child.setOwner(null);
+    					session.update(child);
+    				}	
+				}
+    			// добавляем новых
+    			for (PUserWrapper u: data.children) {
+    				PUser pu = getUserByEmail(session,u.puserEmail);
+    				sendMessageToUser(session,user,pu,"Подтвердите Вашу готовность к тому, "+
+    								  "чтобы стать подчиненным пользователю "+user.getFullName(),Messages.MT_JOIN_TO_OWNER);
+				}
     			
     			
     			session.update(user);
@@ -93,5 +111,29 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
 		if (sess.isNew() || u==null ) 
 			throw new Exception("Необходимо войти в систему");
 		return u;
+	}
+
+	private boolean containsChildren(PUser child, Set<PUserWrapper> children) {
+		for (PUserWrapper u: children) 
+			if(u.puserEmail.equalsIgnoreCase(child.getPuserEmail())) return true;
+		return false;
+	}
+
+	private void sendMessageToUser(Session session, PUser sender, PUser reciever, String txt, int type) {
+		Messages m = new Messages();
+		m.setMessagesDate(new Date());
+		m.setPuserByPuserSId(sender);
+		m.setPuserByPuserRId(reciever);
+		m.setMessagesText(txt);
+		m.setMessagesType(type);
+		session.save(m);
+	}
+
+	private PUser getUserByEmail(Session session, String email) {
+		Query q = session.createQuery("select u from PUser u "+
+                "where u.puserEmail=:email");
+		q.setString("email", email);
+		List<PUser> l = q.list();
+		if(l.size()==0) return null; else return l.get(0); 
 	}
 }

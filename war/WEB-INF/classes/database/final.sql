@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     20.04.2013 18:19:08                          */
+/* Created on:     21.04.2013 11:16:11                          */
 /*==============================================================*/
 
 
@@ -24,7 +24,7 @@ create table messages (
 messages_id          INTEGER                        not null,
 puser_r_id           INTEGER,
 puser_s_id           INTEGER                        not null,
-messages_date        DATE                           not null,
+messages_date        TIMESTAMP                      not null,
 messages_text        VARCHAR(256)                   not null,
 messages_type        INTEGER                        not null,
 constraint PK_MESSAGES primary key (messages_id)
@@ -38,7 +38,7 @@ payments_id          INTEGER                        not null,
 puser_id             INTEGER                        not null,
 payments_period      INTEGER                        not null,
 payments_summa       INTEGER                        not null,
-payments_date        DATE                           not null,
+payments_date        TIMESTAMP                      not null,
 constraint PK_PAYMENTS primary key (payments_id)
 );
 
@@ -53,8 +53,8 @@ puser_login          VARCHAR(60)                    not null,
 puser_pswd           VARCHAR(512)                   not null,
 puser_dbname         VARCHAR(256)                   not null,
 puser_boss           INTEGER                        not null,
-puser_created        DATE                           not null,
-puser_lastaccess     DATE                           not null,
+puser_created        TIMESTAMP                      not null,
+puser_lastaccess     TIMESTAMP                      not null,
 puser_lastaccess_device VARCHAR(20),
 puser_lock           INTEGER                        not null,
 puser_lock_reason    VARCHAR(256),
@@ -75,7 +75,7 @@ create table sync (
 sync_id              INTEGER                        not null,
 puser_id             INTEGER                        not null,
 sync_imei            VARCHAR(20)                    not null,
-sync_last            DATE                           not null,
+sync_last            TIMESTAMP                      not null,
 constraint PK_SYNC primary key (sync_id)
 );
 

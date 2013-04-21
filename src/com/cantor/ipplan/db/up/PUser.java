@@ -21,6 +21,7 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.DynamicUpdate;
 
 import com.cantor.ipplan.core.DataBridge;
 import com.cantor.ipplan.shared.PUserWrapper;
@@ -30,6 +31,7 @@ import com.cantor.ipplan.shared.PUserWrapper;
  */
 @Entity
 @Table(name = "PUSER", uniqueConstraints = @UniqueConstraint(columnNames = "PUSER_EMAIL"))
+@DynamicUpdate
 public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 
 	private int puserId;
@@ -44,7 +46,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 	private String puserLastaccessDevice;
 	private int puserLock;
 	private String puserLockReason;
-	private int puserTrial;
+	private int puserTarif;
 	private int puserFlags;
 	private Set<Sync> syncs = new HashSet<Sync>(0);
 	private Set<Payments> paymentses = new HashSet<Payments>(0);
@@ -56,7 +58,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 	public PUser(int puserId, String puserEmail, String puserLogin,
 			String puserPswd, String puserDbname, int puserBoss,
 			Date puserCreated, Date puserLastaccess, int puserLock,
-			int puserTrial) {
+			int puserTarif) {
 		this.puserId = puserId;
 		this.puserEmail = puserEmail;
 		this.puserLogin = puserLogin;
@@ -66,14 +68,14 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		this.puserCreated = puserCreated;
 		this.puserLastaccess = puserLastaccess;
 		this.puserLock = puserLock;
-		this.puserTrial = puserTrial;
+		this.puserTarif = puserTarif;
 	}
 
 	public PUser(int puserId, PUser puser, String puserEmail,
 			String puserLogin, String puserPswd, String puserDbname,
 			int puserBoss, Date puserCreated, Date puserLastaccess,
 			String puserLastaccessDevice, int puserLock,
-			String puserLockReason, int puserTrial, Set<Sync> syncs,
+			String puserLockReason, int puserTarif, Set<Sync> syncs,
 			Set<Payments> paymentses, Set<PUser> pusers) {
 		this.puserId = puserId;
 		this.owner = puser;
@@ -87,7 +89,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		this.puserLastaccessDevice = puserLastaccessDevice;
 		this.puserLock = puserLock;
 		this.puserLockReason = puserLockReason;
-		this.puserTrial = puserTrial;
+		this.puserTarif = puserTarif;
 		this.syncs = syncs;
 		this.paymentses = paymentses;
 		this.children = pusers;
@@ -160,7 +162,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		this.puserBoss = puserBoss;
 	}
 
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "PUSER_CREATED", nullable = false, length = 10)
 	public Date getPuserCreated() {
 		return this.puserCreated;
@@ -170,7 +172,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		this.puserCreated = puserCreated;
 	}
 
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "PUSER_LASTACCESS", nullable = false, length = 10)
 	public Date getPuserLastaccess() {
 		return this.puserLastaccess;
@@ -207,13 +209,13 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		this.puserLockReason = puserLockReason;
 	}
 
-	@Column(name = "PUSER_TRIAL", nullable = false)
-	public int getPuserTrial() {
-		return this.puserTrial;
+	@Column(name = "PUSER_TARIF", nullable = false)
+	public int getPuserTarif() {
+		return this.puserTarif;
 	}
 
-	public void setPuserTrial(int puserTrial) {
-		this.puserTrial = puserTrial;
+	public void setPuserTarif(int puserTarif) {
+		this.puserTarif = puserTarif;
 	}
 
 	@Column(name = "PUSER_FLAGS", nullable = true)
@@ -266,7 +268,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		u.puserLastaccessDevice = puserLastaccessDevice;
 		u.puserLock = puserLock;
 		u.puserLockReason = puserLockReason;
-		u.puserTrial = puserTrial;
+		u.puserTarif = puserTarif;
 		u.puserFlags = puserFlags;
 		for (Sync item : syncs) {
 			u.syncs.add(item.toClient());

@@ -23,7 +23,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class LoginServiceImpl extends RemoteServiceServlet  implements LoginService {
 
 	@Override
-	public PUserWrapper login(String nameOrEmail, String pswd) {
+	public PUserWrapper login(String nameOrEmail, String pswd, String device) {
 		
 		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
     	Session session = sessionFactory.openSession();
@@ -35,8 +35,7 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     			q.setString("login", nameOrEmail);
     			q.setString("pswd", hashPassword(pswd));
     			List<PUser> l = q.list();
-    			if(l.size()==0) return null; else
-    			{
+    			if(l.size()>0) {
     				PUser u = l.get(0);
     				// fetch lazy
     				u.fetch(true);
@@ -48,11 +47,13 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     				
     				// модмфицируем lastaccess
     				u.setPuserLastaccess(new Date());
+    				u.setPuserLastaccessDevice(device);
     				session.update(u);
         			tx.commit();
     				
     				return uclient;
     			}	
+    			tx.commit();
     		} catch (Exception e) {
     			tx.rollback();
     			Ipplan.error("Ошибка входа в систему пользователя "+nameOrEmail,e);

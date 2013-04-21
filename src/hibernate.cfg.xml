@@ -12,6 +12,8 @@
      -->   
         <property name="hibernate.dialect">org.hibernate.dialect.FirebirdDialect</property>
         <property name="hibernate.connection.provider_class">com.cantor.ipplan.server.IPPlanPoolConnection</property>
+		<!-- Echo all executed SQL to stdout -->
+		<property name="show_sql">true</property>
 
         <mapping class="com.cantor.ipplan.db.up.PUser"/>
         <mapping class="com.cantor.ipplan.db.up.Payments"/>

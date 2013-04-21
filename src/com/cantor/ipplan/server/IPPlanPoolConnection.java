@@ -37,8 +37,8 @@ public class IPPlanPoolConnection implements ConnectionProvider {
 	}
 
 	@Override
-	public void closeConnection(Connection arg0) throws SQLException {
-		// TODO Auto-generated method stub
+	public void closeConnection(Connection c) throws SQLException {
+		c.close();
 
 	}
 

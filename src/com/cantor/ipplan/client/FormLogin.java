@@ -124,7 +124,7 @@ public class FormLogin extends Form {
 				if(!validate()) return;
 				
 				LoginServiceAsync service = GWT.create(LoginService.class);
-				service.login(tbLogin.getText(), tbPassword.getText(), new AsyncCallback<PUserWrapper>() {
+				service.login(tbLogin.getText(), tbPassword.getText(), "WBC", new AsyncCallback<PUserWrapper>() {
 					
 					public void onSuccess(PUserWrapper result) {
 						if(result==null) {

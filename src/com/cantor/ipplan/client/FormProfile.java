@@ -25,8 +25,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.user.client.ui.DecoratorPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
 
 
 public class FormProfile extends Form {
@@ -42,6 +40,7 @@ public class FormProfile extends Form {
 	private Button btnDelete;
 	private ListBox lbChildren;
 	private PUserWrapper user;
+	private ListBox cbTarif;
 
 	public FormProfile(RootPanel root, PUserWrapper usr) {
 		super(root);
@@ -165,6 +164,16 @@ public class FormProfile extends Form {
 		tbEmail.setWidth("300px");
 		tbEmail.setText(user.puserEmail);
 		
+		Label l9 = new Label("Тарифный план");
+		Tabl1.setWidget(3, 0, l9);
+		
+		cbTarif = new ListBox();
+		cbTarif.addItem("Минимальный");
+		cbTarif.addItem("Стандартный");
+		cbTarif.setSelectedIndex(user.puserTarif);
+		Tabl1.setWidget(3, 1, cbTarif);
+		cbTarif.setWidth("310px");
+		
 		final CheckBox cbBoss = new CheckBox("Босс-аккаунт");
 		cbBoss.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -172,14 +181,15 @@ public class FormProfile extends Form {
 				btnDelete.setEnabled(cbBoss.isChecked() && lbChildren.getItemCount()>0);
 			}
 		});
-		Tabl1.setWidget(3, 1, cbBoss);
 		cbBoss.setChecked(user.puserBoss!=0);
+		Tabl1.setWidget(4, 1, cbBoss);
+		
 		
 		Label l5 = new Label("Вам подчиняются");
-		Tabl1.setWidget(4, 0, l5);
+		Tabl1.setWidget(5, 0, l5);
 		
 		HorizontalPanel p6 = new HorizontalPanel();
-		Tabl1.setWidget(4, 1, p6);
+		Tabl1.setWidget(5, 1, p6);
 		
 		lbChildren = new ListBox();
 		p6.add(lbChildren);
@@ -224,11 +234,11 @@ public class FormProfile extends Form {
 		
 		
 		Label l6 = new Label("Вы подчинены");
-		Tabl1.setWidget(5, 0, l6);
+		Tabl1.setWidget(6, 0, l6);
 		
 		Label lOwner = new Label(" ");
 		lOwner.setStyleName("gwt-TextBox");
-		Tabl1.setWidget(5, 1, lOwner);
+		Tabl1.setWidget(6, 1, lOwner);
 		lOwner.setWidth("234px");
 		if(user.owner==null) lOwner.setText("никому"); else
 			lOwner.setText(user.getFullName());
@@ -238,10 +248,12 @@ public class FormProfile extends Form {
 			public void onClick(ClickEvent event) {
 				resetErrors();
 				if(!validateTab1()) return;
-				PUserWrapper user = new PUserWrapper();
-				user.puserLogin = tbName.getText();
-				user.puserEmail = tbEmail.getText();
-				user.puserBoss = cbBoss.isChecked()==true?1:0;
+				PUserWrapper u = new PUserWrapper();
+				u.puserLogin = tbName.getText();
+				u.puserEmail = tbEmail.getText();
+				u.puserBoss = cbBoss.isChecked()==true?1:0;
+				u.puserTarif =cbTarif.getSelectedIndex();
+				u.children.addAll(user.children);
 				
 				ProfileServiceAsync service = GWT.create(ProfileService.class);
 				service.setUserData(user, new AsyncCallback<Void>() {
@@ -255,9 +267,9 @@ public class FormProfile extends Form {
 				});
 			}
 		});
-		Tabl1.setWidget(6, 0, btnSave);
-		Tabl1.getFlexCellFormatter().setColSpan(6, 0, 2);
-		Tabl1.getCellFormatter().setHorizontalAlignment(6, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		Tabl1.setWidget(7, 0, btnSave);
+		Tabl1.getFlexCellFormatter().setColSpan(7, 0, 2);
+		Tabl1.getCellFormatter().setHorizontalAlignment(7, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		FlexTable Tab2 = new FlexTable();
 		tabPanel.add(Tab2, "Оплата сервиса", false);

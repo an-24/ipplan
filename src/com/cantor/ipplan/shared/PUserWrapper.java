@@ -17,11 +17,12 @@ public class PUserWrapper implements java.io.Serializable {
 	public String puserLastaccessDevice;
 	public int puserLock;
 	public String puserLockReason;
-	public int puserTrial;
+	public int puserTarif;
 	public Set<SyncWrapper> syncs = new HashSet<SyncWrapper>(0);
 	public Set<PaymentsWrapper> paymentses = new HashSet<PaymentsWrapper>(0);
 	public Set<PUserWrapper> children = new HashSet<PUserWrapper>(0);
 	public int puserFlags;
+	public MessageWrapper lastSystemMessage;
 	
 	public String getFullName() {
 		if(puserLogin==null) return puserEmail;else
