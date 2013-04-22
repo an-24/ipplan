@@ -1,10 +1,12 @@
 package com.cantor.ipplan.shared;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+
+
 
 public class HttpStatusText {
 
-    private static final Hashtable map = new Hashtable();
+    private static final HashMap map = new HashMap();
 
     private static void set(int status, String phrase) {
         map.put(status, phrase);

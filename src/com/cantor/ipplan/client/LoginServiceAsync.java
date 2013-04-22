@@ -8,4 +8,5 @@ public interface LoginServiceAsync {
 	void login(String nameOrEmail, String pswd, String device,
 			AsyncCallback<PUserWrapper> callback);
 	void logout(AsyncCallback<Void> callback);
+	void changePassword(String newPswd, AsyncCallback<Void> callback);
 }

@@ -277,7 +277,12 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 			u.paymentses.add(item.toClient());
 		}
 		for (PUser item : children) {
-			u.children.add(item.toClient());
+			// для того, чтобы не было рекурсии
+			item.owner = null;
+			PUserWrapper uchild = item.toClient();
+			item.owner = this;
+			uchild.owner = u;
+			u.children.add(uchild);
 		}
 		return u;
 	}

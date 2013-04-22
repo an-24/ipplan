@@ -23,7 +23,17 @@ public class PUserWrapper implements java.io.Serializable {
 	public Set<PUserWrapper> children = new HashSet<PUserWrapper>(0);
 	public int puserFlags;
 	public MessageWrapper lastSystemMessage;
+	public boolean tempflag;
+
+	public PUserWrapper() {
+	}
 	
+	public PUserWrapper(String name,String email) {
+		puserLogin = name;
+		puserEmail = email;
+	}
+	
+
 	public String getFullName() {
 		if(puserLogin==null) return puserEmail;else
 			return puserLogin+"("+puserEmail+")";

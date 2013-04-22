@@ -25,60 +25,30 @@ public class Ipplan implements EntryPoint {
 	public void onModuleLoad() {
 		// логирование
 		login();
-		
-		/*
-		final Button sendButton = new Button("Send");
-		final TextBox nameField = new TextBox();
-		nameField.setText("GWT User");
-		final Label errorLabel = new Label();
-
-		// We can add style names to widgets
-		sendButton.addStyleName("sendButton");
-
-		// Add the nameField and sendButton to the RootPanel
-		// Use RootPanel.get() to get the entire body element
-		RootPanel.get("nameFieldContainer").add(nameField);
-		RootPanel.get("sendButtonContainer").add(sendButton);
-		RootPanel.get("errorLabelContainer").add(errorLabel);
-
-		// Focus the cursor on the name field when the app loads
-		nameField.setFocus(true);
-		nameField.selectAll();
-
-		// Create the popup dialog box
-		final DialogBox dialogBox = new DialogBox();
-		dialogBox.setText("Remote Procedure Call");
-		dialogBox.setAnimationEnabled(true);
-		final Button closeButton = new Button("Close");
-		// We can set the id of a widget by accessing its Element
-		closeButton.getElement().setId("closeButton");
-		final Label textToServerLabel = new Label();
-		final HTML serverResponseLabel = new HTML();
-		VerticalPanel dialogVPanel = new VerticalPanel();
-		dialogVPanel.addStyleName("dialogVPanel");
-		dialogVPanel.add(new HTML("<b>Sending name to the server:</b>"));
-		dialogVPanel.add(textToServerLabel);
-		dialogVPanel.add(new HTML("<br><b>Server replies:</b>"));
-		dialogVPanel.add(serverResponseLabel);
-		dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
-		dialogVPanel.add(closeButton);
-		dialogBox.setWidget(dialogVPanel);
-
-		// Add a handler to close the DialogBox
-		closeButton.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				dialogBox.hide();
-				sendButton.setEnabled(true);
-				sendButton.setFocus(true);
-			}
-		});
-
-
-		// Add a handler to send the name to the server
-		MyHandler handler = new MyHandler();
-		sendButton.addClickHandler(handler);
-		nameField.addKeyUpHandler(handler);
-		*/
+	}
+	
+	public void refreshForm(Class type) {
+		//RootPanel.get("formContainer").clear();
+		// обновление профиля
+		if(FormProfile.class==type) {
+			LoginServiceAsync service = GWT.create(LoginService.class);
+			service.isLogged(new AsyncCallback<PUserWrapper>() {
+				@Override
+				public void onSuccess(PUserWrapper user) {
+					if(user==null) {
+						FormLogin f = new FormLogin(Ipplan.this,RootPanel.get("formContainer"));
+						f.show();
+					} else {
+						FormProfile f = new FormProfile(Ipplan.this, RootPanel.get("formContainer"),user);
+						f.show();
+					}
+				}
+				@Override
+				public void onFailure(Throwable caught) {
+					showError(caught);
+				}
+			});
+		}
 	}
 	
 	public static void log(Level l, String message) {
@@ -104,13 +74,11 @@ public class Ipplan implements EntryPoint {
 	public static void error(String message, Throwable e) {
 		rootLogger.log(Level.SEVERE,message,e);
 	}
-	
+
 	private static DialogBox configEventBox(String errtext) {
 		Button closeButton = null;
 		Label textToServerLabel = null;
-		final DialogBox eventBox = new DialogBox();
-		eventBox.setText("Сообщение сервера");
-		eventBox.setAnimationEnabled(true);
+		final DialogBox eventBox = new Dialog("Сообщение сервера");
 		closeButton = new Button("Закрыть");
 		closeButton.getElement().setId("closeButton");
 
@@ -118,6 +86,7 @@ public class Ipplan implements EntryPoint {
 		textToServerLabel.addStyleName("serverResponseLabelError");
 
 		VerticalPanel dialogVPanel = new VerticalPanel();
+		dialogVPanel.setWidth("500px");
 		dialogVPanel.addStyleName("dialogVPanel");
 		dialogVPanel.add(new HTML("<b>С сервера пришло сообщение:</b>"));
 		dialogVPanel.add(textToServerLabel);
@@ -151,10 +120,10 @@ public class Ipplan implements EntryPoint {
 			@Override
 			public void onSuccess(PUserWrapper user) {
 				if(user==null) {
-					FormLogin f = new FormLogin(RootPanel.get("formContainer"));
+					FormLogin f = new FormLogin(Ipplan.this,RootPanel.get("formContainer"));
 					f.show();
 				} else {
-					FormProfile f = new FormProfile(RootPanel.get("formContainer"),user);
+					FormProfile f = new FormProfile(Ipplan.this,RootPanel.get("formContainer"),user);
 					f.show();
 				}
 			}

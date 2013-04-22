@@ -1,6 +1,10 @@
 package com.cantor.ipplan.client;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
@@ -13,16 +17,35 @@ public class Dialog extends DialogBox {
 	private FocusWidget firstFocusedWidget = null;
 	private FlexTable table;
 	private int rowError = -1;
+	private Button buttonCancel;
+	private Button buttonOk;
 	
 	public Dialog(String caption) {
 		super();
 		setText(caption);
 		setAnimationEnabled(true);
+		setGlassEnabled(true);
 		table = new FlexTable();
 		table.setCellSpacing(4);
 		table.setCellPadding(10);
 		setWidget(table);
 		getElement().getStyle().setProperty("width","auto");
+	}
+
+	public Button getButtonCancel() {
+		return buttonCancel;
+	}
+
+	public void setButtonCancel(Button buttonCancel) {
+		this.buttonCancel = buttonCancel;
+	}
+
+	public Button getButtonOk() {
+		return buttonOk;
+	}
+
+	public void setButtonOk(Button buttonOk) {
+		this.buttonOk = buttonOk;
 	}
 	
 	public FlexTable getContent() {
@@ -61,4 +84,23 @@ public class Dialog extends DialogBox {
 		if(rowError>=0) table.removeRow(rowError);
 		rowError = -1;
 	}
+	
+	@Override
+    protected void onPreviewNativeEvent(NativePreviewEvent event) {
+        super.onPreviewNativeEvent(event);
+        switch (event.getTypeInt()) {
+            case Event.ONKEYDOWN:
+            	switch (event.getNativeEvent().getKeyCode()) {
+				case KeyCodes.KEY_ESCAPE:
+					if(buttonCancel!=null) buttonCancel.click(); else hide();
+					break;
+				case KeyCodes.KEY_ENTER:
+					if(buttonOk!=null) buttonOk.click();
+					break;
+				default:
+					break;
+				}
+                break;
+        }
+    }	
 }

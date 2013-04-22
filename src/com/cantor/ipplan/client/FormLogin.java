@@ -26,14 +26,14 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineHyperlink;
 
 public class FormLogin extends Form {
-	
+
 	private TextBox tbLogin;
 	private PasswordTextBox tbPassword;
 	private FlexTable flexTable;
 	private int rowError =  -1;
 
-	public FormLogin(RootPanel root) {
-		super(root);
+	public FormLogin(Ipplan main, RootPanel root) {
+		super(main,root);
 		final FormPanel form = new FormPanel();
 		form.setEncoding(FormPanel.ENCODING_MULTIPART);
 		form.setMethod(FormPanel.METHOD_POST);
@@ -130,7 +130,7 @@ public class FormLogin extends Form {
 						if(result==null) {
 							showError(3, "Введен неверный пароль или имя или адрес электронной почты.");
 						} else {
-							FormProfile f = new FormProfile(FormLogin.this.getRoot(),result);
+							FormProfile f = new FormProfile(getMain(), FormLogin.this.getRoot(),result);
 							f.show();
 						}
 					}

@@ -11,14 +11,20 @@ public class Form extends Composite {
 	private static final int SHEDULE_LOCK_CONTROL = 1000;
 	private FocusWidget firstFocusedWidget = null;
 	private RootPanel root = null;
+	private Ipplan main;
 
 	public Form() {
 		startLockControl();
 	}
 	
-	public Form(RootPanel root) {
+	public Form(Ipplan main,RootPanel root) {
 		this();
 		this.root = root;
+		this.main = main;
+	}
+	
+	public Ipplan getMain() {
+		return main;
 	}
 	
 	public RootPanel getRoot() {

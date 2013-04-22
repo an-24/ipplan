@@ -25,6 +25,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.user.client.ui.SimpleRadioButton;
+import com.google.gwt.user.client.ui.RadioButton;
+import com.google.gwt.user.client.ui.PasswordTextBox;
 
 
 public class FormProfile extends Form {
@@ -42,8 +45,8 @@ public class FormProfile extends Form {
 	private PUserWrapper user;
 	private ListBox cbTarif;
 
-	public FormProfile(RootPanel root, PUserWrapper usr) {
-		super(root);
+	public FormProfile(Ipplan main, RootPanel root, PUserWrapper usr) {
+		super(main, root);
 		this.user = usr;
 		
 		VerticalPanel p0 = new VerticalPanel();
@@ -168,6 +171,7 @@ public class FormProfile extends Form {
 		Tabl1.setWidget(3, 0, l9);
 		
 		cbTarif = new ListBox();
+		cbTarif.setStyleName("gwt-ListBox");
 		cbTarif.addItem("Минимальный");
 		cbTarif.addItem("Стандартный");
 		cbTarif.setSelectedIndex(user.puserTarif);
@@ -195,6 +199,11 @@ public class FormProfile extends Form {
 		p6.add(lbChildren);
 		lbChildren.setWidth("300px");
 		lbChildren.setVisibleItemCount(5);
+
+		if(user.children!=null) 
+		for (PUserWrapper child : user.children) {
+			lbChildren.addItem(child.getFullName());
+		}
 		
 		VerticalPanel p7 = new VerticalPanel();
 		p7.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -217,8 +226,13 @@ public class FormProfile extends Form {
 			public void onClick(ClickEvent event) {
 				int idx = lbChildren.getSelectedIndex();
 				if(idx>=0) {
-					lbChildren.removeItem(idx);
-					user.children.remove(user.children.toArray()[idx]);
+					PUserWrapper duser = (PUserWrapper) user.children.toArray()[idx];
+					if(duser.tempflag)
+						Ipplan.showError(new Exception("Этому пользователю уже отправлено приглашение. Ожидается его решение.")); else
+						{
+							lbChildren.removeItem(idx);
+							user.children.remove(duser);
+						}
 				}
 			}
 		});
@@ -227,21 +241,39 @@ public class FormProfile extends Form {
 		btnDelete.setEnabled(user.puserBoss!=0 && user.children!=null && user.children.size()>0);
 		
 		
-		if(user.children!=null) 
-		for (PUserWrapper child : user.children) {
-			lbChildren.addItem(child.getFullName());
-		}
-		
-		
 		Label l6 = new Label("Вы подчинены");
 		Tabl1.setWidget(6, 0, l6);
+
+		HorizontalPanel p11 = new HorizontalPanel();
+		p11.setSpacing(5);
+		Tabl1.setWidget(6, 1, p11);
 		
 		Label lOwner = new Label(" ");
+		p11.add(lOwner);
+		p11.setCellVerticalAlignment(lOwner, HasVerticalAlignment.ALIGN_MIDDLE);
 		lOwner.setStyleName("gwt-TextBox");
-		Tabl1.setWidget(6, 1, lOwner);
-		lOwner.setWidth("234px");
+		lOwner.setWidth("212px");
+
+		VerticalPanel p12 = new VerticalPanel();
+		p12.setSpacing(2);
+		p11.add(p12);
+		p12.setHeight("");
+
 		if(user.owner==null) lOwner.setText("никому"); else
-			lOwner.setText(user.getFullName());
+			lOwner.setText(user.owner.getFullName());
+		
+		if(user.lastSystemMessage!=null) {
+			lOwner.setText("Приглашение от босса "+user.lastSystemMessage.sender.getFullName());
+		} else
+			p12.setVisible(false);
+		
+		
+		final RadioButton rbOwnerOk = new RadioButton("groupOwner", "Принять приглашение");
+		p12.add(rbOwnerOk);
+		
+		final RadioButton rbOwnerCancel = new RadioButton("groupOwner", "Отказаться");
+		p12.add(rbOwnerCancel);
+		
 		
 		btnSave = new Button("Сохранить изменения");
 		btnSave.addClickHandler(new ClickHandler() {
@@ -254,11 +286,14 @@ public class FormProfile extends Form {
 				u.puserBoss = cbBoss.isChecked()==true?1:0;
 				u.puserTarif =cbTarif.getSelectedIndex();
 				u.children.addAll(user.children);
-				
+				u.lastSystemMessage = FormProfile.this.user.lastSystemMessage;
+				if(rbOwnerOk.isChecked()) 
+					u.owner = FormProfile.this.user.lastSystemMessage.sender; 
 				ProfileServiceAsync service = GWT.create(ProfileService.class);
-				service.setUserData(user, new AsyncCallback<Void>() {
+				service.setUserData(u, rbOwnerOk.isChecked()?1:rbOwnerCancel.isChecked()?-1:0,new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
 						showSuccess(btnSave,"Общие данные успешно изменены");
+						getMain().refreshForm(FormProfile.class);
 					}
 					
 					public void onFailure(Throwable caught) {
@@ -267,25 +302,71 @@ public class FormProfile extends Form {
 				});
 			}
 		});
+		
 		Tabl1.setWidget(7, 0, btnSave);
 		Tabl1.getFlexCellFormatter().setColSpan(7, 0, 2);
 		Tabl1.getCellFormatter().setHorizontalAlignment(7, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
+		setFirstFocusedWidget(tbName);
+
 		FlexTable Tab2 = new FlexTable();
 		tabPanel.add(Tab2, "Оплата сервиса", false);
 		Tab2.setSize("100%", "3cm");
 		
 		FlexTable Tab3 = new FlexTable();
+		Tab3.setCellSpacing(4);
+		Tab3.setCellPadding(10);
 		tabPanel.add(Tab3, "Сменить пароль", false);
 		Tab3.setSize("100%", "3cm");
+		
+		Label l20 = new Label("Новый пароль");
+		Tab3.setWidget(0, 0, l20);
+		
+		final PasswordTextBox tbNewPassword = new PasswordTextBox();
+		Tab3.setWidget(0, 1, tbNewPassword);
+		tbNewPassword.setWidth("300px");
+		
+		Label l21 = new Label("Повторите пароль");
+		Tab3.setWidget(1, 0, l21);
+		
+		final PasswordTextBox tbRepeatPassword = new PasswordTextBox();
+		Tab3.setWidget(1, 1, tbRepeatPassword);
+		tbRepeatPassword.setWidth("300px");
+		
+		final Button btnSavePassword = new Button("Сохранить изменения");
+		btnSavePassword.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				resetErrors();
+				if(tbNewPassword.getText().length()<7) {
+					showError(1, "Пароль слишком короткий. Требуется более 6 знаков");
+					return;
+				};	
+				if(!tbNewPassword.getText().equals(tbRepeatPassword.getText())) {
+					showError(2, "Вам не удалось повторить пароль");
+					return;
+				};
+				LoginServiceAsync service = GWT.create(LoginService.class);
+				service.changePassword(tbNewPassword.getText(), new AsyncCallback<Void>() {
+					public void onSuccess(Void result) {
+						tbNewPassword.setText("");
+						tbRepeatPassword.setText("");
+						showSuccess(btnSavePassword,"Пароль успешно изменен");
+					}
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+					}
+				});
+			}
+		});
+		Tab3.setWidget(2, 0, btnSavePassword);
+		Tab3.getFlexCellFormatter().setColSpan(2, 0, 2);
+		Tab3.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		FlexTable Tab4 = new FlexTable();
 		tabPanel.add(Tab4, "Синхронизация", false);
 		Tab4.setSize("100%", "3cm");
 		
 		tabPanel.getTabBar().selectTab(0);
-		
-		setFirstFocusedWidget(tbName);
 	}
 
 	protected void showAddChildDialog() {
@@ -318,6 +399,7 @@ public class FormProfile extends Form {
 			}
 		});
 		Button btnOk = new Button("Добавить");
+		dialog.setButtonOk(btnOk);
 		btnOk.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				dialog.resetErrors();

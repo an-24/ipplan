@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class MessageWrapper implements Serializable {
-	private int messagesId;
+	public int messageId;
 	public PUserWrapper sender;
 	public PUserWrapper reciever;
 	public Date datetime;

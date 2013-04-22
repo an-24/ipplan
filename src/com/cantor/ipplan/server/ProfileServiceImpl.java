@@ -35,7 +35,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileService {
 
 	@Override
-	public void setUserData(PUserWrapper data) throws Exception {
+	public void setUserData(PUserWrapper data,int joinAction) throws Exception {
 		PUser user = checkLogin();
 		
 		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
@@ -63,24 +63,34 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
     				}	
 				}
     			// добавляем новых
-    			for (PUserWrapper u: data.children) {
+    			for (PUserWrapper u: data.children) 
+    			if (!u.tempflag) {
     				PUser pu = getUserByEmail(session,u.puserEmail);
     				sendMessageToUser(session,user,pu,"Подтвердите Вашу готовность к тому, "+
     								  "чтобы стать подчиненным пользователю "+user.getFullName(),Messages.MT_JOIN_TO_OWNER);
 				}
-    			
+    			// установление подчиненности
+    			if(joinAction!=0) {
+    				if(joinAction==1) {
+    					PUser own = (PUser) session.load(PUser.class, data.lastSystemMessage.sender.puserId);
+    					user.setOwner(own);
+    				}
+    				// удаление сообщения
+    				deleteMessage(session,data.lastSystemMessage.messageId);
+    			}
     			
     			session.update(user);
     			tx.commit();
     		} catch (Exception e) {
     			tx.rollback();
-    			Ipplan.error("Ошибка изменения профиля пользователя "+user.getFullName(),e);
-    			throw e;
+    			Ipplan.error(e);
+    			throw new Exception("Ошибка изменения профиля пользователя "+user.getFullName()+": "+e.getMessage());
 			}
     	} finally {
     		session.close();
     	}
 	}
+
 
 	@Override
 	public boolean checkUser(String name, String email) throws Exception {
@@ -97,12 +107,18 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
     			List<PUser> l = q.list();
     			if(l.size()==0) return false; else return true; 
     		} catch (Exception e) {
-    			Ipplan.error("Ошибка проверки пользователя "+name+"("+email+")",e);
+    			Ipplan.error(e);
 			}
     	} finally {
     		session.close();
     	}
 		return false;
+	}
+
+	private void deleteMessage(Session session, int messageId) {
+		Query q = session.createQuery("delete from Messages where messagesId=:messagesId");
+		q.setInteger("messagesId", messageId);
+		q.executeUpdate();
 	}
 	
 	private PUser checkLogin() throws Exception {
