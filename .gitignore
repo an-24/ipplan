@@ -1,3 +1,6 @@
 gwt-unitCache
 /.gwt/.gwt-log
-/.gwt/.gwt-log
+*.class
+/war/WEB-INF/classes/*
+/war/WEB-INF/deploy/*
+/war/ipplan/*
