@@ -15,6 +15,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.Hibernate;
+
 import com.cantor.ipplan.core.DataBridge;
 import com.cantor.ipplan.shared.SyncWrapper;
 
@@ -83,8 +85,9 @@ public class Sync implements java.io.Serializable, DataBridge<SyncWrapper>  {
 
 	@Override
 	public SyncWrapper toClient() {
-		// TODO Auto-generated method stub
-		return null;
+		SyncWrapper wrapper =  new SyncWrapper(this.syncId,
+				this.syncImei,this.syncLast);
+		return wrapper;
 	}
 
 	@Override
@@ -95,8 +98,7 @@ public class Sync implements java.io.Serializable, DataBridge<SyncWrapper>  {
 
 	@Override
 	public void fetch(boolean deep) {
-		// TODO Auto-generated method stub
-		
+		Hibernate.initialize(this.getPuser());
 	}
 
 }

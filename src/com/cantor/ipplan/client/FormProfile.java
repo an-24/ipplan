@@ -28,6 +28,19 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.user.client.ui.SimpleRadioButton;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.PasswordTextBox;
+import com.google.gwt.user.cellview.client.DataGrid;
+import com.cantor.ipplan.shared.SyncWrapper;
+import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
+import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.view.client.ListDataProvider;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+
+import com.google.gwt.cell.client.DateCell;
 
 
 public class FormProfile extends Form {
@@ -44,6 +57,7 @@ public class FormProfile extends Form {
 	private ListBox lbChildren;
 	private PUserWrapper user;
 	private ListBox cbTarif;
+	private DataGrid<SyncWrapper> syncGrid;
 
 	public FormProfile(Ipplan main, RootPanel root, PUserWrapper usr) {
 		super(main, root);
@@ -130,7 +144,7 @@ public class FormProfile extends Form {
 				currentTab = (FlexTable) tabPanel.getWidget(tabId);
 				FocusWidget w = getFirstFocusedWidget(currentTab);
 				if(w!=null) w.setFocus(true);
-				
+				if(tabId==3) syncGrid.redraw();
 			}
 		});
 		tabPanel.setAnimationEnabled(true);
@@ -365,6 +379,68 @@ public class FormProfile extends Form {
 		FlexTable Tab4 = new FlexTable();
 		tabPanel.add(Tab4, "Синхронизация", false);
 		Tab4.setSize("100%", "3cm");
+		
+		syncGrid = new DataGrid<SyncWrapper>();
+		Tab4.setWidget(0, 0, syncGrid);
+		syncGrid.setSize("100%", "500px");
+		
+		TextColumn<SyncWrapper> c1 = new TextColumn<SyncWrapper>() {
+			@Override
+			public String getValue(SyncWrapper object) {
+				return (object==null)?"":object.getImei();
+			}
+		};
+		c1.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
+		c1.setSortable(true);
+		syncGrid.setColumnWidth(c1, "200px");
+		
+		Column<SyncWrapper, Date> c2 = new Column<SyncWrapper, Date>(new DateCell()) {
+			@Override
+			public Date getValue(SyncWrapper object) {
+				return (object==null)?null:object.getLast();
+			}
+		};
+		c2.setSortable(true);
+		
+
+		syncGrid.addColumn(c1, "Устройство");
+		syncGrid.addColumn(c2, "Дата и время синхронизации");
+		
+		
+	    // Create a data provider.
+	    ListDataProvider<SyncWrapper> dataProvider = new ListDataProvider<SyncWrapper>();
+	    // Connect the table to the data provider.
+	    dataProvider.addDataDisplay(syncGrid);
+	    // Add the data to the data provider, which automatically pushes it to the
+	    // widget.
+		dataProvider.getList().addAll(user.syncs);
+	    
+		
+	    // Add a ColumnSortEvent.ListHandler to connect sorting to the
+	    // java.util.List.
+	    ListHandler<SyncWrapper> columnSortHandler = new ListHandler<SyncWrapper>(dataProvider.getList());
+	    columnSortHandler.setComparator(c1,
+	        new Comparator<SyncWrapper>() {
+	          public int compare(SyncWrapper o1, SyncWrapper o2) {
+	            if (o1 == o2) {
+	              return 0;
+	            }
+	            // Compare the name columns.
+	            if (o1 != null) {
+	              return (o2 != null) ? o1.getImei().compareTo(o2.getImei()) : 1;
+	            }
+	            return -1;
+	          }
+	        });
+	    syncGrid.addColumnSortHandler(columnSortHandler);
+
+	    // We know that the data is sorted alphabetically by default.
+	    syncGrid.getColumnSortList().push(c1);
+		
+		
+		
+		
+//		syncGrid.setRowCount(user.syncs.size(),true);
 		
 		tabPanel.getTabBar().selectTab(0);
 	}

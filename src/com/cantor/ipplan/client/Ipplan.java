@@ -1,5 +1,7 @@
 package com.cantor.ipplan.client;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,6 +11,9 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import com.google.gwt.user.client.ui.Button;
@@ -18,37 +23,74 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class Ipplan implements EntryPoint {
+public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 
 	private static Logger rootLogger = Logger.getLogger("iPPlan");
+	private static String INIT_TOKEN = "login";
+    private static Map<String, Class> tokenForms = new HashMap<String, Class>();
+    static {
+    	tokenForms.put("login", FormLogin.class);
+    	tokenForms.put("profile", FormProfile.class);
+    }
+
+	private PUserWrapper user;	
 	
 	public void onModuleLoad() {
-		// логирование
-		login();
+		String initToken = History.getToken();
+		if(initToken.isEmpty()) 
+			History.newItem(INIT_TOKEN);
+		History.addValueChangeHandler(this);
+		History.fireCurrentHistoryState();
+	}
+
+	@Override
+	public void onValueChange(ValueChangeEvent<String> event) {
+		String token = event.getValue();
+		showForm(token);
 	}
 	
-	public void refreshForm(Class type) {
-		//RootPanel.get("formContainer").clear();
-		// обновление профиля
-		if(FormProfile.class==type) {
-			LoginServiceAsync service = GWT.create(LoginService.class);
-			service.isLogged(new AsyncCallback<PUserWrapper>() {
-				@Override
-				public void onSuccess(PUserWrapper user) {
-					if(user==null) {
-						FormLogin f = new FormLogin(Ipplan.this,RootPanel.get("formContainer"));
-						f.show();
-					} else {
-						FormProfile f = new FormProfile(Ipplan.this, RootPanel.get("formContainer"),user);
-						f.show();
+	public void showForm(String token) {
+		refreshForm(tokenForms.get(token));
+	}
+	
+	public void refreshForm(final Class type) {
+		//unknown form
+		if(type==null) {
+			getRootInHTML().clear();
+		} else
+		// login
+		if(type==FormLogin.class) {
+			FormLogin f = new FormLogin(Ipplan.this, getRootInHTML());
+			f.show();
+		} else 
+			// check login user
+			if(this.user==null) {
+				LoginServiceAsync service = GWT.create(LoginService.class);
+				service.isLogged(new AsyncCallback<PUserWrapper>() {
+					@Override
+					public void onSuccess(PUserWrapper user) {
+						if(user==null) {
+							History.newItem(INIT_TOKEN);
+						} else {
+							setUser(user);
+							refreshForm(type);
+						}
 					}
-				}
-				@Override
-				public void onFailure(Throwable caught) {
-					showError(caught);
-				}
-			});
-		}
+					@Override
+					public void onFailure(Throwable caught) {
+						showError(caught);
+					}
+				});
+			} else 
+			// profile
+			if(type==FormProfile.class) {
+				FormProfile f = new FormProfile(Ipplan.this, getRootInHTML(),this.user);
+				f.show();
+			};
+	}
+
+	public void setUser(PUserWrapper user) {
+		this.user = user;
 	}
 	
 	public static void log(Level l, String message) {
@@ -73,6 +115,10 @@ public class Ipplan implements EntryPoint {
 
 	public static void error(String message, Throwable e) {
 		rootLogger.log(Level.SEVERE,message,e);
+	}
+	
+	private RootPanel getRootInHTML() {
+		return RootPanel.get("formContainer");
 	}
 
 	private static DialogBox configEventBox(String errtext) {
@@ -113,30 +159,6 @@ public class Ipplan implements EntryPoint {
 		
 	}
 	
-	private void login() {
-		LoginServiceAsync service = GWT.create(LoginService.class);
-		service.isLogged(new AsyncCallback<PUserWrapper>() {
-			
-			@Override
-			public void onSuccess(PUserWrapper user) {
-				if(user==null) {
-					FormLogin f = new FormLogin(Ipplan.this,RootPanel.get("formContainer"));
-					f.show();
-				} else {
-					FormProfile f = new FormProfile(Ipplan.this,RootPanel.get("formContainer"),user);
-					f.show();
-				}
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				showError(caught);
-			}
-
-		});
-		
-	}
-
 	public static void showError(Throwable e) {
 		String s = e.getMessage();
 		if (e instanceof StatusCodeException) {
@@ -147,60 +169,7 @@ public class Ipplan implements EntryPoint {
 		eventBox.center();
 	}
 
-	/*
-	// Create a handler for the sendButton and nameField
-	class MyHandler implements ClickHandler, KeyUpHandler {
-		 // Fired when the user clicks on the sendButton.
-		public void onClick(ClickEvent event) {
-			sendNameToServer();
-		}
 
-		// Fired when the user types in the nameField.
-		public void onKeyUp(KeyUpEvent event) {
-			if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-				sendNameToServer();
-			}
-		}
 
-		 // Send the name from the nameField to the server and wait for a response.
-		
-		private void sendNameToServer() {
-			// First, we validate the input.
-			errorLabel.setText("");
-			String textToServer = nameField.getText();
-			if (!FieldVerifier.isValidName(textToServer)) {
-				errorLabel.setText("Please enter at least four characters");
-				return;
-			}
-
-			// Then, we send the input to the server.
-			sendButton.setEnabled(false);
-			textToServerLabel.setText(textToServer);
-			serverResponseLabel.setText("");
-			greetingService.greetServer(textToServer,
-					new AsyncCallback<String>() {
-						public void onFailure(Throwable caught) {
-							// Show the RPC error message to the user
-							dialogBox
-									.setText("Remote Procedure Call - Failure");
-							serverResponseLabel
-									.addStyleName("serverResponseLabelError");
-							serverResponseLabel.setHTML(SERVER_ERROR);
-							dialogBox.center();
-							closeButton.setFocus(true);
-						}
-
-						public void onSuccess(String result) {
-							dialogBox.setText("Remote Procedure Call");
-							serverResponseLabel
-									.removeStyleName("serverResponseLabelError");
-							serverResponseLabel.setHTML(result);
-							dialogBox.center();
-							closeButton.setFocus(true);
-						}
-					});
-		}
-	}
-	*/
 	
 }

@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -130,8 +131,8 @@ public class FormLogin extends Form {
 						if(result==null) {
 							showError(3, "Введен неверный пароль или имя или адрес электронной почты.");
 						} else {
-							FormProfile f = new FormProfile(getMain(), FormLogin.this.getRoot(),result);
-							f.show();
+							getMain().setUser(result);
+							History.newItem("profile");
 						}
 					}
 					
