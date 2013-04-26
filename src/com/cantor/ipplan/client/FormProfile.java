@@ -5,7 +5,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CaptionPanel;
@@ -41,6 +43,9 @@ import java.util.Date;
 import java.util.List;
 
 import com.google.gwt.cell.client.DateCell;
+import com.google.gwt.user.cellview.client.SimplePager;
+import com.cantor.ipplan.shared.PaymentsWrapper;
+import com.google.gwt.cell.client.NumberCell;
 
 
 public class FormProfile extends Form {
@@ -58,6 +63,7 @@ public class FormProfile extends Form {
 	private PUserWrapper user;
 	private ListBox cbTarif;
 	private DataGrid<SyncWrapper> syncGrid;
+	private DataGrid<PaymentsWrapper> payGrid;
 
 	public FormProfile(Ipplan main, RootPanel root, PUserWrapper usr) {
 		super(main, root);
@@ -145,6 +151,7 @@ public class FormProfile extends Form {
 				FocusWidget w = getFirstFocusedWidget(currentTab);
 				if(w!=null) w.setFocus(true);
 				if(tabId==3) syncGrid.redraw();
+				if(tabId==1) payGrid.redraw();
 			}
 		});
 		tabPanel.setAnimationEnabled(true);
@@ -327,6 +334,74 @@ public class FormProfile extends Form {
 		tabPanel.add(Tab2, "Оплата сервиса", false);
 		Tab2.setSize("100%", "3cm");
 		
+		HorizontalPanel p33 = new HorizontalPanel();
+		p33.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		p33.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		p33.setSpacing(5);
+		Tab2.setWidget(0, 0, p33);
+		p33.setSize("100%", "51px");
+		
+		Button btnPay1 = new Button("Заплатить за 1 месяц");
+		p33.add(btnPay1);
+		
+		Button btnPay3 = new Button("Заплатить за 3 месяца");
+		p33.add(btnPay3);
+		
+		Button button = new Button("Заплатить за полгода");
+		p33.add(button);
+		
+		SimplePager pagerPayTop = new SimplePager();
+		Tab2.setWidget(1, 0, pagerPayTop);
+		
+		payGrid = new DataGrid<PaymentsWrapper>();
+		pagerPayTop.setDisplay(payGrid);
+		Tab2.setWidget(2, 0, payGrid);
+		Tab2.getCellFormatter().setHeight(2, 0, "");
+		Tab2.getCellFormatter().setWidth(2, 0, "");
+		payGrid.setSize("100%", "400px");
+		
+		TextColumn<PaymentsWrapper> c3 = new PeriodColumn<PaymentsWrapper,Integer>() {
+			@Override
+			public String getValue(PaymentsWrapper object) {
+				return (object==null)?"":object.getPeriod();
+			}
+
+			@Override
+			public Integer getSortedValue(PaymentsWrapper object) {
+				return object.getPeriodNumber();
+			}
+		};
+		c3.setDefaultSortAscending(false);
+		
+		Column<PaymentsWrapper, Date> c4 = new Column<PaymentsWrapper, Date>(new DateCell(DateTimeFormat.getFormat("dd.MM.yyyy"))) {
+			@Override
+			public Date getValue(PaymentsWrapper object) {
+				return (object==null)?null:object.getPaymentsDate();
+			}
+		};
+		
+		Column<PaymentsWrapper, Number> с5 = new Column<PaymentsWrapper, Number>(new NumberCell(NumberFormat.getFormat("#,##0.00"))) {
+			@Override
+			public Number getValue(PaymentsWrapper object) {
+				return (object==null)?null:object.getPaymentsSumma()/100.0;
+			}
+		};
+		с5.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+
+		payGrid.addColumn(c3, "Период");
+		payGrid.addColumn(c4, "Дата оплаты");
+		payGrid.addColumn(с5, "Сумма");
+
+		prepareGrid(payGrid, user.paymentses);
+		Tab2.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		
+		SimplePager pagerPayBottom = new SimplePager();
+		pagerPayBottom.setDisplay(payGrid);
+		Tab2.setWidget(3, 0, pagerPayBottom);
+		Tab2.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		payGrid.getColumnSortList().push(c3);
+		
+		
 		FlexTable Tab3 = new FlexTable();
 		Tab3.setCellSpacing(4);
 		Tab3.setCellPadding(10);
@@ -380,9 +455,13 @@ public class FormProfile extends Form {
 		tabPanel.add(Tab4, "Синхронизация", false);
 		Tab4.setSize("100%", "3cm");
 		
+		SimplePager pagerSyncTop = new SimplePager();
+		Tab4.setWidget(0, 0, pagerSyncTop);
+		
 		syncGrid = new DataGrid<SyncWrapper>();
-		Tab4.setWidget(0, 0, syncGrid);
-		syncGrid.setSize("100%", "500px");
+		pagerSyncTop.setDisplay(syncGrid);
+		Tab4.setWidget(1, 0, syncGrid);
+		syncGrid.setSize("100%", "400px");
 		
 		TextColumn<SyncWrapper> c1 = new TextColumn<SyncWrapper>() {
 			@Override
@@ -394,7 +473,7 @@ public class FormProfile extends Form {
 		c1.setSortable(true);
 		syncGrid.setColumnWidth(c1, "200px");
 		
-		Column<SyncWrapper, Date> c2 = new Column<SyncWrapper, Date>(new DateCell()) {
+		Column<SyncWrapper, Date> c2 = new Column<SyncWrapper, Date>(new DateCell(DateTimeFormat.getMediumDateTimeFormat())) {
 			@Override
 			public Date getValue(SyncWrapper object) {
 				return (object==null)?null:object.getLast();
@@ -406,37 +485,15 @@ public class FormProfile extends Form {
 		syncGrid.addColumn(c1, "Устройство");
 		syncGrid.addColumn(c2, "Дата и время синхронизации");
 		
-		
-	    // Create a data provider.
-	    ListDataProvider<SyncWrapper> dataProvider = new ListDataProvider<SyncWrapper>();
-	    // Connect the table to the data provider.
-	    dataProvider.addDataDisplay(syncGrid);
-	    // Add the data to the data provider, which automatically pushes it to the
-	    // widget.
-		dataProvider.getList().addAll(user.syncs);
+		prepareGrid(syncGrid, user.syncs);
+		c2.setDefaultSortAscending(false);
+	    syncGrid.getColumnSortList().push(c2);
+	    Tab4.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 	    
-		
-	    // Add a ColumnSortEvent.ListHandler to connect sorting to the
-	    // java.util.List.
-	    ListHandler<SyncWrapper> columnSortHandler = new ListHandler<SyncWrapper>(dataProvider.getList());
-	    columnSortHandler.setComparator(c1,
-	        new Comparator<SyncWrapper>() {
-	          public int compare(SyncWrapper o1, SyncWrapper o2) {
-	            if (o1 == o2) {
-	              return 0;
-	            }
-	            // Compare the name columns.
-	            if (o1 != null) {
-	              return (o2 != null) ? o1.getImei().compareTo(o2.getImei()) : 1;
-	            }
-	            return -1;
-	          }
-	        });
-	    syncGrid.addColumnSortHandler(columnSortHandler);
-
-	    // We know that the data is sorted alphabetically by default.
-	    syncGrid.getColumnSortList().push(c1);
-		
+	    SimplePager pagerSyncBottom = new SimplePager();
+	    pagerSyncBottom.setDisplay(syncGrid);
+	    Tab4.setWidget(2, 0, pagerSyncBottom);
+	    Tab4.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		
 		

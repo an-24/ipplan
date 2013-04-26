@@ -95,8 +95,8 @@ public class Payments implements java.io.Serializable, DataBridge<PaymentsWrappe
 
 	@Override
 	public PaymentsWrapper toClient() {
-		// TODO Auto-generated method stub
-		return null;
+		return new PaymentsWrapper(paymentsId,
+				paymentsPeriod,paymentsSumma,paymentsDate);
 	}
 
 	@Override
