@@ -26,14 +26,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 
 	private static Logger rootLogger = Logger.getLogger("iPPlan");
-	private static String INIT_TOKEN = "login";
-    private static Map<String, Class> tokenForms = new HashMap<String, Class>();
-    static {
-    	tokenForms.put("login", FormLogin.class);
-    	tokenForms.put("profile", FormProfile.class);
-    }
-
-	private PUserWrapper user;	
+	static String INIT_TOKEN = "";
+    protected static Map<String, Class> tokenForms = new HashMap<String, Class>();
 	
 	public void onModuleLoad() {
 		String initToken = History.getToken();
@@ -54,44 +48,7 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	}
 	
 	public void refreshForm(final Class type) {
-		//unknown form
-		if(type==null) {
-			getRootInHTML().clear();
-		} else
-		// login
-		if(type==FormLogin.class) {
-			FormLogin f = new FormLogin(Ipplan.this, getRootInHTML());
-			f.show();
-		} else 
-			// check login user
-			if(this.user==null) {
-				LoginServiceAsync service = GWT.create(LoginService.class);
-				service.isLogged(new AsyncCallback<PUserWrapper>() {
-					@Override
-					public void onSuccess(PUserWrapper user) {
-						if(user==null) {
-							History.newItem(INIT_TOKEN);
-						} else {
-							setUser(user);
-							refreshForm(type);
-						}
-					}
-					@Override
-					public void onFailure(Throwable caught) {
-						showError(caught);
-					}
-				});
-			} else 
-			// profile
-			if(type==FormProfile.class) {
-				FormProfile f = new FormProfile(Ipplan.this, getRootInHTML(),this.user);
-				f.show();
-			};
-	}
-
-	public void setUser(PUserWrapper user) {
-		this.user = user;
-	}
+	};
 	
 	public static void log(Level l, String message) {
 		rootLogger.log(l,message);
@@ -117,7 +74,7 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		rootLogger.log(Level.SEVERE,message,e);
 	}
 	
-	private RootPanel getRootInHTML() {
+	protected RootPanel getRootInHTML() {
 		return RootPanel.get("formContainer");
 	}
 

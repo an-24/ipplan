@@ -104,8 +104,8 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
     		                                  "where u.puserLogin=:login AND u.puserEmail=:email");
     			q.setString("login", name);
     			q.setString("email", email);
-    			List<PUser> l = q.list();
-    			if(l.size()==0) return false; else return true; 
+    			PUser u = (PUser) q.uniqueResult();
+    			return u!=null;
     		} catch (Exception e) {
     			Ipplan.error(e);
 			}
@@ -149,7 +149,6 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
 		Query q = session.createQuery("select u from PUser u "+
                 "where u.puserEmail=:email");
 		q.setString("email", email);
-		List<PUser> l = q.list();
-		if(l.size()==0) return null; else return l.get(0); 
+		return (PUser) q.uniqueResult();
 	}
 }

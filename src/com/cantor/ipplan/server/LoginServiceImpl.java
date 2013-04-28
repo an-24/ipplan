@@ -3,12 +3,15 @@ package com.cantor.ipplan.server;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -18,6 +21,7 @@ import com.cantor.ipplan.client.LoginService;
 import com.cantor.ipplan.db.up.Messages;
 import com.cantor.ipplan.db.up.PUser;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 @SuppressWarnings("serial")
@@ -39,9 +43,8 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     		                                  "where (u.puserLogin=:login OR u.puserEmail=:login)AND u.puserPswd=:pswd");
     			q.setString("login", nameOrEmail);
     			q.setString("pswd", hashPassword(pswd));
-    			List<PUser> l = q.list();
-    			if(l.size()>0) {
-    				PUser u = l.get(0);
+    			PUser u = (PUser) q.uniqueResult();
+    			if(u!=null) {
     				// fetch lazy
     				u.fetch(true);
     				
@@ -88,11 +91,9 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
 			if (sess.isNew()) return null;
 			PUser u = (PUser) sess.getAttribute("user");
 			if(u==null) return null; else {
-				PUser u1 = (PUser) session.merge(u);
-				// добавим недостающие данные
-				PUserWrapper uclient = u1.toClient();
-				setDataClient(session,u1,uclient);
-				
+    			session.refresh(u);
+				PUserWrapper uclient = u.toClient();
+				setDataClient(session,u,uclient);
 				return uclient;
 			}
     	} finally {
@@ -145,12 +146,80 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
 		for (Messages m : lm) {
 			PUserWrapper ruser = new PUserWrapper(m.getPuserByPuserRId().getPuserLogin(),m.getPuserByPuserRId().getPuserEmail());
 			ruser.tempflag = true;
-			uclient.children.add(ruser);
+			if(uclient.findChildById(ruser.puserId)!=null)
+				uclient.children.add(ruser);
 		}
 		// ищем последнее системное сообщение направленное этому пользователю
 		Messages m = Messages.getLastMessageTo(session, user, Messages.MT_JOIN_TO_OWNER);
 		uclient.lastSystemMessage = m!=null?m.toClient():null;
 		
+	}
+
+	@Override
+	public String openDatabase() throws Exception {
+		PUser user = checkLogin();
+		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
+    	Session session = sessionFactory.openSession();
+    	try {
+    		Transaction tx = session.beginTransaction();
+    		try {
+    			// расчет доступности пользователя 
+    			calcLockFlag(user);
+    			if(user.getPuserLock()!=0) {
+    				// доступнсоть могла изменится
+    				session.update(user);
+    				tx.commit();
+    				throw new Exception("База данных заблокирована. Причина: "+user.getPuserLockReason());
+    			}
+    			// вновь создаваемая база данных
+    			boolean newdb = (user.getOwner()==null && user.getPuserDbname().isEmpty());
+    			if(newdb) {
+    				byte[] code = new byte[16];
+    				new SecureRandom().nextBytes(code);
+    				user.setPuserDbname(Base64Utils.toBase64(code));
+    				session.update(user); 
+    			} else {
+    				if(user.getOwner()!=null && user.getOwner().getPuserDbname().isEmpty())
+        				throw new Exception("База данных еще не подготовлена. Обратитесь к лицу, которому подчиняетесь");
+    			}
+    			String host = getServletConfig().getInitParameter("dataServer");
+    			if(host==null)
+    				throw new Exception("Неверная кофигурация сервера. dataServer not found. ");
+    			String redirectUrl = host+"#"+(newdb?"create,":"open,");
+    			redirectUrl += user.getPuserDbname()+","+user.getPuserEmail();
+    			tx.commit();
+    			return redirectUrl;
+    		} catch (Exception e) {
+    			if(tx.isActive()) {
+    				tx.rollback();
+        			Ipplan.error(e);
+    			}
+    			throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	private void calcLockFlag(PUser user)  throws Exception {
+		//TODO проверка условий предоставления доступа (оплата и т.д.)
+	}
+
+	@Override
+	public boolean isAccessDatabase(String dbName, String userEmail) {
+		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
+    	Session session = sessionFactory.openSession();
+    	try {
+    		SQLQuery q = session.createSQLQuery("select u.* "+
+    					"from PUSER u left outer join PUSER own on u.owner_puser_id = own.puser_id "+
+    					"where (u.PUSER_EMAIL=:login and u.PUSER_LOCK=0) AND "+
+    					"((own.puser_id is null AND u.puser_dbname =:db) OR (own.puser_id is not null AND own.puser_dbname =:db AND own.PUSER_LOCK=0))");
+			q.setString("login", userEmail);
+			q.setString("db", dbName);
+    		return q.uniqueResult()!=null;
+    	} finally {
+    		session.close();
+    	}
 	}
 
 }

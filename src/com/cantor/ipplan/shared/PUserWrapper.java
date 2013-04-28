@@ -38,5 +38,24 @@ public class PUserWrapper implements java.io.Serializable {
 		if(puserLogin==null) return puserEmail;else
 			return puserLogin+"("+puserEmail+")";
 	}
+
+	public Object findChildById(int id) {
+		for (PUserWrapper item : children) {
+			if(item.puserId==id) return item;
+		}
+		return null;
+	}
+	
+	public boolean isDatabaseCreateNeeded() {
+		return puserDbname.isEmpty() || (owner!=null && owner.puserDbname.isEmpty());
+	}
+
+	public boolean isAllowedCreateDatabase() {
+		return owner==null;
+	}
+	
+	public String getDatabaseName() {
+		return (owner==null)?puserDbname:owner.puserDbname;
+	}
 	
 }

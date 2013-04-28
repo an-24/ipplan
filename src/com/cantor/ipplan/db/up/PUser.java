@@ -270,6 +270,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		u.puserLockReason = puserLockReason;
 		u.puserTarif = puserTarif;
 		u.puserFlags = puserFlags;
+		u.puserDbname = puserDbname;
 		for (Sync item : syncs) {
 			u.syncs.add(item.toClient());
 		}

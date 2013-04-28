@@ -65,6 +65,10 @@ public class FormProfile extends Form {
 	private DataGrid<SyncWrapper> syncGrid;
 	private DataGrid<PaymentsWrapper> payGrid;
 
+	private LoginServiceAsync loginService = null;
+	private ProfileServiceAsync profService = null;
+	
+	
 	public FormProfile(Ipplan main, RootPanel root, PUserWrapper usr) {
 		super(main, root);
 		this.user = usr;
@@ -87,8 +91,8 @@ public class FormProfile extends Form {
 		Button btnExit = new Button("Выйти");
 		btnExit.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				LoginServiceAsync service = GWT.create(LoginService.class);
-				service.logout(new AsyncCallback<Void>() {
+				if(loginService==null) loginService = GWT.create(LoginService.class);
+				loginService.logout(new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
 						com.google.gwt.user.client.Window.Location.reload();
 					}
@@ -135,9 +139,26 @@ public class FormProfile extends Form {
 		VerticalPanel p2 = new VerticalPanel();
 		p0.add(p2);
 		p2.setSize("100%", "45px");
-		
-		Button btnOpenDB = new Button("Открыть базу данных");
+
+		String sTmp = "Открыть базу данных";
+		if(user.isDatabaseCreateNeeded()) sTmp = "Создать базу данных";
+		Button btnOpenDB = new Button(sTmp);
+		btnOpenDB.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				if(loginService==null) loginService = GWT.create(LoginService.class);
+				loginService.openDatabase(new AsyncCallback<String>() {
+					public void onSuccess(String result) {
+						Window.Location.assign(result);
+					}
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+					}
+				});
+			}
+		});
 		btnOpenDB.setEnabled(user.puserLock==0);
+		if(user.isDatabaseCreateNeeded() && !user.isAllowedCreateDatabase())
+			btnOpenDB.setEnabled(false);
 		p2.add(btnOpenDB);
 		btnOpenDB.setWidth("162px");
 		p2.setCellVerticalAlignment(btnOpenDB, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -309,9 +330,10 @@ public class FormProfile extends Form {
 				u.children.addAll(user.children);
 				u.lastSystemMessage = FormProfile.this.user.lastSystemMessage;
 				if(rbOwnerOk.isChecked()) 
-					u.owner = FormProfile.this.user.lastSystemMessage.sender; 
-				ProfileServiceAsync service = GWT.create(ProfileService.class);
-				service.setUserData(u, rbOwnerOk.isChecked()?1:rbOwnerCancel.isChecked()?-1:0,new AsyncCallback<Void>() {
+					u.owner = FormProfile.this.user.lastSystemMessage.sender;
+				
+				if(profService==null) profService = GWT.create(ProfileService.class);
+				profService.setUserData(u, rbOwnerOk.isChecked()?1:rbOwnerCancel.isChecked()?-1:0,new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
 						showSuccess(btnSave,"Общие данные успешно изменены");
 						getMain().refreshForm(FormProfile.class);
@@ -434,8 +456,8 @@ public class FormProfile extends Form {
 					showError(2, "Вам не удалось повторить пароль");
 					return;
 				};
-				LoginServiceAsync service = GWT.create(LoginService.class);
-				service.changePassword(tbNewPassword.getText(), new AsyncCallback<Void>() {
+				if(loginService==null) loginService = GWT.create(LoginService.class);
+				loginService.changePassword(tbNewPassword.getText(), new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
 						tbNewPassword.setText("");
 						tbRepeatPassword.setText("");
@@ -544,8 +566,8 @@ public class FormProfile extends Form {
 						dialog.showError(2, "Нельзя быть подчиненным у самого себя");
 					return;
 				}
-				ProfileServiceAsync service = GWT.create(ProfileService.class);
-				service.checkUser(tbChildName.getText(), tbChildEmail.getText(), new AsyncCallback<Boolean>() {
+				if(profService==null) profService = GWT.create(ProfileService.class);
+				profService.checkUser(tbChildName.getText(), tbChildEmail.getText(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
 						if(!result) { 

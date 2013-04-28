@@ -9,10 +9,29 @@
   <servlet>
     <servlet-name>loginServlet</servlet-name>
     <servlet-class>com.cantor.ipplan.server.LoginServiceImpl</servlet-class>
+  	<!--  Url для точки входа  в основную программу -->
+    <init-param>
+    	<param-name>dataServer</param-name>
+    	<param-value>http://127.0.0.1:8889/Main.html?gwt.codesvr=127.0.0.1:9998</param-value>
+    </init-param>
   </servlet>
   <servlet>
     <servlet-name>profileServlet</servlet-name>
     <servlet-class>com.cantor.ipplan.server.ProfileServiceImpl</servlet-class>
+  </servlet>
+  <servlet>
+  	<servlet-name>DatabaseService</servlet-name>
+  	<servlet-class>com.cantor.ipplan.server.DatabaseServiceImpl</servlet-class>
+  	<!--  Параметр для обратного вызова и подтверждения полномочий пользователя -->
+    <init-param>
+    	<param-name>loginCallBack</param-name>
+    	<param-value>http://127.0.0.1:8888/ipplan/</param-value>
+    </init-param>
+    <!-- Месторасположение хранилища -->
+    <init-param>
+    	<param-name>storeLocation</param-name>
+    	<param-value>d:\database\store</param-value>
+    </init-param>
   </servlet>
   
   <servlet-mapping>
@@ -24,10 +43,16 @@
     <servlet-name>profileServlet</servlet-name>
     <url-pattern>ipplan/profile</url-pattern>
   </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>DatabaseService</servlet-name>
+    <url-pattern>/main/database</url-pattern>
+  </servlet-mapping>
   
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>Ipplan.html</welcome-file>
+    <welcome-file>Main.html</welcome-file>
   </welcome-file-list>
 
   <listener>

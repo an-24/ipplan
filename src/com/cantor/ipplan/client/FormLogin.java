@@ -32,6 +32,7 @@ public class FormLogin extends Form {
 	private PasswordTextBox tbPassword;
 	private FlexTable flexTable;
 	private int rowError =  -1;
+	private LoginServiceAsync service = null;
 
 	public FormLogin(Ipplan main, RootPanel root) {
 		super(main,root);
@@ -39,7 +40,7 @@ public class FormLogin extends Form {
 		form.setEncoding(FormPanel.ENCODING_MULTIPART);
 		form.setMethod(FormPanel.METHOD_POST);
 		form.setWidth("600px");
-		form.setAction("/login");
+		//form.setAction("/login");
 		
 		initWidget(form);
 		
@@ -124,14 +125,14 @@ public class FormLogin extends Form {
 				
 				if(!validate()) return;
 				
-				LoginServiceAsync service = GWT.create(LoginService.class);
+				if(service==null) service = GWT.create(LoginService.class);
 				service.login(tbLogin.getText(), tbPassword.getText(), "WBC", new AsyncCallback<PUserWrapper>() {
 					
 					public void onSuccess(PUserWrapper result) {
 						if(result==null) {
 							showError(3, "Введен неверный пароль или имя или адрес электронной почты.");
 						} else {
-							getMain().setUser(result);
+							((UserProfile)getMain()).setUser(result);
 							History.newItem("profile");
 						}
 					}

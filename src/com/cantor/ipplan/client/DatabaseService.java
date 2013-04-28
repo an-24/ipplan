@@ -15,11 +15,13 @@
 package com.cantor.ipplan.client;
 
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
-@RemoteServiceRelativePath("profile")
-public interface ProfileService extends RemoteService {
-	public void setUserData(PUserWrapper data, int joinAction) throws Exception;
-	public boolean checkUser(String name,String email) throws Exception;
+@RemoteServiceRelativePath("database")
+public interface DatabaseService extends RemoteService {
+	public String create(String name, String userEmail) throws Exception;
+	public String open(String name, String userEmail) throws Exception;
+	public void close(String key);
 }
