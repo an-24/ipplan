@@ -17,7 +17,7 @@ public class ContextEventHandler implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
     	Configuration cfg = new Configuration().configure();
-    	SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+    	SessionFactory sessionFactory = cfg.buildSessionFactory();
     	event.getServletContext().setAttribute("sessionFactory", sessionFactory);
 	}
 

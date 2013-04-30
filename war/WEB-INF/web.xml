@@ -58,5 +58,8 @@
   <listener>
     <listener-class>com.cantor.ipplan.server.ContextEventHandler</listener-class>
   </listener>
+  <listener>
+    <listener-class>com.cantor.ipplan.server.IpplanSessionListener</listener-class>
+  </listener>
   
 </web-app>

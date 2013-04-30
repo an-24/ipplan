@@ -7,7 +7,7 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 import org.hibernate.Query;

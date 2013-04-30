@@ -11,21 +11,22 @@ import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 
 public class IPPlanPoolConnection implements ConnectionProvider {
 	
-	static private ConnectionPool pool;
+	private ConnectionPool pool;
 
+	public IPPlanPoolConnection(String url) throws ClassNotFoundException {
+		setPool(url);
+	}
+	
 	public IPPlanPoolConnection() throws ClassNotFoundException {
-		setPool("jdbc:firebirdsql:localhost:D:\\Database\\IPPLAN_UP.FDB");
+		this("jdbc:firebirdsql:localhost:D:\\Database\\IPPLAN_UP.FDB");
 	}
 
-	static public void setPool(String dbUrl) throws ClassNotFoundException {
+
+	public void setPool(String dbUrl) throws ClassNotFoundException {
 		Properties prop = new Properties();
 		prop.setProperty("user", "SYSDBA");
 		prop.setProperty("password", "masterkey");
 		pool = new ConnectionPool(new DriverManagerConnectionFactory("org.firebirdsql.jdbc.FBDriver",dbUrl,prop), 1, 4);
-	}
-
-	static public void setPool(ConnectionPool p) {
-		pool = p;
 	}
 
 	@Override

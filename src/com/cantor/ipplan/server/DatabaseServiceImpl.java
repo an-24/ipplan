@@ -25,6 +25,7 @@ import org.firebirdsql.gds.impl.GDSType;
 import org.firebirdsql.management.BackupManager;
 import org.firebirdsql.management.FBBackupManager;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 
 import com.cantor.ipplan.client.DatabaseService;
 import com.cantor.ipplan.client.LoginService;
@@ -34,11 +35,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class DatabaseServiceImpl extends RemoteServiceServlet implements DatabaseService {
 
+	private String dbUrl;
+	
 	@Override
 	public String create(String name, String userEmail) throws Exception {
 		String dbKey = checkAccess(name,userEmail);
 		String url = openStore(name,userEmail);
-		IPPlanPoolConnection.setPool(url);
+		createSessionFactory(url);
 		return dbKey;
 	}
 
@@ -46,8 +49,18 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	public String open(String name, String userEmail) throws Exception {
 		String dbKey = checkAccess(name,userEmail);
 		String url = openStore(name,userEmail);
-		IPPlanPoolConnection.setPool(url);
+		createSessionFactory(url);
 		return dbKey;
+	}
+
+
+	private void createSessionFactory(String url) {
+		dbUrl = url;
+    	Configuration cfg = new Configuration().configure();
+    	cfg.setProperty("hibernate.connection.provider_class", "com.cantor.ipplan.server.DatabaseServiceImpl.DBProvider");
+    	SessionFactory sessionFactory = cfg.buildSessionFactory();
+    	HttpSession sess = this.getThreadLocalRequest().getSession();
+		sess.setAttribute("sessionFactory", sessionFactory);
 	}
 
 	@Override
@@ -112,6 +125,14 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		} catch (Throwable e) {
 			throw new Exception(e.getMessage());
 		}
+	}
+	
+	public class DBProvider extends IPPlanPoolConnection{
+
+		public DBProvider() throws ClassNotFoundException {
+			super(dbUrl);
+		}
+		
 	}
 
 }
