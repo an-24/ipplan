@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <core.ProjectElement res="/ipplan" version="16.1">
- <pdm.core.PdmModelElement res="src/model/Основные данные.pdm" fnam="src\model\Основные данные.pdm" oid="{B24D8A1F-3DCA-4269-A461-EB445A173BE9}">
+ <pdm.core.PdmModelElement res="src/model/Основные данные.pdm" fnam="src\model\Основные данные.pdm" oid="{B24D8A1F-3DCA-4269-A461-EB445A173BE9}" mdat="1367383560953">
   <core.PackageElement res="/ipplan/src/model" oid="{00000000-0000-0000-0000-000000000000}" />
  </pdm.core.PdmModelElement>
- <pdm.core.PdmModelElement res="src/model/Профили пользователя.pdm" fnam="src\model\Профили пользователя.pdm" oid="{33AFAB31-B708-4AE8-A76C-7F98592C6B7F}" mdat="1366523253500">
+ <pdm.core.PdmModelElement res="src/model/Профили пользователя.pdm" fnam="src\model\Профили пользователя.pdm" oid="{33AFAB31-B708-4AE8-A76C-7F98592C6B7F}">
   <core.PackageElement res="/ipplan/src/model" oid="{00000000-0000-0000-0000-000000000000}" />
  </pdm.core.PdmModelElement>
 </core.ProjectElement>

@@ -13,19 +13,19 @@ public class IpplanSessionListener implements HttpSessionAttributeListener {
 	
 	@Override
 	public void attributeAdded(HttpSessionBindingEvent e) {
-		if(e.getName().equals("user"));
+		if(e.getName().equals("user"))
 			authSessions.put(e.getSession().getId(), (PUser) e.getValue());
 	}
 
 	@Override
 	public void attributeRemoved(HttpSessionBindingEvent e) {
-		if(e.getName().equals("user"));
+		if(e.getName().equals("user"))
 			authSessions.remove(e.getSession().getId());
 	}
 
 	@Override
 	public void attributeReplaced(HttpSessionBindingEvent e) {
-		if(e.getName().equals("user"));
+		if(e.getName().equals("user"))
 			authSessions.put(e.getSession().getId(), (PUser) e.getValue());
 	}
 	

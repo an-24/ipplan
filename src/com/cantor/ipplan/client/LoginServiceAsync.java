@@ -10,6 +10,5 @@ public interface LoginServiceAsync {
 	void logout(AsyncCallback<Void> callback);
 	void changePassword(String newPswd, AsyncCallback<Void> callback);
 	void openDatabase(AsyncCallback<String> callback);
-	void isAccessDatabase(String dbName, String userEmail,
-			AsyncCallback<Boolean> callback);
+	void isAccessDatabase(String sessionId, AsyncCallback<PUserWrapper> callback);
 }

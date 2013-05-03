@@ -7,7 +7,6 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 import org.hibernate.Query;
@@ -21,7 +20,6 @@ import com.cantor.ipplan.client.LoginService;
 import com.cantor.ipplan.db.up.Messages;
 import com.cantor.ipplan.db.up.PUser;
 import com.cantor.ipplan.shared.PUserWrapper;
-import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 @SuppressWarnings("serial")
@@ -176,7 +174,7 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     			if(newdb) {
     				byte[] code = new byte[16];
     				new SecureRandom().nextBytes(code);
-    				user.setPuserDbname(Base64Utils.toBase64(code));
+    				user.setPuserDbname(new BigInteger(1,code).toString(16));
     				session.update(user); 
     			} else {
     				if(user.getOwner()!=null && user.getOwner().getPuserDbname().isEmpty())
@@ -185,8 +183,7 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     			String host = getServletConfig().getInitParameter("dataServer");
     			if(host==null)
     				throw new Exception("Неверная кофигурация сервера. dataServer not found. ");
-    			String redirectUrl = host+"#"+(newdb?"create,":"open,");
-    			redirectUrl += user.getPuserDbname()+","+user.getPuserEmail();
+    			String redirectUrl = host+"#session="+getThreadLocalRequest().getSession().getId();
     			tx.commit();
     			return redirectUrl;
     		} catch (Exception e) {
@@ -201,12 +198,17 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     	}
 	}
 
+	@Override
+	public PUserWrapper isAccessDatabase(String sessionId) {
+		PUser user = IpplanSessionListener.getAuthUserBySession(sessionId);
+		return (user==null)?null:user.toClient();
+	}
+
 	private void calcLockFlag(PUser user)  throws Exception {
 		//TODO проверка условий предоставления доступа (оплата и т.д.)
 	}
 
-	@Override
-	public boolean isAccessDatabase(String dbName, String userEmail) {
+	private boolean isAccessDatabase(String dbName, String userEmail) {
 		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
     	Session session = sessionFactory.openSession();
     	try {

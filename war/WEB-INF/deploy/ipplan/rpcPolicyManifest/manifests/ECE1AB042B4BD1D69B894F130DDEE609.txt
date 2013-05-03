@@ -1,2 +1,0 @@
-serviceClass: com.cantor.ipplan.client.GreetingService
-path: AAD620314A4169E57035B48E5BC12414.gwt.rpc

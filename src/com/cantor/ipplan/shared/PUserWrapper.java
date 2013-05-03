@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import com.google.gwt.i18n.shared.CustomDateTimeFormat;
 
-public class PUserWrapper implements java.io.Serializable {
+public class PUserWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable {
 	public int puserId;
 	public PUserWrapper owner;
 	public String puserEmail;
@@ -24,7 +24,7 @@ public class PUserWrapper implements java.io.Serializable {
 	public int puserFlags;
 	public MessageWrapper lastSystemMessage;
 	public boolean tempflag;
-
+	
 	public PUserWrapper() {
 	}
 	

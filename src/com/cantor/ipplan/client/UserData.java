@@ -1,5 +1,6 @@
 package com.cantor.ipplan.client;
 
+import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -7,7 +8,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class UserData extends Ipplan {
 
-	protected String keyDB;
+	protected PUserWrapper user;
 	
 	static {
     	tokenForms.put("main", FormMain.class);
@@ -18,16 +19,12 @@ public class UserData extends Ipplan {
 	public void onModuleLoad() {
 		String initToken = History.getToken();
 		if(!initToken.isEmpty()) {
-			String[] tokens = initToken.split(",");
-			if(tokens[0].equals("create")) {
-				createDatabase(tokens[1],tokens[2]);
-				return;
-			} else
-			if(tokens[0].equals("open")) {
-				openDatabase(tokens[1],tokens[2]);
+			// проверка на запрос доступа к сессии
+			String[] tokens = initToken.split("=");
+			if(tokens[0].equals("session")) {
+				openDatabase(tokens[1]);
 				return;
 			};
-				
 		}
 		super.onModuleLoad();
 	}
@@ -44,24 +41,12 @@ public class UserData extends Ipplan {
 		};		
 	}
 	
-	private void createDatabase(String db, String user) {
-		DatabaseServiceAsync service = GWT.create(DatabaseService.class);
-		service.create(db, user, new AsyncCallback<String>() {
-			public void onSuccess(String result) {
-				UserData.this.keyDB = result;
-				History.newItem(INIT_TOKEN);
-			}
-			public void onFailure(Throwable caught) {
-				showError(caught);
-			}
-		});
-	}
 
-	private void openDatabase(String db, String user) {
+	private void openDatabase(String sessId) {
 		DatabaseServiceAsync service = GWT.create(DatabaseService.class);
-		service.open(db, user, new AsyncCallback<String>() {
-			public void onSuccess(String result) {
-				UserData.this.keyDB = result;
+		service.open(sessId, new AsyncCallback<PUserWrapper>() {
+			public void onSuccess(PUserWrapper result) {
+				UserData.this.user = result;
 				History.newItem(INIT_TOKEN);
 			}
 			public void onFailure(Throwable caught) {

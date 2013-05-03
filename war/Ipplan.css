@@ -5,15 +5,14 @@
 h1 {
   font-size: 2em;
   font-weight: bold;
-  color: #777777;
+  color: #004276;
   margin: 40px 0px 70px;
   text-align: center;
 }
 
+
 /** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 400px;
-}
+
 
 .dialogVPanel {
   margin: 5px;
@@ -31,18 +30,14 @@ h1 {
 .gwt-FormCaption {
   font-size: 2em;
   font-weight: bold;
-  color: #777777;
+  color: #004276;
   padding: 10px 10px 10px 10px;
 }
 .gwt-Form  {
-    -moz-border-bottom-colors: none;
-    -moz-border-left-colors: none;
-    -moz-border-right-colors: none;
-    -moz-border-top-colors: none;
     background-color: #FFFAFA;
     border-color: #BBBBBB #BBBBBB #A0A0A0;
     border-image: none;
-    border-radius: 3px 3px 3px 3px;
+    border-radius: 6px;
     border-style: solid;
     border-width: 1px;
     cursor: pointer;

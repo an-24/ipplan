@@ -21,7 +21,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("database")
 public interface DatabaseService extends RemoteService {
-	public String create(String name, String userEmail) throws Exception;
-	public String open(String name, String userEmail) throws Exception;
-	public void close(String key);
+	public PUserWrapper open(String sessId) throws Exception;
 }

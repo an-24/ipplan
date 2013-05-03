@@ -11,6 +11,6 @@ public interface LoginService extends RemoteService {
 	public void logout();
 	public void changePassword(String newPswd) throws Exception;
 	public String openDatabase() throws Exception;
-	public boolean isAccessDatabase(String dbName, String userEmail);
+	public PUserWrapper isAccessDatabase(String sessionId);
 
 }

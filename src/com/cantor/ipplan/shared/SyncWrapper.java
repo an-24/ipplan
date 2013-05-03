@@ -2,7 +2,7 @@ package com.cantor.ipplan.shared;
 
 import java.util.Date;
 
-public class SyncWrapper implements java.io.Serializable {
+public class SyncWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable  {
 	private Integer id;
 	private String imei;
     private Date last;

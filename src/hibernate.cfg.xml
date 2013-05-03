@@ -12,7 +12,7 @@
         <property name="hibernate.connection.password">masterkey</property>
         
         <property name="hibernate.dialect">org.hibernate.dialect.FirebirdDialect</property>
-        <property name="hibernate.connection.provider_class">com.cantor.ipplan.server.IPPlanPoolConnection</property>
+        <property name="hibernate.connection.provider_class">com.cantor.ipplan.server.UserProfilePoolConnection</property>
 		<!-- Echo all executed SQL to stdout -->
 		<property name="show_sql">true</property>
 
@@ -20,5 +20,6 @@
         <mapping class="com.cantor.ipplan.db.up.Payments"/>
         <mapping class="com.cantor.ipplan.db.up.Sync"/>
         <mapping class="com.cantor.ipplan.db.up.Messages"/>
+        <mapping class="com.cantor.ipplan.db.ud.PUserIdent"/>
     </session-factory>
 </hibernate-configuration>

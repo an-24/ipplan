@@ -15,8 +15,6 @@
 package com.cantor.ipplan.server;
 
 import java.io.File;
-import java.security.SecureRandom;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 
 import javax.servlet.http.HttpSession;
@@ -24,70 +22,66 @@ import javax.servlet.http.HttpSession;
 import org.firebirdsql.gds.impl.GDSType;
 import org.firebirdsql.management.BackupManager;
 import org.firebirdsql.management.FBBackupManager;
+import org.hibernate.Query;
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.service.Service;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.ServiceRegistryBuilder;
 
 import com.cantor.ipplan.client.DatabaseService;
 import com.cantor.ipplan.client.LoginService;
+import com.cantor.ipplan.db.ud.PUserIdent;
+import com.cantor.ipplan.shared.PUserWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
-import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+@SuppressWarnings("serial")
 public class DatabaseServiceImpl extends RemoteServiceServlet implements DatabaseService {
 
-	private String dbUrl;
+	private boolean newDBFlag = false;
 	
+	/**
+	 *  После удачного open в сессии два атрибута
+	 *  (PUserWrapper) loginUser - пользователь в профиле
+	 *  (int) userId - идентификатор пользователя в персональнойБД
+	 *  @param sessId - идентификатор сессии на UP сервере
+	 */
 	@Override
-	public String create(String name, String userEmail) throws Exception {
-		String dbKey = checkAccess(name,userEmail);
-		String url = openStore(name,userEmail);
+	public PUserWrapper open(String sessId) throws Exception {
+		PUserWrapper u = checkAccess(sessId);
+		String url = openOrCreateStore(u.puserDbname,u.puserEmail);
 		createSessionFactory(url);
-		return dbKey;
-	}
-
-	@Override
-	public String open(String name, String userEmail) throws Exception {
-		String dbKey = checkAccess(name,userEmail);
-		String url = openStore(name,userEmail);
-		createSessionFactory(url);
-		return dbKey;
-	}
-
-
-	private void createSessionFactory(String url) {
-		dbUrl = url;
-    	Configuration cfg = new Configuration().configure();
-    	cfg.setProperty("hibernate.connection.provider_class", "com.cantor.ipplan.server.DatabaseServiceImpl.DBProvider");
-    	SessionFactory sessionFactory = cfg.buildSessionFactory();
-    	HttpSession sess = this.getThreadLocalRequest().getSession();
-		sess.setAttribute("sessionFactory", sessionFactory);
-	}
-
-	@Override
-	public void close(String key) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private String checkAccess(String name, String userEmail) throws Exception {
+		int userId = makeUser(u.puserEmail);
 		HttpSession sess = this.getThreadLocalRequest().getSession();
-		String key = (String) sess.getAttribute("dbKey");
-		if (sess.isNew() || key==null ) {
+		sess.setAttribute("userId", userId);
+		return u;
+	}
+
+
+	private PUserWrapper checkAccess(String sessId) throws Exception {
+		HttpSession sess = this.getThreadLocalRequest().getSession();
+		PUserWrapper u = (PUserWrapper) sess.getAttribute("loginUser");
+		if (sess.isNew() || u==null ) {
 			// проводим проверку через сервер UP
 			String host = getServletConfig().getInitParameter("loginCallBack");
 			LoginService login = (LoginService) SyncProxy.newProxyInstance(LoginService.class, host,"login");
-			if(!login.isAccessDatabase(name,userEmail))
+			u = login.isAccessDatabase(sessId);
+			if(u==null)
 				throw new Exception("Доступ к базе данных запрещен");
-			byte[] code = new byte[16];
-			new SecureRandom().nextBytes(code);
-			key = Base64Utils.toBase64(code);
-			sess.setAttribute("dbKey",key);
-		}	
-		return key;
-		
+			sess.setAttribute("loginUser",u);
+		};
+		return u;
 	}
-	
-	private synchronized String openStore(String name, String userEmail) throws Exception {
+
+	private synchronized String openOrCreateStore(String name, String userEmail) throws Exception {
 		String dir = getServletConfig().getInitParameter("storeLocation");
 		if(dir==null)
 			throw new Exception("Неверная кофигурация сервера. storeLocation not found. ");
@@ -101,16 +95,17 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		String dbName;
 		if(newCatalog) {
 			userroot.mkdir();
-			dbName = createDatabase(root,name,0);
+			dbName = createDatabase(root,name);
+			newDBFlag  = true;
 		} else {
-			dbName = "";
+			dbName = getCurrentDBName(root, name);
 		}
 		return "jdbc:firebirdsql:localhost:"+dbName;
 	}
 
-	private String createDatabase(File root, String name, int ver) throws Exception {
+	private String createDatabase(File root, String name) throws Exception {
 		try {
-			String dbname = root.getAbsolutePath()+File.separatorChar+name+File.separatorChar+"db"+ver+".fdb";
+			String dbname = getCurrentDBName(root, name);
 			BackupManager restoreManager = new FBBackupManager(GDSType.getType("PURE_JAVA"));
 			restoreManager.setHost("localhost");
 			restoreManager.setPort(3050);
@@ -126,13 +121,57 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			throw new Exception(e.getMessage());
 		}
 	}
-	
-	public class DBProvider extends IPPlanPoolConnection{
 
-		public DBProvider() throws ClassNotFoundException {
-			super(dbUrl);
+	private void createSessionFactory(String url) throws Exception {
+		SessionFactory sessionFactory = (SessionFactory) this.getThreadLocalRequest().getSession().getAttribute("sessionFactory");
+		if(sessionFactory==null) {
+			// конфигурируем hibername
+	    	Configuration cfg = new Configuration().configure();
+	    	cfg.setProperty(Environment.CONNECTION_PROVIDER, "com.cantor.ipplan.server.UserDataPoolConnection");
+	    	ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build(); 
+	    	UserDataPoolConnection pool = (UserDataPoolConnection) serviceRegistry.getService(org.hibernate.engine.jdbc.connections.spi.ConnectionProvider.class);
+	    	pool.setPool(url);
+	    	sessionFactory = cfg.buildSessionFactory(serviceRegistry);
+	    	// устанавливаем в сессии
+	    	this.getThreadLocalRequest().getSession().setAttribute("sessionFactory", sessionFactory);
 		}
-		
+	}
+
+	
+	private int makeUser(String userEmail) throws Exception {
+		SessionFactory sessionFactory = (SessionFactory) this.getThreadLocalRequest().getSession().getAttribute("sessionFactory");
+		// проверка наличия пользователя
+    	Session session = sessionFactory.openSession();
+    	try {
+    		PUserIdent user;
+    		Query q = session.createQuery("select u from PUserIdent u where u.puserLogin=:login");
+			q.setString("login", userEmail);
+			user =  (PUserIdent) q.uniqueResult();
+    		if(user == null) {
+    			// добавим
+    			Transaction tx = session.beginTransaction();
+    			try {
+    				user = new PUserIdent();
+    				user.setPuserLogin(userEmail);
+    				if(newDBFlag) user.setPuserId(PUserIdent.USER_ROOT_ID); else {
+    					PUserIdent own = (PUserIdent) session.get(PUserIdent.class, PUserIdent.USER_ROOT_ID);
+    					if(own==null) user.setPuserId(PUserIdent.USER_ROOT_ID); else user.setOwner(own);
+    				}
+    				session.save(user);
+    				tx.commit();
+    			} catch (Exception e) {
+    				tx.rollback();
+    				throw e;
+				}
+    		}
+    		return user.getId();
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	private String getCurrentDBName(File root, String name) {
+		return root.getAbsolutePath()+File.separatorChar+name+File.separatorChar+"current.fdb";
 	}
 
 }
