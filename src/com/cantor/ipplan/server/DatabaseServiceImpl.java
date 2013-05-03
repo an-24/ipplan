@@ -57,18 +57,26 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	@Override
 	public PUserWrapper open(String sessId) throws Exception {
 		PUserWrapper u = checkAccess(sessId);
-		String url = openOrCreateStore(u.puserDbname,u.puserEmail);
-		createSessionFactory(url);
-		int userId = makeUser(u.puserEmail);
-		HttpSession sess = this.getThreadLocalRequest().getSession();
-		sess.setAttribute("userId", userId);
+		SessionFactory sessionFactory = getSessionFactory();
+		if(sessionFactory==null) {
+			String url = openOrCreateStore(u.puserDbname,u.puserEmail);
+			createSessionFactory(url);
+			int userId = makeUser(u.puserEmail);
+			HttpSession sess = this.getThreadLocalRequest().getSession();
+			sess.setAttribute("userId", userId);
+		}
 		return u;
 	}
 
+	@Override
+	public PUserWrapper isLogged() {
+		SessionFactory sessionFactory = getSessionFactory();
+		return sessionFactory!=null?getLoginUser():null;
+	}
 
 	private PUserWrapper checkAccess(String sessId) throws Exception {
 		HttpSession sess = this.getThreadLocalRequest().getSession();
-		PUserWrapper u = (PUserWrapper) sess.getAttribute("loginUser");
+		PUserWrapper u = getLoginUser();
 		if (sess.isNew() || u==null ) {
 			// проводим проверку через сервер UP
 			String host = getServletConfig().getInitParameter("loginCallBack");
@@ -76,10 +84,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			u = login.isAccessDatabase(sessId);
 			if(u==null)
 				throw new Exception("Доступ к базе данных запрещен");
-			sess.setAttribute("loginUser",u);
+			setLoginUser(u);
 		};
 		return u;
 	}
+
 
 	private synchronized String openOrCreateStore(String name, String userEmail) throws Exception {
 		String dir = getServletConfig().getInitParameter("storeLocation");
@@ -123,7 +132,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	}
 
 	private void createSessionFactory(String url) throws Exception {
-		SessionFactory sessionFactory = (SessionFactory) this.getThreadLocalRequest().getSession().getAttribute("sessionFactory");
+		SessionFactory sessionFactory = getSessionFactory();
 		if(sessionFactory==null) {
 			// конфигурируем hibername
 	    	Configuration cfg = new Configuration().configure();
@@ -137,9 +146,23 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		}
 	}
 
+
+	private SessionFactory getSessionFactory() {
+		return (SessionFactory) this.getThreadLocalRequest().getSession().getAttribute("sessionFactory");
+	}
+	
+	private PUserWrapper getLoginUser() {
+		HttpSession sess = this.getThreadLocalRequest().getSession();
+		return (PUserWrapper) sess.getAttribute("loginUser");
+	}
+
+	private void setLoginUser(PUserWrapper u) {
+		HttpSession sess = this.getThreadLocalRequest().getSession();
+		sess.setAttribute("loginUser",u);
+	}
 	
 	private int makeUser(String userEmail) throws Exception {
-		SessionFactory sessionFactory = (SessionFactory) this.getThreadLocalRequest().getSession().getAttribute("sessionFactory");
+		SessionFactory sessionFactory = getSessionFactory();
 		// проверка наличия пользователя
     	Session session = sessionFactory.openSession();
     	try {
@@ -173,5 +196,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	private String getCurrentDBName(File root, String name) {
 		return root.getAbsolutePath()+File.separatorChar+name+File.separatorChar+"current.fdb";
 	}
+
+
 
 }

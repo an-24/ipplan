@@ -17,8 +17,10 @@ import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 public class Form extends Composite {
@@ -132,6 +134,18 @@ public class Form extends Composite {
 		}
 		grid.addColumnSortHandler(columnSortHandler);
 	}
+
+	static public FocusWidget getFirstFocusedWidget(FlexTable table) {
+	    for (int row = 0; row < table.getRowCount(); row++) {
+	      for (int col = 0; col < table.getCellCount(row); col++) {
+	        Widget w = table.getWidget(row, col);
+	        if (w instanceof FocusWidget ) {
+	          return (FocusWidget) w;
+	        }
+	      }
+	    };
+		return null;
+	};
 	
 	protected boolean validate() {
 		return true;
@@ -148,4 +162,5 @@ public class Form extends Composite {
 	    };
 	    t.scheduleRepeating(SHEDULE_LOCK_CONTROL);
 	}
+
 }

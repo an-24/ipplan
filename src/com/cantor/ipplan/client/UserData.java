@@ -9,6 +9,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class UserData extends Ipplan {
 
 	protected PUserWrapper user;
+	private DatabaseServiceAsync dbservice;
 	
 	static {
     	tokenForms.put("main", FormMain.class);
@@ -17,6 +18,7 @@ public class UserData extends Ipplan {
 
 	
 	public void onModuleLoad() {
+		// проверка
 		String initToken = History.getToken();
 		if(!initToken.isEmpty()) {
 			// проверка на запрос доступа к сессии
@@ -27,23 +29,59 @@ public class UserData extends Ipplan {
 			};
 		}
 		super.onModuleLoad();
+		if(user==null) {
+			reguestLogin();
+			return;
+		}	
 	}
 
-	public void refreshForm(final Class type) {
+
+	public void refreshForm(Class type) {
+		if(user==null) return;
+		// пробуем определить номер вкладки у main
+		int numTab = 0;
+		String t = History.getToken();
+		if(t!=null && t.startsWith("main")) {
+			type = FormMain.class;
+			int n = t.indexOf('.');
+			if(n>=0) 		
+				numTab = Integer.valueOf(t.substring(n+1)); 
+		};
 		//unknown form
 		if(type==null) {
 			getRootInHTML().clear();
 		} else
 		// login
-		if(type==FormLogin.class) {
-			FormMain f = new FormMain(this, getRootInHTML());
+		if(type==FormMain.class) {
+			FormMain f = new FormMain(this, getRootInHTML(),user,numTab);
 			f.show();
 		};		
 	}
+
+	private DatabaseServiceAsync getDataBaseService() {
+		if(dbservice!=null) return dbservice; 
+		dbservice = GWT.create(DatabaseService.class);
+		return dbservice;
+	}
 	
+	private void reguestLogin() {
+		History.newItem("",false);
+		DatabaseServiceAsync service = getDataBaseService();
+		service.isLogged(new AsyncCallback<PUserWrapper>() {
+			public void onSuccess(PUserWrapper result) {
+				UserData.this.user = result;
+				History.newItem(INIT_TOKEN);
+			}
+			public void onFailure(Throwable caught) {
+				showError(caught);
+			}
+		});
+	}
+
+
 
 	private void openDatabase(String sessId) {
-		DatabaseServiceAsync service = GWT.create(DatabaseService.class);
+		DatabaseServiceAsync service = getDataBaseService();
 		service.open(sessId, new AsyncCallback<PUserWrapper>() {
 			public void onSuccess(PUserWrapper result) {
 				UserData.this.user = result;

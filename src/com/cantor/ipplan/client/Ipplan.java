@@ -29,11 +29,15 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	static String INIT_TOKEN = "";
     protected static Map<String, Class> tokenForms = new HashMap<String, Class>();
 	
+    public Ipplan() {
+    	super();
+		init();
+    }
+    
 	public void onModuleLoad() {
 		String initToken = History.getToken();
 		if(initToken.isEmpty()) 
-			History.newItem(INIT_TOKEN);
-		History.addValueChangeHandler(this);
+			History.newItem(INIT_TOKEN,false);
 		History.fireCurrentHistoryState();
 	}
 
@@ -41,6 +45,10 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	public void onValueChange(ValueChangeEvent<String> event) {
 		String token = event.getValue();
 		showForm(token);
+	}
+	
+	public void init() {
+		History.addValueChangeHandler(this);
 	}
 	
 	public void showForm(String token) {

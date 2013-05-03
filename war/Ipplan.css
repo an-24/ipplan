@@ -89,4 +89,11 @@ h1 {
     width: 0;
 }
 
+.ProfitBorder {
+	border-top: 2px solid #cc0000;
+}
+
+.tableBorderCollapse {
+	border-collapse:collapse;
+}
 

@@ -5,4 +5,5 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface DatabaseServiceAsync {
 	void open(String sessId, AsyncCallback<PUserWrapper> callback);
+	void isLogged(AsyncCallback<PUserWrapper> callback);
 }
