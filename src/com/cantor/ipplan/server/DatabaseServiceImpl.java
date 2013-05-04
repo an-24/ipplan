@@ -16,6 +16,8 @@ package com.cantor.ipplan.server;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -38,7 +40,10 @@ import org.hibernate.service.ServiceRegistryBuilder;
 
 import com.cantor.ipplan.client.DatabaseService;
 import com.cantor.ipplan.client.LoginService;
+import com.cantor.ipplan.db.ud.Bargain;
 import com.cantor.ipplan.db.ud.PUserIdent;
+import com.cantor.ipplan.db.ud.Status;
+import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -48,6 +53,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 
 	private boolean newDBFlag = false;
 	
+	//TODO при смене email нужно синхронизировать данные по id пользователя
 	/**
 	 *  После удачного open в сессии два атрибута
 	 *  (PUserWrapper) loginUser - пользователь в профиле
@@ -72,6 +78,43 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	public PUserWrapper isLogged() {
 		SessionFactory sessionFactory = getSessionFactory();
 		return sessionFactory!=null?getLoginUser():null;
+	}
+
+	@Override
+	public List<BargainWrapper> attention() throws Exception {
+		SessionFactory sessionFactory = getSessionFactory();
+		List<BargainWrapper> list = new ArrayList<BargainWrapper>();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		String hsq = "select b from Bargain b where b.bargainHead=1";
+    		int usrid = getUserId();
+    		if(usrid != PUserIdent.USER_ROOT_ID)
+    			hsq+=" and b.puser.puserId="+usrid;
+    		// со статусом = 
+    		hsq+="and (";
+    		// все Приостановленные
+    		hsq+=" (b.status.statusId="+Status.SUSPENDED+")";
+    		// за N дней, до финиша, если Выполнение
+    		hsq+=" or (b.status.statusId= "+Status.EXECUTION+" and b.bargainFinish-current_date<b.status.statusDayLimit)";
+    		// за N дней, до финиша, если Выполнение
+    		hsq+=" or (b.status.statusId= "+Status.COMPLETION+" and b.bargainFinish-current_date<b.status.statusDayLimit)";
+    		hsq+=")\n";
+    		// самые близкие по плану
+    		hsq+=" order by b.bargainFinish, b.bargainRevenue desc";
+    		
+    		Query q = session.createQuery(hsq);
+    		q.setMaxResults(5);
+    		List<Bargain> bargains = q.list();
+    		for (Bargain b : bargains) {
+    			BargainWrapper wrap = b.toClient();
+    			wrap.attention =  b.makeAttention();
+    			list.add(wrap);
+    		}
+    		return list;
+    		
+    	} finally {
+    		session.close();
+    	}
 	}
 
 	private PUserWrapper checkAccess(String sessId) throws Exception {
@@ -181,6 +224,10 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     					if(own==null) user.setPuserId(PUserIdent.USER_ROOT_ID); else user.setOwner(own);
     				}
     				session.save(user);
+    				// добавим статусы: только для root
+    				if(user.getPuserId()==PUserIdent.USER_ROOT_ID)
+    					makeDefaultStatuses(session,user);
+    				
     				tx.commit();
     			} catch (Exception e) {
     				tx.rollback();
@@ -193,8 +240,36 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	}
 	}
 
+	private void makeDefaultStatuses(Session session, PUserIdent user) {
+		Status s;
+		s = new Status(Status.PRIMARY_CONTACT,user,"Первичный контакт",0);
+		session.save(s);
+		s = new Status(Status.TALK,user,"Переговоры",0);
+		session.save(s);
+		s = new Status(Status.DECISION_MAKING,user,"Принимают решение",0);
+		session.save(s);
+		s = new Status(Status.RECONCILIATION_AGREEMENT,user,"Согласование договора",0);
+		session.save(s);
+		s = new Status(Status.EXECUTION,user,"Исполнение",Bargain.EXECUTE_WARNING_DURATION_LIMIT);
+		session.save(s);
+		s = new Status(Status.SUSPENDED,user,"Приостановлено для изменения условий",0);
+		session.save(s);
+		s = new Status(Status.COMPLETION,user,"Завершение",Bargain.COMPLETION_WARNING_DURATION_LIMIT);
+		session.save(s);
+		s = new Status(Status.CLOSE_OK,user,"Закрыта успешно",0);
+		session.save(s);
+		s = new Status(Status.CLOSE_FAIL,user,"Закрыта без результата",0);
+		session.save(s);
+		
+	}
+
 	private String getCurrentDBName(File root, String name) {
 		return root.getAbsolutePath()+File.separatorChar+name+File.separatorChar+"current.fdb";
+	}
+
+	private int getUserId() {
+		HttpSession sess = this.getThreadLocalRequest().getSession();
+		return (Integer) sess.getAttribute("userId");
 	}
 
 

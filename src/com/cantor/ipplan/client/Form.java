@@ -11,6 +11,8 @@ import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.user.cellview.client.AbstractCellTable;
+import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
@@ -67,14 +69,18 @@ public class Form extends Composite {
 		this.getElement().getStyle().setCursor(Cursor.DEFAULT);
 	}
 	
-	public static <T> void prepareGrid(DataGrid<T> grid, Collection<T> c) {
+	public static <T> void prepareGrid(AbstractCellTable<T> grid, Collection<T> c) {
+		prepareGrid(grid, c, true);
+	}
+
+	public static <T> void prepareGrid(AbstractCellTable<T> grid, Collection<T> c, boolean sorting) {
 	    ListDataProvider<T> dataProvider = new ListDataProvider<T>();
 	    dataProvider.addDataDisplay(grid);
 		dataProvider.getList().addAll(c);
-		setSortingColumns(grid, dataProvider.getList());
+		if(sorting) setSortingColumns(grid, dataProvider.getList());
 	}
-	
-	public static <T> void setSortingColumns(DataGrid<T> grid, List<T> list) {
+
+	public static <T> void setSortingColumns(AbstractCellTable<T> grid, List<T> list) {
 	    ListHandler<T> columnSortHandler = new ListHandler<T>(list);
 		for (int i = 0; i < grid.getColumnCount(); i++) {
 			final Column<T, ?> c = grid.getColumn(i);

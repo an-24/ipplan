@@ -89,11 +89,38 @@ h1 {
     width: 0;
 }
 
-.ProfitBorder {
+.redBorder {
 	border-top: 2px solid #cc0000;
+}
+
+.grayBorder {
+	border-top: thin solid gray;
 }
 
 .tableBorderCollapse {
 	border-collapse:collapse;
 }
+
+.linkcell div {
+	border-bottom: 1px dashed #004276;
+	text-decoration: none;	
+}
+
+.linkcell:hover  div {
+	border-color: #cc0000;
+	color: #cc0000;
+}
+
+.Attention1 {
+	color: #339900;
+}
+
+.Attention2 {
+	color: #FF9900;
+}
+
+.Attention3 {
+	color: #CC0000;
+}
+
 

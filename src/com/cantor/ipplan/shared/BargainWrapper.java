@@ -24,10 +24,13 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public Integer bargainPaymentCosts;
 	public Integer bargainFine;
 	public Integer bargainTax;
+	public Integer bargainHead;
 	public CalendarWrapper calendar;
 	public Set<BargaincostsWrapper> bargaincostses = new HashSet<BargaincostsWrapper>(0);
 	public Set<BargainWrapper> bargains = new HashSet<BargainWrapper>(0);
 	public Set<AgreedWrapper> agreeds = new HashSet<AgreedWrapper>(0);
+	
+	public Attention attention;
 	
 	public String getFullName() {
 		return bargainId+". "+bargainName;

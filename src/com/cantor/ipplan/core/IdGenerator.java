@@ -7,6 +7,7 @@ import org.hibernate.id.SequenceGenerator;
 
 public class IdGenerator extends SequenceGenerator {
 
+	//TODO отконфигурировать
 	@Override
 	public Serializable generate(SessionImplementor session, Object obj) {
 		int id = 0;

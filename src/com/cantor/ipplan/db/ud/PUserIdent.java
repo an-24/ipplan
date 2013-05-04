@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -14,7 +13,9 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
+import com.cantor.ipplan.core.DataBridge;
 import com.cantor.ipplan.core.IdGetter;
+import com.cantor.ipplan.shared.PUserWrapper;
 
 
 
@@ -23,7 +24,7 @@ import com.cantor.ipplan.core.IdGetter;
 @Entity
 @Table(name = "PUSER")
 @DynamicUpdate
-public class PUserIdent implements java.io.Serializable, IdGetter {
+public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PUserWrapper> {
 	
 	@Transient
 	public static final int USER_ROOT_ID = 1;
@@ -43,8 +44,6 @@ public class PUserIdent implements java.io.Serializable, IdGetter {
 	}
 
 	@Id
-//	@javax.persistence.SequenceGenerator(name="newRec", sequenceName="NEWRECORDID")	
-//	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "newRec")
 	@GenericGenerator(name="newRec", strategy="com.cantor.ipplan.core.IdGenerator")
 	@GeneratedValue(generator = "newRec")
 	@Column(name = "PUSER_ID", unique = true, nullable = false)
@@ -79,5 +78,26 @@ public class PUserIdent implements java.io.Serializable, IdGetter {
 	@Override
 	public int getId() {
 		return this.puserId;
+	}
+
+	@Override
+	public PUserWrapper toClient() {
+		PUserWrapper wrap = new PUserWrapper();
+		wrap.puserId = puserId;
+		wrap.puserEmail = puserLogin;
+		wrap.owner = owner==null?null:owner.toClient();
+		return wrap;
+	}
+
+	@Override
+	public void fromClient(PUserWrapper data) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void fetch(boolean deep) {
+		// TODO Auto-generated method stub
+		
 	}
 }

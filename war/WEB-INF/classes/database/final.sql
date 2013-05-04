@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     07.04.2013 18:23:54                          */
+/* Created on:     04.05.2013 12:37:04                          */
 /*==============================================================*/
 
 
@@ -33,20 +33,22 @@ constraint PK_AGREED primary key (agreed_id)
 /*==============================================================*/
 create table bargain (
 bargain_id           INTEGER                        not null,
+bargain_name         VARCHAR(220)                   not null,
 puser_id             INTEGER                        not null,
 root_bargain_id      INTEGER                        not null,
 status_id            INTEGER,
 customer_id          INTEGER                        not null,
 contract_id          INTEGER,
 bargain_ver          INTEGER                        default 0 not null,
-bargain_start        DATE                           not null,
-bargain_finish       DATE                           not null,
+bargain_start        TIMESTAMP                      not null,
+bargain_finish       TIMESTAMP                      not null,
 bargain_revenue      INTEGER,
 bargain_prepayment   INTEGER,
 bargain_costs        INTEGER,
 bargain_payment_costs INTEGER,
 bargain_fine         INTEGER,
 bargain_tax          INTEGER,
+bargain_head         INTEGER,
 constraint PK_BARGAIN primary key (bargain_id),
 constraint AK_KEY_2_BARGAIN unique (root_bargain_id, bargain_ver)
 );

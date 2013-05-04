@@ -21,5 +21,13 @@
         <mapping class="com.cantor.ipplan.db.up.Sync"/>
         <mapping class="com.cantor.ipplan.db.up.Messages"/>
         <mapping class="com.cantor.ipplan.db.ud.PUserIdent"/>
+        <mapping class="com.cantor.ipplan.db.ud.Status"/>
+        <mapping class="com.cantor.ipplan.db.ud.Costs"/>
+        <mapping class="com.cantor.ipplan.db.ud.Bargain"/>
+        <mapping class="com.cantor.ipplan.db.ud.Agreed"/>
+        <mapping class="com.cantor.ipplan.db.ud.Contract"/>
+        <mapping class="com.cantor.ipplan.db.ud.Bargaincosts"/>
+        <mapping class="com.cantor.ipplan.db.ud.Calendar"/>
+        <mapping class="com.cantor.ipplan.db.ud.Customer"/>
     </session-factory>
 </hibernate-configuration>

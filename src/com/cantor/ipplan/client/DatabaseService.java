@@ -14,6 +14,9 @@
  *******************************************************************************/
 package com.cantor.ipplan.client;
 
+import java.util.List;
+
+import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -23,4 +26,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface DatabaseService extends RemoteService {
 	public PUserWrapper open(String sessId) throws Exception;
 	public PUserWrapper isLogged();
+	public List<BargainWrapper> attention() throws Exception;
 }

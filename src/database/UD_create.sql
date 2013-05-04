@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     03.05.2013 19:12:32                          */
+/* Created on:     04.05.2013 14:21:49                          */
 /*==============================================================*/
 
 
@@ -35,6 +35,7 @@ bargain_costs        INTEGER,
 bargain_payment_costs INTEGER,
 bargain_fine         INTEGER,
 bargain_tax          INTEGER,
+bargain_head         INTEGER,
 constraint PK_BARGAIN primary key (bargain_id),
 constraint AK_KEY_2_BARGAIN unique (root_bargain_id, bargain_ver)
 );
@@ -127,6 +128,7 @@ create table status (
 status_id            INTEGER                        not null,
 puser_id             INTEGER                        not null,
 status_name          VARCHAR(60)                    not null,
+status_daylimit      INTEGER,
 constraint PK_STATUS primary key (status_id)
 );
 
