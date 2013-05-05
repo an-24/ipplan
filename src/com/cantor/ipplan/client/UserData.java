@@ -44,8 +44,14 @@ public class UserData extends Ipplan {
 		if(t!=null && t.startsWith("main")) {
 			type = FormMain.class;
 			int n = t.indexOf('.');
-			if(n>=0) 		
-				numTab = Integer.valueOf(t.substring(n+1)); 
+			if(n>=0) { 		
+				numTab = Integer.valueOf(t.substring(n+1));
+				// форма была уже создана
+				if(FormMain.currentForm!=null) {
+					FormMain.currentForm.selectTab(numTab);
+					return;
+				}
+			}	
 		};
 		//unknown form
 		if(type==null) {

@@ -37,12 +37,14 @@ import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.service.Service;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.ServiceRegistryBuilder;
+import org.hibernate.transform.Transformers;
 
 import com.cantor.ipplan.client.DatabaseService;
 import com.cantor.ipplan.client.LoginService;
 import com.cantor.ipplan.db.ud.Bargain;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.db.ud.Status;
+import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
@@ -117,6 +119,44 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	}
 	}
 
+	@Override
+	public BargainTotals[] getTotals() throws Exception {
+		BargainTotals b,bold;
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		int usrid = getUserId();
+    		Query q;
+    		String sql;
+    		// запрашиваем HEAD данные
+    		sql = 
+    		  	  "select count(b.bargain_id) \"count\",sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
+    	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
+    			  "from bargain b "+
+    			  "where b.bargain_head=1 AND "+
+    			  "b.status_id in ("+Status.EXECUTION+','+Status.COMPLETION+','+Status.SUSPENDED+')';
+    		if(usrid != PUserIdent.USER_ROOT_ID)
+    			sql+=" AND b.puser.puserId="+usrid;
+    		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
+    		b = (BargainTotals) q.uniqueResult();
+    		// запрашиваем начальные данные
+    		sql = 
+      		  	  "select count(b.bargain_id) \"count\", sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
+      	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
+      			  "from bargain b "+
+      			  "where b.bargain_id=b.root_bargain_id AND "+
+      			  "b.status_id in ("+Status.EXECUTION+','+Status.COMPLETION+','+Status.SUSPENDED+')';
+      		if(usrid != PUserIdent.USER_ROOT_ID)
+      			sql+=" AND b.puser.puserId="+usrid;
+      		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
+    		bold = (BargainTotals) q.uniqueResult();
+    		
+    		return new BargainTotals[]{b,bold};
+    	} finally {
+    		session.close();
+    	}
+	}
+	
 	private PUserWrapper checkAccess(String sessId) throws Exception {
 		HttpSession sess = this.getThreadLocalRequest().getSession();
 		PUserWrapper u = getLoginUser();
@@ -271,6 +311,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		HttpSession sess = this.getThreadLocalRequest().getSession();
 		return (Integer) sess.getAttribute("userId");
 	}
+
 
 
 

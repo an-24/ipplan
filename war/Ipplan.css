@@ -122,5 +122,11 @@ h1 {
 .Attention3 {
 	color: #CC0000;
 }
+.gwt-FormSubCaption {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #004276;
+  padding: 10px 10px 10px 10px;
+}
 
 

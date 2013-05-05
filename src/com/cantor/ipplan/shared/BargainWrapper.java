@@ -25,6 +25,7 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public Integer bargainFine;
 	public Integer bargainTax;
 	public Integer bargainHead;
+	public Date bargainCreated;
 	public CalendarWrapper calendar;
 	public Set<BargaincostsWrapper> bargaincostses = new HashSet<BargaincostsWrapper>(0);
 	public Set<BargainWrapper> bargains = new HashSet<BargainWrapper>(0);
@@ -32,7 +33,21 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	
 	public Attention attention;
 	
+	public BargainWrapper(){
+		super();
+		bargainCreated = new Date();
+	}
+	
+	public BargainWrapper(String text) {
+		this();
+		bargainName = text;
+	}
+
 	public String getFullName() {
 		return bargainId+". "+bargainName;
+	}
+	
+	public boolean isNew() {
+		return bargainId == 0;
 	}
 }

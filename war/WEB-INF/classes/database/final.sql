@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     04.05.2013 12:37:04                          */
+/* Created on:     04.05.2013 14:21:49                          */
 /*==============================================================*/
 
 
@@ -141,6 +141,7 @@ create table status (
 status_id            INTEGER                        not null,
 puser_id             INTEGER                        not null,
 status_name          VARCHAR(60)                    not null,
+status_daylimit      INTEGER,
 constraint PK_STATUS primary key (status_id)
 );
 

@@ -54,8 +54,6 @@ button:focus{
   zoom: 1;
 }
 
-/* <ipplan ----------------------- */
-
 a, a:visited {
   color: #004276;
   text-decoration:none;
@@ -193,6 +191,21 @@ a:hover {
   width: 400px;
 }
 
+.gwt-DialogBox .Caption {
+  background: #cc0000;
+  color:white;
+  padding: 6px 10px;
+  cursor: default;
+  font-family: Arial Unicode MS, Arial, sans-serif;
+  font-weight: bold;
+  border-radius:6px;
+  margin:4px;
+}
+
+.gwt-DialogBox .dialogTopCenter {
+  background: white;
+}
+
 .gwt-DialogBox .dialogContent {
 }
 .gwt-DialogBox .dialogMiddleCenter {
@@ -245,7 +258,6 @@ a:hover {
   background: url(images/circles.png) no-repeat -8px -36px;
   -background: url(images/circles_ie6.png) no-repeat -8px -36px;
 }
-
 * html .gwt-DialogBox .dialogTopLeftInner {
   width: 10px;
   overflow: hidden;
@@ -264,6 +276,7 @@ a:hover {
   height: 12px;
   overflow: hidden;
 }
+
 
 /* ipplan> ----------------------- */
 
@@ -950,14 +963,14 @@ a:hover {
 }
 
 .gwt-TabBar {
-  background: #ccc;
+  background-color: #cc0000;
   padding-top: 6px;
 }
 .gwt-TabBar .gwt-TabBarFirst {
   width: 5px;  /* first tab distance from the left */
 }
 .gwt-TabBar .gwt-TabBarRest {
-}
+}                  
 .gwt-TabBar .gwt-TabBarItem {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;
@@ -966,10 +979,19 @@ a:hover {
   color: white;
   font-weight: normal;
   text-align: center;
-  background: #8E8E8E;
+  background: #990000;
   -moz-border-radius: 3px 3px 0px 0px;
   border-radius: 3px 3px 0px 0px;
 }
+
+.gwt-TabBar .gwt-TabBarItem div {
+  color:#D8DCDF;
+}
+
+.gwt-TabBar .gwt-TabBarItem-selected div {
+  color: #333;
+} 
+
 .gwt-TabBar .gwt-TabBarItem-selected {
   cursor: default;
   background: white;

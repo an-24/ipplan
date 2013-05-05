@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
@@ -25,10 +26,15 @@ public class Dialog extends DialogBox {
 		setText(caption);
 		setAnimationEnabled(true);
 		setGlassEnabled(true);
+		
 		table = new FlexTable();
 		table.setCellSpacing(4);
 		table.setCellPadding(10);
-		setWidget(table);
+		
+		FormPanel f = new FormPanel();
+		f.setWidget(table);
+		setWidget(f);
+		
 		getElement().getStyle().setProperty("width","auto");
 	}
 
@@ -95,7 +101,10 @@ public class Dialog extends DialogBox {
 					if(buttonCancel!=null) buttonCancel.click(); else hide();
 					break;
 				case KeyCodes.KEY_ENTER:
-					if(buttonOk!=null) buttonOk.click();
+					if(buttonOk!=null) {
+						buttonOk.click();
+						event.cancel();
+					}
 					break;
 				default:
 					break;

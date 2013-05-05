@@ -3,8 +3,10 @@ package com.cantor.ipplan.client;
 import java.util.List;
 
 import com.cantor.ipplan.db.ud.PUserIdent;
+import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -20,6 +22,7 @@ import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -34,8 +37,12 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.cantor.ipplan.shared.BargaincostsWrapper;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
 
 public class FormMain extends Form {
+	
+	public static FormMain currentForm = null;
 
 	private PUserWrapper user;
 	private FlexTable currentTab = null;
@@ -50,15 +57,18 @@ public class FormMain extends Form {
 	private NumberLabel<Double> lRevenueDelta;
 	private NumberLabel<Double> lPrePayment;
 	private NumberLabel<Double> lMargin;
-	private NumberLabel<Double> llMarginDelta;
+	private NumberLabel<Double> lMarginDelta;
 	private NumberLabel<Double> lTax;
 	private NumberLabel<Double> lTaxDelta;
 	private NumberLabel<Double> lProfit;
 	private NumberLabel<Double> lProfitDelta;
+	private FlexTable tableStats;
+	private Label lCaption;
 
 	public FormMain(Ipplan main, RootPanel root, PUserWrapper usr, int numTab) {
 		super(main, root);
 		user =usr;
+		currentForm = this;
 		
 		// ресурсы для таблицы
 		CellTable.Resources resources = GWT.create(CellTable.Resources.class);
@@ -87,25 +97,29 @@ public class FormMain extends Form {
 		tab1.setSize("100%", "3cm");
 		
 		Button btnNew = new Button("Создать новую сделку");
+		btnNew.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				addNew();
+			}
+		});
 		tab1.setWidget(0, 0, btnNew);
 		tab1.getCellFormatter().setHeight(0, 0, "70px");
 		tab1.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		tab1.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER);
 		
-		Button btnNewFromPattern = new Button("New button");
-		btnNewFromPattern.setText("Создать по шаблону");
+		Button btnNewFromPattern = new Button("Создать по шаблону");
 		tab1.setWidget(0, 1, btnNewFromPattern);
 		
 		Button btnNewFromSample = new Button("Создать по образцу");
 		tab1.setWidget(0, 2, btnNewFromSample);
 		tab1.getCellFormatter().setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_CENTER);
 		
-		Label l2 = new Label("Всего в работе");
-		tab1.setWidget(1, 0, l2);
-		l2.setHeight("");
-		l2.addStyleName("bold-text");
+		lCaption = new Label("Всего в работе");
+		tab1.setWidget(1, 0, lCaption);
+		lCaption.setHeight("");
+		lCaption.addStyleName("bold-text");
 		
-		FlexTable tableStats = new FlexTable();
+		tableStats = new FlexTable();
 		tableStats.setCellSpacing(5);
 		tableStats.setCellPadding(5);
 		tab1.setWidget(2, 0, tableStats);
@@ -115,14 +129,14 @@ public class FormMain extends Form {
 		tab1.getFlexCellFormatter().setColSpan(2, 0, 3);
 		
 
-		Label lCount = new Label("0 сделок на общую сумму");
-		tableStats.setWidget(0, 0, lCount);
+		Label l11 = new Label("на общую сумму");
+		tableStats.setWidget(0, 0, l11);
 		tableStats.getCellFormatter().setWidth(0, 0, "300px");
 		
 		lRevenue = newNumberLabel();
 		tableStats.setWidget(0, 1, lRevenue);
 		
-		lRevenueDelta = newNumberLabel();
+		lRevenueDelta = newDeltaNumberLabel();
 		tableStats.setWidget(0, 2, lRevenueDelta);
 		
 		Label l3 = new Label("Авансы");
@@ -137,8 +151,8 @@ public class FormMain extends Form {
 		lMargin = newNumberLabel();
 		tableStats.setWidget(2, 1, lMargin);
 		
-		llMarginDelta = newNumberLabel();
-		tableStats.setWidget(2, 2, llMarginDelta);
+		lMarginDelta = newDeltaNumberLabel();
+		tableStats.setWidget(2, 2, lMarginDelta);
 		
 		Label l5 = new Label("Налог");
 		tableStats.setWidget(3, 0, l5);
@@ -146,7 +160,7 @@ public class FormMain extends Form {
 		lTax = newNumberLabel();
 		tableStats.setWidget(3, 1, lTax);
 		
-		lTaxDelta = newNumberLabel();
+		lTaxDelta = newDeltaNumberLabel();
 		tableStats.setWidget(3, 2, lTaxDelta);
 		
 		Label l6 = new Label("Прибыль");
@@ -158,7 +172,7 @@ public class FormMain extends Form {
 		tableStats.setWidget(4, 1, lProfit);
 		lProfit.addStyleName("bold-text");
 		
-		lProfitDelta = newNumberLabel();
+		lProfitDelta = newDeltaNumberLabel();
 		tableStats.setWidget(4, 2, lProfitDelta);
 		lProfitDelta.addStyleName("bold-text");
 		
@@ -273,6 +287,53 @@ public class FormMain extends Form {
 		prepare();
 	}
 
+	protected void addNew() {
+		
+		final Dialog dialog = new Dialog("Создание новой сделки");
+		FlexTable table = dialog.getContent();
+		table.setWidget(0,0,new Label("Наименование сделки"));
+		final TextBox tbBargainName = new TextBox();
+		tbBargainName.setWidth("300px");
+		table.setWidget(0, 1, tbBargainName);
+		tbBargainName.setName("bargainName");
+		tbBargainName.getElement().setAttribute("autocomplete", "on");
+
+		HorizontalPanel p = new HorizontalPanel();
+		table.setWidget(1, 0, p);
+		table.getFlexCellFormatter().setColSpan(1, 0, 2);		
+		p.setSpacing(10);
+		table.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		
+		Button btnCancel = new Button("Отменить");
+		btnCancel.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				dialog.hide();
+			}
+		});
+		Button btnOk = new Button("Создать");
+		dialog.setButtonOk(btnOk);
+		btnOk.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				dialog.resetErrors();
+				if(tbBargainName.getText().isEmpty()) {
+					dialog.showError(1, "Наименование сделки не может быть пустым");
+					return;
+				}
+				BargainFlexTable tab = new BargainFlexTable(new BargainWrapper(tbBargainName.getText()));
+				tabPanel.add(tab,tab.getTitle());
+				tabPanel.getTabBar().selectTab(tabPanel.getTabBar().getTabCount()-1);
+				dialog.hide();
+			}
+		});
+			
+		p.add(btnOk);
+		p.add(btnCancel);
+		dialog.setFirstFocusedWidget(tbBargainName);
+		dialog.center();
+		
+	}
+
 	private void setProfitLoading(FlexTable tableStats) {
 		tableStats.setWidget(4, 1, loading);
 		tableStats.getCellFormatter().setWidth(4, 1, "200px");
@@ -281,6 +342,10 @@ public class FormMain extends Form {
 
 	private NumberLabel<Double> newNumberLabel() {
 		return new NumberLabel<Double>(NumberFormat.getFormat("#,##0.00"));
+	}
+
+	private NumberLabel<Double> newDeltaNumberLabel() {
+		return new NumberLabel<Double>(NumberFormat.getFormat("(#,##0.00)"));
 	}
 
 	private void prepare() {
@@ -301,10 +366,16 @@ public class FormMain extends Form {
 		});
 		
 		startAttention();
+		startTotals();
 		
 		tabPanel.getTabBar().selectTab(currentTabId);
 	}
 
+	public void selectTab(int numTab) {
+		if(numTab<tabPanel.getTabBar().getTabCount() && numTab>=0)
+			tabPanel.getTabBar().selectTab(numTab);
+	}
+	
 	private DatabaseServiceAsync getDataBaseService() {
 		if(dbservice!=null) return dbservice; 
 		dbservice = GWT.create(DatabaseService.class);
@@ -327,5 +398,53 @@ public class FormMain extends Form {
 			}
 		});
 	}
+
+	private void startTotals() {
+		DatabaseServiceAsync db = getDataBaseService();
+		db.getTotals(new AsyncCallback<BargainTotals[]>() {
+			
+			@Override
+			public void onSuccess(BargainTotals[] result) {
+				lCaption.setText("Всего в работе "+result[0].getCount()+" "+Utils.getNumberPadeg(new String[]{"сделка","сделки","сделок"},
+						result[0].getCount()));
+				lRevenue.setValue(result[0].getRevenue()/100.0);
+				lPrePayment.setValue(result[0].getPrepayment()/100.0);
+				lMargin.setValue(result[0].getMargin()/100.0);
+				lTax.setValue(result[0].getTax()/100.0);
+				lProfit.setValue(result[0].getProfit()/100.0);
+
+				lRevenueDelta.setValue((result[0].getRevenue()-result[1].getRevenue())/100.0);
+				lMarginDelta.setValue((result[0].getMargin() - result[1].getMargin())/100.0);
+				lTaxDelta.setValue((result[0].getTax()-result[1].getTax())/100.0);
+				lProfitDelta.setValue((result[0].getProfit()-result[1].getProfit())/100.0);
+
+				if(lRevenueDelta.getValue()<0)
+					lRevenueDelta.addStyleName("Attention3"); else
+						if(lRevenueDelta.getValue()>0) 
+							lRevenueDelta.addStyleName("Attention1"); 
+				if(lMarginDelta.getValue()<0)
+					lMarginDelta.addStyleName("Attention3"); else
+						if(lMarginDelta.getValue()>0) 
+							lMarginDelta.addStyleName("Attention1"); 
+				if(lTaxDelta.getValue()>0)
+					lTaxDelta.addStyleName("Attention3"); else
+						if(lTaxDelta.getValue()<0) 
+							lTaxDelta.addStyleName("Attention1"); 
+				if(lProfitDelta.getValue()<0)
+					lProfitDelta.addStyleName("Attention3"); else
+						if(lProfitDelta.getValue()>0) 
+							lProfitDelta.addStyleName("Attention1"); 
+				
+				tableStats.setWidget(4, 1, lProfit);
+				tableStats.getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Ipplan.showError(caught);
+			}
+		});
+	}
+
 		
 }

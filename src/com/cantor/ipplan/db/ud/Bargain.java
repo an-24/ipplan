@@ -49,7 +49,8 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 	private Integer bargainFine;
 	private Integer bargainTax;
 	private Integer bargainHead;
-	
+	public Date bargainCreated;
+
 	private Set<Bargaincosts> bargaincostses = new HashSet<Bargaincosts>(0);
 	private Set<Bargain> bargains = new HashSet<Bargain>(0);
 	private Set<Agreed> agreeds = new HashSet<Agreed>(0);
@@ -264,6 +265,15 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 		this.bargainHead = bargainHead;
 	}
 
+	@Column(name = "BARGAIN_CREATED", nullable = false)
+	public Date getBargainCreated() {
+		return bargainCreated;
+	}
+
+	public void setBargainCreated(Date bargainCreated) {
+		this.bargainCreated = bargainCreated;
+	}
+	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "bargain")
 	public Set<Bargaincosts> getBargaincostses() {
 		return this.bargaincostses;
@@ -311,6 +321,7 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 		wrap.bargainFine = bargainFine;
 		wrap.bargainTax = bargainTax;
 		wrap.bargainHead = bargainHead;
+		wrap.bargainCreated = bargainCreated;  
 
 		return wrap;
 	}
