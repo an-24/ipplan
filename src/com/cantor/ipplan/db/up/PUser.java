@@ -48,6 +48,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 	private String puserLockReason;
 	private int puserTarif;
 	private int puserFlags;
+	private int puserTaxtype;
 	private Set<Sync> syncs = new HashSet<Sync>(0);
 	private Set<Payments> paymentses = new HashSet<Payments>(0);
 	private Set<PUser> children = new HashSet<PUser>(0);
@@ -226,6 +227,15 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 	public void setPuserFlags(int puserFlags) {
 		this.puserFlags = puserFlags;
 	}
+
+	@Column(name = "PUSER_TAXTYPE", nullable = false)
+	public int getPuserTaxtype() {
+		return puserTaxtype;
+	}
+
+	public void setPuserTaxtype(int puserTaxtype) {
+		this.puserTaxtype = puserTaxtype;
+	}
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "puser")
 	public Set<Sync> getSyncs() {
@@ -271,6 +281,7 @@ public class PUser implements java.io.Serializable, DataBridge<PUserWrapper> {
 		u.puserTarif = puserTarif;
 		u.puserFlags = puserFlags;
 		u.puserDbname = puserDbname;
+		u.puserTaxtype = puserTaxtype;
 		for (Sync item : syncs) {
 			u.syncs.add(item.toClient());
 		}

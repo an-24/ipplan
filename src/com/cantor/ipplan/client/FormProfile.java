@@ -31,12 +31,14 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.ValuePicker;
+import com.google.gwt.user.cellview.client.CellList;
+import com.google.gwt.cell.client.TextCell;
 
 
 public class FormProfile extends Form {
@@ -200,15 +202,44 @@ public class FormProfile extends Form {
 		tbEmail.setWidth("300px");
 		tbEmail.setText(user.puserEmail);
 		
+		Label l31 = new Label("Вид налогооблажения");
+		Tabl1.setWidget(3, 0, l31);
+		
+		HorizontalPanel p30 = new HorizontalPanel();
+		Tabl1.setWidget(3, 1, p30);
+		p30.setWidth("100%");
+		Tabl1.getCellFormatter().setWidth(3, 1, "");
+		
+		final RadioButton rbTaxType1 = new RadioButton("taxtype", "По ставке 6% от дохода");
+		rbTaxType1.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				if(user.puserTaxtype!=1)
+				 toast(rbTaxType1,"Изменение коснется только новых сделок");
+			}
+		});
+		p30.add(rbTaxType1);
+		rbTaxType1.setValue(user.puserTaxtype==1);
+		
+		final RadioButton rbTaxType2 = new RadioButton("taxtype", "По ставке 15% от доходов, уменьшенных на величину расходов");
+		rbTaxType2.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				if(user.puserTaxtype!=2)
+				 toast(rbTaxType2,"Изменение коснется только новых сделок");
+			}
+		});
+		p30.add(rbTaxType2);
+		rbTaxType2.setWidth("155px");
+		rbTaxType2.setValue(user.puserTaxtype==2);
+		
 		Label l9 = new Label("Тарифный план");
-		Tabl1.setWidget(3, 0, l9);
+		Tabl1.setWidget(4, 0, l9);
 		
 		cbTarif = new ListBox();
 		cbTarif.setStyleName("gwt-ListBox");
 		cbTarif.addItem("Минимальный");
 		cbTarif.addItem("Стандартный");
 		cbTarif.setSelectedIndex(user.puserTarif);
-		Tabl1.setWidget(3, 1, cbTarif);
+		Tabl1.setWidget(4, 1, cbTarif);
 		cbTarif.setWidth("310px");
 		
 		final CheckBox cbBoss = new CheckBox("Босс-аккаунт");
@@ -219,14 +250,14 @@ public class FormProfile extends Form {
 			}
 		});
 		cbBoss.setChecked(user.puserBoss!=0);
-		Tabl1.setWidget(4, 1, cbBoss);
+		Tabl1.setWidget(5, 1, cbBoss);
 		
 		
 		Label l5 = new Label("Вам подчиняются");
-		Tabl1.setWidget(5, 0, l5);
+		Tabl1.setWidget(6, 0, l5);
 		
 		HorizontalPanel p6 = new HorizontalPanel();
-		Tabl1.setWidget(5, 1, p6);
+		Tabl1.setWidget(6, 1, p6);
 		
 		lbChildren = new ListBox();
 		p6.add(lbChildren);
@@ -275,11 +306,11 @@ public class FormProfile extends Form {
 		
 		
 		Label l6 = new Label("Вы подчинены");
-		Tabl1.setWidget(6, 0, l6);
+		Tabl1.setWidget(7, 0, l6);
 
 		HorizontalPanel p11 = new HorizontalPanel();
 		p11.setSpacing(5);
-		Tabl1.setWidget(6, 1, p11);
+		Tabl1.setWidget(7, 1, p11);
 		
 		Label lOwner = new Label(" ");
 		p11.add(lOwner);
@@ -316,7 +347,8 @@ public class FormProfile extends Form {
 				PUserWrapper u = new PUserWrapper();
 				u.puserLogin = tbName.getText();
 				u.puserEmail = tbEmail.getText();
-				u.puserBoss = cbBoss.isChecked()==true?1:0;
+				u.puserTaxtype = rbTaxType1.getValue()?1:2;
+				u.puserBoss = cbBoss.getValue()?1:0;
 				u.puserTarif =cbTarif.getSelectedIndex();
 				u.children.addAll(user.children);
 				u.lastSystemMessage = FormProfile.this.user.lastSystemMessage;
@@ -326,7 +358,7 @@ public class FormProfile extends Form {
 				if(profService==null) profService = GWT.create(ProfileService.class);
 				profService.setUserData(u, rbOwnerOk.isChecked()?1:rbOwnerCancel.isChecked()?-1:0,new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
-						showSuccess(btnSave,"Общие данные успешно изменены");
+						toast(btnSave,"Общие данные успешно изменены");
 						getMain().refreshForm(FormProfile.class);
 					}
 					
@@ -337,9 +369,9 @@ public class FormProfile extends Form {
 			}
 		});
 		
-		Tabl1.setWidget(7, 0, btnSave);
-		Tabl1.getFlexCellFormatter().setColSpan(7, 0, 2);
-		Tabl1.getCellFormatter().setHorizontalAlignment(7, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		Tabl1.setWidget(8, 0, btnSave);
+		Tabl1.getFlexCellFormatter().setColSpan(8, 0, 2);
+		Tabl1.getCellFormatter().setHorizontalAlignment(8, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		setFirstFocusedWidget(tbName);
 
@@ -452,7 +484,7 @@ public class FormProfile extends Form {
 					public void onSuccess(Void result) {
 						tbNewPassword.setText("");
 						tbRepeatPassword.setText("");
-						showSuccess(btnSavePassword,"Пароль успешно изменен");
+						toast(btnSavePassword,"Пароль успешно изменен");
 					}
 					public void onFailure(Throwable caught) {
 						Ipplan.showError(caught);
@@ -524,6 +556,8 @@ public class FormProfile extends Form {
 		final TextBox tbChildName = new TextBox();
 		tbChildName.setWidth("200px");
 		table.setWidget(0, 1, tbChildName);
+		tbChildName.getElement().setAttribute("autocomplete", "on");
+		tbChildName.setName("userName");
 		
 		Label l = new Label("* Адрес электронной почты подчиненного");
 		l.setWidth("150px");
@@ -531,33 +565,24 @@ public class FormProfile extends Form {
 		final TextBox tbChildEmail = new TextBox();
 		tbChildEmail.setWidth("200px");
 		table.setWidget(1, 1, tbChildEmail);
+		tbChildEmail.getElement().setAttribute("autocomplete", "on");
+		tbChildEmail.setName("email");
 		
-		HorizontalPanel p = new HorizontalPanel();
-		table.setWidget(2, 0, p);
-		p.setSpacing(10);
-		table.getFlexCellFormatter().setColSpan(2, 0, 2);		
-		table.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		
-		Button btnCancel = new Button("Отменить");
-		btnCancel.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				dialog.hide();
-			}
-		});
-		Button btnOk = new Button("Добавить");
-		dialog.setButtonOk(btnOk);
-		btnOk.addClickHandler(new ClickHandler() {
+		dialog.setButtonOkClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				dialog.resetErrors();
 				if(tbChildEmail.getText().isEmpty()) {
+					dialog.cancel();
 					dialog.showError(2, "Адрес электронной почты подчиненного не может быть пустым");
 					return;
 				}
 				if (tbChildEmail.getText().equalsIgnoreCase(FormProfile.this.user.puserEmail)) {
-						dialog.showError(2, "Нельзя быть подчиненным у самого себя");
+					dialog.cancel();
+					dialog.showError(2, "Нельзя быть подчиненным у самого себя");
 					return;
 				}
 				if(profService==null) profService = GWT.create(ProfileService.class);
+				dialog.cancel(); // дальше идут асинхронные проверки, поэтому окно не скрываем
 				profService.checkUser(tbChildName.getText(), tbChildEmail.getText(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
@@ -575,21 +600,17 @@ public class FormProfile extends Form {
 						u.puserLogin = tbChildName.getText();
 						user.children.add(u);
 						dialog.hide();
-						showSuccess(lbChildren,"Пользователю "+u.getFullName()+" будет отправлено приглашение."+
+						toast(lbChildren,"Пользователю "+u.getFullName()+" будет отправлено приглашение."+
 						            " Он должен будет подтвердить, что готов быть Вашим подчиненным.");
 					}
 
 					@Override
 					public void onFailure(Throwable caught) {
 						Ipplan.showError(caught);
-						dialog.hide();
 					}
 				});
 			}
 		});
-		
-		p.add(btnOk);
-		p.add(btnCancel);
 
 		dialog.setFirstFocusedWidget(tbChildName);
 		dialog.center();
@@ -613,11 +634,6 @@ public class FormProfile extends Form {
 				return u;
 		}
 		return null;
-	}
-
-	public void showSuccess(Widget w, String message) {
-		Balloon b = new Balloon(message, true);
-		b.show(w);
 	}
 
 	public void showError(int beforeRow,String message) {

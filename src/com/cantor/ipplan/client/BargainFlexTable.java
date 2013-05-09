@@ -57,9 +57,13 @@ public class BargainFlexTable extends FlexTable {
 	}
 
 	public String getTitle() {
-		if(this.bargain.isNew())
-			return "* "+bargain.bargainName; else
-			return bargain.getFullName();
+		String s = bargain.getFullName();
+		if(this.bargain.isDirty()) s = "* "+s;
+		return s;
+	}
+	
+	public BargainWrapper getBargain() {
+		return bargain; 
 	}
 
 }

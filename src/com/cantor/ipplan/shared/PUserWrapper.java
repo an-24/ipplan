@@ -3,8 +3,8 @@ package com.cantor.ipplan.shared;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import com.google.gwt.i18n.shared.CustomDateTimeFormat;
 
+@SuppressWarnings("serial")
 public class PUserWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable {
 	public int puserId;
 	public PUserWrapper owner;
@@ -24,6 +24,7 @@ public class PUserWrapper implements java.io.Serializable,com.google.gwt.user.cl
 	public int puserFlags;
 	public MessageWrapper lastSystemMessage;
 	public boolean tempflag;
+	public int puserTaxtype;
 	
 	public PUserWrapper() {
 	}

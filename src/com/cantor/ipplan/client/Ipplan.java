@@ -89,7 +89,7 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	private static DialogBox configEventBox(String errtext) {
 		Button closeButton = null;
 		Label textToServerLabel = null;
-		final DialogBox eventBox = new Dialog("Сообщение сервера");
+		final DialogBox eventBox = new Dialog("Сообщение сервера",true);
 		closeButton = new Button("Закрыть");
 		closeButton.getElement().setId("closeButton");
 

@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
 
 import com.cantor.ipplan.core.DataBridge;
@@ -109,7 +110,7 @@ public class Status implements java.io.Serializable,IdGetter,DataBridge<StatusWr
 
 	@Override
 	public void fetch(boolean deep) {
-		// TODO Auto-generated method stub
+		Hibernate.initialize(getPuser());
 		
 	}
 

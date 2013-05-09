@@ -1,5 +1,6 @@
 package com.cantor.ipplan.client;
 
+import java.util.Date;
 import java.util.List;
 
 import com.cantor.ipplan.shared.BargainTotals;
@@ -12,4 +13,9 @@ public interface DatabaseServiceAsync {
 	void isLogged(AsyncCallback<PUserWrapper> callback);
 	void attention(AsyncCallback<List<BargainWrapper>> callback);
 	void getTotals(AsyncCallback<BargainTotals[]> callback);
+	void newBargain(String name, int startStatus,
+			AsyncCallback<BargainWrapper> callback);
+	void newBargain(String name, int startStatus, Date start, Date finish,
+			AsyncCallback<BargainWrapper> callback);
+	void getTemporalyBargains(AsyncCallback<List<BargainWrapper>> callback);
 }

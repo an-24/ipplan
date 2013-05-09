@@ -20,7 +20,10 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.Hibernate;
+
 import com.cantor.ipplan.core.DataBridge;
+import com.cantor.ipplan.core.IdGetter;
 import com.cantor.ipplan.shared.Attention;
 import com.cantor.ipplan.shared.BargainWrapper;
 
@@ -31,7 +34,7 @@ import com.cantor.ipplan.shared.BargainWrapper;
 @Entity
 @Table(name = "BARGAIN", uniqueConstraints = @UniqueConstraint(columnNames = {
 		"ROOT_BARGAIN_ID", "BARGAIN_VER" }))
-public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> {
+public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,IdGetter {
 	private int bargainId;
 	private String bargainName;
 	private PUserIdent puser;
@@ -39,7 +42,7 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 	private Status status;
 	private Customer customer;
 	private Contract contract;
-	private int bargainVer;
+	private int bargainVer = 0;
 	private Date bargainStart;
 	private Date bargainFinish;
 	private Integer bargainRevenue;
@@ -54,6 +57,9 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 	private Set<Bargaincosts> bargaincostses = new HashSet<Bargaincosts>(0);
 	private Set<Bargain> bargains = new HashSet<Bargain>(0);
 	private Set<Agreed> agreeds = new HashSet<Agreed>(0);
+	
+	private boolean newState;
+	private boolean dirty;
 
 	// количество дней, за котщрое нужно предупреждать, из статуса EXECUTION
 	public static final Integer EXECUTE_WARNING_DURATION_LIMIT = 10;
@@ -283,7 +289,7 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 		this.bargaincostses = bargaincostses;
 	}
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "rootBargain")
+	@Transient
 	public Set<Bargain> getBargains() {
 		return this.bargains;
 	}
@@ -307,7 +313,7 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 		wrap.bargainId = bargainId;
 		wrap.bargainName = bargainName;
 		//wrap.contract;
-		wrap.customer = customer.toClient();
+		wrap.customer = customer==null?null:customer.toClient();
 		wrap.puser = puser.toClient();
 		//wrap.bargain;
 		wrap.status = status.toClient();
@@ -321,7 +327,10 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 		wrap.bargainFine = bargainFine;
 		wrap.bargainTax = bargainTax;
 		wrap.bargainHead = bargainHead;
-		wrap.bargainCreated = bargainCreated;  
+		wrap.bargainCreated = bargainCreated;
+		
+		wrap.isnew = newState;
+		if(dirty) wrap.modify();
 
 		return wrap;
 	}
@@ -334,8 +343,20 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 
 	@Override
 	public void fetch(boolean deep) {
-		// TODO Auto-generated method stub
-		
+		Hibernate.initialize(this.getContract());
+		Hibernate.initialize(this.getCustomer());
+		Hibernate.initialize(this.getPuser());
+		Hibernate.initialize(this.getRootBargain());
+		Hibernate.initialize(this.getStatus());
+		Hibernate.initialize(this.getBargaincostses());
+		Hibernate.initialize(this.getAgreeds());
+		if(deep) {
+			if(this.getContract()!=null) this.getContract().fetch(deep);
+			if(this.getCustomer()!=null) this.getCustomer().fetch(deep);
+			if(this.getPuser()!=null) this.getPuser().fetch(deep);
+			if(this.getRootBargain()!=null) this.getRootBargain().fetch(deep);
+			if(this.getStatus()!=null) this.getStatus().fetch(deep);
+		}
 	}
 
 	@Transient
@@ -369,4 +390,27 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper> 
 		return at;
 	}
 
+	@Transient
+	@Override
+	public int getId() {
+		return bargainId;
+	}
+
+	@Transient
+	public boolean isNew() {
+		return newState;
+	}
+
+	public void setNew(boolean newState) {
+		this.newState = newState;
+	}
+
+	@Transient
+	public boolean isDirty() {
+		return dirty;
+	}
+
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+	}
 }

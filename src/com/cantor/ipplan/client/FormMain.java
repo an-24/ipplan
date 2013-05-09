@@ -1,5 +1,6 @@
 package com.cantor.ipplan.client;
 
+import java.util.Date;
 import java.util.List;
 
 import com.cantor.ipplan.db.ud.PUserIdent;
@@ -14,6 +15,7 @@ import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -24,21 +26,20 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.cantor.ipplan.shared.BargaincostsWrapper;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.cantor.ipplan.client.Slider;
 
 public class FormMain extends Form {
 	
@@ -49,7 +50,7 @@ public class FormMain extends Form {
 	private Integer currentTabId = 0;
 	
 	private Label lUserName;
-	private TabPanel tabPanel;
+	private MainTabPanel tabPanel;
 	private CellTable<BargainWrapper> tableAttention;
 	private DatabaseServiceAsync dbservice;
 	private Image loading;
@@ -87,7 +88,7 @@ public class FormMain extends Form {
 		lUserName = new Label("");
 		p1.add(lUserName);
 		
-		tabPanel = new TabPanel();
+		tabPanel = new MainTabPanel();
 		p0.add(tabPanel);
 		tabPanel.setSize("100%", "564px");
 		tabPanel.setAnimationEnabled(true);
@@ -271,6 +272,14 @@ public class FormMain extends Form {
 		tabPanel.add(tab2, "Сделки", false);
 		tab2.setSize("100%", "3cm");
 		
+		Button btnNewButton = new Button("New button");
+		tab2.setWidget(0, 0, btnNewButton);
+		
+		Slider slider = new Slider();
+		tab2.setWidget(0, 1, slider);
+		slider.setSize("286px", "");
+		slider.setPosition(5.);
+		
 		FlexTable tab3 = new FlexTable();
 		tabPanel.add(tab3, "Клиенты", false);
 		tab3.setSize("100%", "3cm");
@@ -293,26 +302,36 @@ public class FormMain extends Form {
 		FlexTable table = dialog.getContent();
 		table.setWidget(0,0,new Label("Наименование сделки"));
 		final TextBox tbBargainName = new TextBox();
-		tbBargainName.setWidth("300px");
+		tbBargainName.setWidth("200px");
 		table.setWidget(0, 1, tbBargainName);
 		tbBargainName.setName("bargainName");
 		tbBargainName.getElement().setAttribute("autocomplete", "on");
 
-		HorizontalPanel p = new HorizontalPanel();
-		table.setWidget(1, 0, p);
-		table.getFlexCellFormatter().setColSpan(1, 0, 2);		
-		p.setSpacing(10);
+		RadioButton rb1 = new RadioButton("status","Начать с продажи");
+		table.setWidget(1, 0, rb1);
 		table.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		RadioButton rb2 = new RadioButton("status","Осталось только исполнить");
+		table.setWidget(1, 1, rb2);
+		table.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		rb1.setValue(true);
 		
-		Button btnCancel = new Button("Отменить");
-		btnCancel.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				dialog.hide();
-			}
-		});
-		Button btnOk = new Button("Создать");
-		dialog.setButtonOk(btnOk);
-		btnOk.addClickHandler(new ClickHandler() {
+		table.setWidget(2, 0, new Label("Начать"));
+		table.setWidget(2, 1, new Label("Закончить"));
+		table.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		table.getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		
+		DateBox dbstart = new DateBox();
+		dbstart.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		dbstart.setValue(new Date());
+		table.setWidget(3, 0, dbstart);
+		table.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		DateBox dbfinish = new DateBox();
+		dbfinish.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		table.setWidget(3, 1, dbfinish);
+		table.getCellFormatter().setHorizontalAlignment(3, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		
+		dialog.getButtonOk().setText("Создать");
+		dialog.setButtonOkClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				dialog.resetErrors();
@@ -320,15 +339,24 @@ public class FormMain extends Form {
 					dialog.showError(1, "Наименование сделки не может быть пустым");
 					return;
 				}
-				BargainFlexTable tab = new BargainFlexTable(new BargainWrapper(tbBargainName.getText()));
-				tabPanel.add(tab,tab.getTitle());
-				tabPanel.getTabBar().selectTab(tabPanel.getTabBar().getTabCount()-1);
-				dialog.hide();
+				DatabaseServiceAsync db = getDataBaseService();
+				db.newBargain(tbBargainName.getText(), 1, new AsyncCallback<BargainWrapper>() {
+					@Override
+					public void onSuccess(BargainWrapper result) {
+						tabPanel.add(result);
+						tabPanel.selectBargain(result);
+						dialog.hide();
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+					}
+				});
+				dialog.cancel();
 			}
 		});
 			
-		p.add(btnOk);
-		p.add(btnCancel);
 		dialog.setFirstFocusedWidget(tbBargainName);
 		dialog.center();
 		
@@ -367,9 +395,11 @@ public class FormMain extends Form {
 		
 		startAttention();
 		startTotals();
+		startRecoveryEditBargain();
 		
 		tabPanel.getTabBar().selectTab(currentTabId);
 	}
+
 
 	public void selectTab(int numTab) {
 		if(numTab<tabPanel.getTabBar().getTabCount() && numTab>=0)
@@ -389,7 +419,7 @@ public class FormMain extends Form {
 			@Override
 			public void onSuccess(List<BargainWrapper> result) {
 				prepareGrid(tableAttention, result,false);
-				tableAttention.setRowCount(5);
+				tableAttention.setRowCount(result.size());
 			}
 			
 			@Override
@@ -399,6 +429,24 @@ public class FormMain extends Form {
 		});
 	}
 
+	private void startRecoveryEditBargain() {
+		DatabaseServiceAsync db = getDataBaseService();
+		db.getTemporalyBargains(new AsyncCallback<List<BargainWrapper>>() {
+			
+			@Override
+			public void onSuccess(List<BargainWrapper> result) {
+				for (BargainWrapper bw : result) {
+					tabPanel.add(bw);
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				// молчим
+			}
+		});
+	}
+	
 	private void startTotals() {
 		DatabaseServiceAsync db = getDataBaseService();
 		db.getTotals(new AsyncCallback<BargainTotals[]>() {

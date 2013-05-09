@@ -32,6 +32,8 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public Set<AgreedWrapper> agreeds = new HashSet<AgreedWrapper>(0);
 	
 	public Attention attention;
+	public boolean isnew;
+	private boolean dirty=false;
 	
 	public BargainWrapper(){
 		super();
@@ -47,7 +49,19 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 		return bargainId+". "+bargainName;
 	}
 	
+	public void modify() {
+		dirty = true;
+	}
+	
+	public void saveCompleted() {
+		dirty = false;
+	}
+	
 	public boolean isNew() {
-		return bargainId == 0;
+		return isnew;
+	}
+
+	public boolean isDirty() {
+		return dirty;
 	}
 }

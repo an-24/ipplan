@@ -17,6 +17,9 @@ package com.cantor.ipplan.server;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -41,6 +44,7 @@ import org.hibernate.transform.Transformers;
 
 import com.cantor.ipplan.client.DatabaseService;
 import com.cantor.ipplan.client.LoginService;
+import com.cantor.ipplan.core.IdGenerator;
 import com.cantor.ipplan.db.ud.Bargain;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.db.ud.Status;
@@ -69,7 +73,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		if(sessionFactory==null) {
 			String url = openOrCreateStore(u.puserDbname,u.puserEmail);
 			createSessionFactory(url);
-			int userId = makeUser(u.puserEmail);
+			int userId = makeUser(u);
 			HttpSession sess = this.getThreadLocalRequest().getSession();
 			sess.setAttribute("userId", userId);
 		}
@@ -156,7 +160,71 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		session.close();
     	}
 	}
+
+	@Override
+	public BargainWrapper newBargain(String name, int status) throws Exception {
+		Bargain b = newEmptyBargain(name,status);
+		addTempBargain(b);
+		BargainWrapper bw = b.toClient();
+		return bw;
+	}
+
+	@Override
+	public BargainWrapper newBargain(String name, int startStatus, Date start,
+			Date finish) throws Exception {
+		Bargain b = newEmptyBargain(name,startStatus);
+		b.setBargainStart(start);
+		b.setBargainFinish(finish);
+		addTempBargain(b);
+		BargainWrapper bw = b.toClient();
+		return bw;
+	}
+
+	@Override
+	public List<BargainWrapper> getTemporalyBargains() throws Exception {
+		HashMap<Integer, Bargain> bl = getTempBargains();
+		List<BargainWrapper> bwl = new ArrayList<BargainWrapper>();
+		for (Bargain b : bl.values()) {
+			bwl.add(b.toClient());
+		}
+		return bwl;
+	}
 	
+	private Bargain newEmptyBargain(String name, int status) {
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		Bargain b = new Bargain();
+    		b.setBargainCreated(new Date());
+    		b.setBargainName(name);
+    		b.setBargainHead(1);
+    		b.setPuser(new PUserIdent(getLoginUser()));
+    		b.setStatus((Status) session.load(Status.class,status));
+    		b.setBargainId(IdGenerator.generatorId(sessionFactory,session));
+    		b.fetch(true);
+    		b.setNew(true);
+    		b.setDirty(true);
+    		return b;
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	private void addTempBargain(Bargain b) {
+		HashMap<Integer, Bargain> bl =  getTempBargains();
+		bl.put(b.getId(),b);
+	}
+
+	private HashMap<Integer, Bargain> getTempBargains() {
+		HttpSession sess = this.getThreadLocalRequest().getSession();
+		HashMap<Integer, Bargain> bl =  (HashMap) sess.getAttribute("tmp_bargain_list");
+		if(bl==null) {
+			bl = new HashMap<Integer, Bargain>();
+			sess.setAttribute("tmp_bargain_list", bl);
+		}
+		return bl;
+	}
+
 	private PUserWrapper checkAccess(String sessId) throws Exception {
 		HttpSession sess = this.getThreadLocalRequest().getSession();
 		PUserWrapper u = getLoginUser();
@@ -244,21 +312,22 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		sess.setAttribute("loginUser",u);
 	}
 	
-	private int makeUser(String userEmail) throws Exception {
+	private int makeUser(PUserWrapper u) throws Exception {
 		SessionFactory sessionFactory = getSessionFactory();
 		// проверка наличия пользователя
     	Session session = sessionFactory.openSession();
     	try {
     		PUserIdent user;
     		Query q = session.createQuery("select u from PUserIdent u where u.puserLogin=:login");
-			q.setString("login", userEmail);
+			q.setString("login", u.puserEmail);
 			user =  (PUserIdent) q.uniqueResult();
     		if(user == null) {
     			// добавим
     			Transaction tx = session.beginTransaction();
     			try {
     				user = new PUserIdent();
-    				user.setPuserLogin(userEmail);
+    				user.setPuserLogin(u.puserEmail);
+    				user.setPuserTaxtype(u.puserTaxtype);
     				if(newDBFlag) user.setPuserId(PUserIdent.USER_ROOT_ID); else {
     					PUserIdent own = (PUserIdent) session.get(PUserIdent.class, PUserIdent.USER_ROOT_ID);
     					if(own==null) user.setPuserId(PUserIdent.USER_ROOT_ID); else user.setOwner(own);
@@ -311,6 +380,8 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		HttpSession sess = this.getThreadLocalRequest().getSession();
 		return (Integer) sess.getAttribute("userId");
 	}
+
+
 
 
 

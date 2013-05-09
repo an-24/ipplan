@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     05.05.2013 17:22:24                          */
+/* Created on:     06.05.2013 11:10:26                          */
 /*==============================================================*/
 
 
@@ -119,6 +119,7 @@ create table puser (
 puser_id             INTEGER                        not null,
 owner_puser_id       INTEGER,
 puser_login          VARCHAR(320)                   not null,
+puser_taxtype        INTEGER                        not null,
 constraint PK_PUSER primary key (puser_id)
 );
 

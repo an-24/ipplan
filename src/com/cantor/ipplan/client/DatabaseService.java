@@ -14,6 +14,7 @@
  *******************************************************************************/
 package com.cantor.ipplan.client;
 
+import java.util.Date;
 import java.util.List;
 
 import com.cantor.ipplan.shared.BargainTotals;
@@ -28,5 +29,8 @@ public interface DatabaseService extends RemoteService {
 	public PUserWrapper isLogged();
 	public List<BargainWrapper> attention() throws Exception;
 	public BargainTotals[] getTotals() throws Exception;
+	public BargainWrapper newBargain(String name, int startStatus) throws Exception;
+	public BargainWrapper newBargain(String name, int startStatus, Date start, Date finish) throws Exception;
+	public List<BargainWrapper> getTemporalyBargains() throws Exception;
 	
 }

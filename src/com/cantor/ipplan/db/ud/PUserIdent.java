@@ -18,8 +18,6 @@ import com.cantor.ipplan.core.IdGetter;
 import com.cantor.ipplan.shared.PUserWrapper;
 
 
-
-
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "PUSER")
@@ -32,8 +30,10 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	private int puserId;
 	private PUserIdent owner;
 	private String puserLogin;
+	private int puserTaxtype;
 
 	public PUserIdent() {
+		super();
 	}
 	
 	public PUserIdent(int puserId, PUserIdent owner, String puserLogin) {
@@ -43,6 +43,12 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		this.puserLogin = puserLogin;
 	}
 
+	public PUserIdent(PUserWrapper pattern) {
+		super();
+		fromClient(pattern);
+	}
+	
+	
 	@Id
 	@GenericGenerator(name="newRec", strategy="com.cantor.ipplan.core.IdGenerator")
 	@GeneratedValue(generator = "newRec")
@@ -74,6 +80,15 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		this.puserLogin = puserLogin;
 	}
 
+	@Column(name = "PUSER_TAXTYPE", nullable = false)
+	public int getPuserTaxtype() {
+		return puserTaxtype;
+	}
+
+	public void setPuserTaxtype(int puserTaxtype) {
+		this.puserTaxtype = puserTaxtype;
+	}
+	
 	@Transient
 	@Override
 	public int getId() {
@@ -85,14 +100,20 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		PUserWrapper wrap = new PUserWrapper();
 		wrap.puserId = puserId;
 		wrap.puserEmail = puserLogin;
+		wrap.puserTaxtype = puserTaxtype;
 		wrap.owner = owner==null?null:owner.toClient();
 		return wrap;
 	}
 
 	@Override
 	public void fromClient(PUserWrapper data) {
-		// TODO Auto-generated method stub
-		
+		puserId = data.puserId;
+		if(data.owner!=null) {
+			if(owner==null) owner = new PUserIdent();
+			owner.fromClient(data.owner); 
+		}
+		puserLogin = data.puserLogin;
+		puserTaxtype = data.puserTaxtype;
 	}
 
 	@Override

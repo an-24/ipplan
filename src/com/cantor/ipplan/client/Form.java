@@ -21,6 +21,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
@@ -78,6 +79,12 @@ public class Form extends Composite {
 	    dataProvider.addDataDisplay(grid);
 		dataProvider.getList().addAll(c);
 		if(sorting) setSortingColumns(grid, dataProvider.getList());
+		grid.setEmptyTableWidget(new Label("Записи отсутствуют"));
+		/*
+		display: table-cell;
+		vertical-align: middle;
+		height: 100px;
+		*/
 	}
 
 	public static <T> void setSortingColumns(AbstractCellTable<T> grid, List<T> list) {
@@ -160,6 +167,11 @@ public class Form extends Composite {
 	protected void lockControl() {
 	}
 
+	public void toast(Widget w, String message) {
+		Balloon b = new Balloon(message, true);
+		b.show(w);
+	}
+	
 	private void startLockControl() {
 		Timer t = new Timer() {
 	      public void run() {

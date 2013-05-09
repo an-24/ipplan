@@ -116,12 +116,15 @@ a:hover {
   cursor: default;
   color: #888;
 }
+
 .gwt-Button[disabled]:hover {
-  border: 1px outset #ccc;
+  border: 1px solid #D8DCDF;
+  background: url("images/ui-bg_highlight-hard_100_eeeeee_1x100.png") repeat-x scroll 50% 50% #EEEEEE;
 }
 
 .gwt-TextBox,
-.gwt-PasswordTextBox {
+.gwt-PasswordTextBox,
+.gwt-DateBox {
   padding: 5px 4px;
   border: 1px solid #D8DCDF;
   border-radius: 6px;
@@ -129,14 +132,20 @@ a:hover {
 }
 
 .gwt-TextBox:focus,
-.gwt-PasswordTextBox:focus {
+.gwt-PasswordTextBox:focus,
+.gwt-DateBox:focus {
   padding: 5px 4px;
   border: 1px solid #939393;
   border-radius: 6px;
   background-color: #f6f6f6;
 }
 
-.gwt-TextBox-readonly {
+.gwt-DateBox input {
+  width: 8em;
+}
+
+.gwt-TextBox-readonly,
+.gwt-DateBox-readonly {
   color: #888;
 }
 
@@ -144,20 +153,24 @@ a:hover {
   color: #111111;
 }
 
-.gwt-CheckBox {
+.gwt-CheckBox,
+.gwt-RadioButton {
   outline: none; 
 }
 
-.gwt-CheckBox label{
+.gwt-CheckBox label,
+.gwt-RadioButton label{
   color: #111111;
   cursor: pointer;
 }
 
-.gwt-CheckBox input{
+.gwt-CheckBox input,
+.gwt-RadioButton input{
   display:none;
 }
 
-.gwt-CheckBox label::before{
+.gwt-CheckBox label::before,
+.gwt-RadioButton label::before{
   content: "";
   display:inline-block;
   height:18px;
@@ -173,17 +186,29 @@ a:hover {
   background-position: -64px -144px;
 }
 
+.gwt-RadioButton label::before{
+  background:url(images/ui-icons_ffffff_256x240.png) no-repeat;
+  background-position: -79px -144px;
+}
+
 .gwt-CheckBox input:checked+label::before{
   background:url(images/ui-icons_cc0000_256x240.png) no-repeat;
   background-position: -64px -144px;
 }
 
-.gwt-CheckBox:focus label::before{
+.gwt-RadioButton input:checked+label::before{
+  background:url(images/ui-icons_cc0000_256x240.png) no-repeat;
+  background-position: -79px -144px;
+}
+
+.gwt-CheckBox:focus label::before,
+.gwt-RadioButton:focus label::before{
   background-color: #f6f6f6;
   border: 1px solid #939393;
 }
 
-.gwt-CheckBox-disabled {
+.gwt-CheckBox-disabled,
+.gwt-RadioButton-disabled {
   color: #888;
 }
 
@@ -275,6 +300,40 @@ a:hover {
   width: 12px;
   height: 12px;
   overflow: hidden;
+}
+
+
+.gwt-Slider{
+  padding: 2px;
+  border: 1px solid #D8DCDF;
+  border-radius: 6px;
+  background-color: white;
+}
+
+.gwt-Slider div{
+    position: relative;
+}
+
+.gwt-Slider a {
+    cursor: default;
+    height: 1em;
+    position: absolute;
+    width: 1em;
+    z-index: 2;
+    border: 1px solid #D3D3D3;
+    border-radius: 3px;
+    color: #555555;
+    font-weight: normal;
+    background: url("images/ui-bg_glass_55_fbf8ee_1x400.png") repeat-x scroll 50% 50% #E6E6E6;
+} 
+
+.gwt-Slider a:hover {
+    border: 1px solid #cc0000;
+}
+
+.gwt-Slider-Horizontal a {
+    margin-left: -0.5em;
+    margin-top: -0.6em;
 }
 
 
@@ -963,7 +1022,7 @@ a:hover {
 }
 
 .gwt-TabBar {
-  background-color: #cc0000;
+  background-color: #006699;
   padding-top: 6px;
 }
 .gwt-TabBar .gwt-TabBarFirst {
@@ -979,7 +1038,7 @@ a:hover {
   color: white;
   font-weight: normal;
   text-align: center;
-  background: #990000;
+  background: #004276;
   -moz-border-radius: 3px 3px 0px 0px;
   border-radius: 3px 3px 0px 0px;
 }
@@ -1191,15 +1250,6 @@ a:hover {
   margin-left: -4px;
 }
 
-.gwt-DateBox {
-  padding: 5px 4px;
-  border: 1px solid #ccc;
-  border-top: 1px solid #999;
-  font-size: 100%;
-}
-.gwt-DateBox input {
-  width: 8em;
-}
 .dateBoxFormatError {
   background: #ffcccc;
 }
