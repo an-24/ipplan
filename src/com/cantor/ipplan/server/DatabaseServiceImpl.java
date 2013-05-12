@@ -51,6 +51,7 @@ import com.cantor.ipplan.db.ud.Status;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.cantor.ipplan.shared.StatusWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -99,11 +100,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		// со статусом = 
     		hsq+="and (";
     		// все Приостановленные
-    		hsq+=" (b.status.statusId="+Status.SUSPENDED+")";
+    		hsq+=" (b.status.statusId="+StatusWrapper.SUSPENDED+")";
     		// за N дней, до финиша, если Выполнение
-    		hsq+=" or (b.status.statusId= "+Status.EXECUTION+" and b.bargainFinish-current_date<b.status.statusDayLimit)";
+    		hsq+=" or (b.status.statusId= "+StatusWrapper.EXECUTION+" and b.bargainFinish-current_date<b.status.statusDayLimit)";
     		// за N дней, до финиша, если Выполнение
-    		hsq+=" or (b.status.statusId= "+Status.COMPLETION+" and b.bargainFinish-current_date<b.status.statusDayLimit)";
+    		hsq+=" or (b.status.statusId= "+StatusWrapper.COMPLETION+" and b.bargainFinish-current_date<b.status.statusDayLimit)";
     		hsq+=")\n";
     		// самые близкие по плану
     		hsq+=" order by b.bargainFinish, b.bargainRevenue desc";
@@ -138,7 +139,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
     			  "from bargain b "+
     			  "where b.bargain_head=1 AND "+
-    			  "b.status_id in ("+Status.EXECUTION+','+Status.COMPLETION+','+Status.SUSPENDED+')';
+    			  "b.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+')';
     		if(usrid != PUserIdent.USER_ROOT_ID)
     			sql+=" AND b.puser.puserId="+usrid;
     		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
@@ -149,7 +150,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
       	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
       			  "from bargain b "+
       			  "where b.bargain_id=b.root_bargain_id AND "+
-      			  "b.status_id in ("+Status.EXECUTION+','+Status.COMPLETION+','+Status.SUSPENDED+')';
+      			  "b.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+')';
       		if(usrid != PUserIdent.USER_ROOT_ID)
       			sql+=" AND b.puser.puserId="+usrid;
       		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
@@ -351,23 +352,23 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 
 	private void makeDefaultStatuses(Session session, PUserIdent user) {
 		Status s;
-		s = new Status(Status.PRIMARY_CONTACT,user,"Первичный контакт",0);
+		s = new Status(StatusWrapper.PRIMARY_CONTACT,user,"Первичный контакт",0);
 		session.save(s);
-		s = new Status(Status.TALK,user,"Переговоры",0);
+		s = new Status(StatusWrapper.TALK,user,"Переговоры",0);
 		session.save(s);
-		s = new Status(Status.DECISION_MAKING,user,"Принимают решение",0);
+		s = new Status(StatusWrapper.DECISION_MAKING,user,"Принимают решение",0);
 		session.save(s);
-		s = new Status(Status.RECONCILIATION_AGREEMENT,user,"Согласование договора",0);
+		s = new Status(StatusWrapper.RECONCILIATION_AGREEMENT,user,"Согласование договора",0);
 		session.save(s);
-		s = new Status(Status.EXECUTION,user,"Исполнение",Bargain.EXECUTE_WARNING_DURATION_LIMIT);
+		s = new Status(StatusWrapper.EXECUTION,user,"Исполнение",Bargain.EXECUTE_WARNING_DURATION_LIMIT);
 		session.save(s);
-		s = new Status(Status.SUSPENDED,user,"Приостановлено для изменения условий",0);
+		s = new Status(StatusWrapper.SUSPENDED,user,"Приостановлено для изменения условий",0);
 		session.save(s);
-		s = new Status(Status.COMPLETION,user,"Завершение",Bargain.COMPLETION_WARNING_DURATION_LIMIT);
+		s = new Status(StatusWrapper.COMPLETION,user,"Завершение",Bargain.COMPLETION_WARNING_DURATION_LIMIT);
 		session.save(s);
-		s = new Status(Status.CLOSE_OK,user,"Закрыта успешно",0);
+		s = new Status(StatusWrapper.CLOSE_OK,user,"Закрыта успешно",0);
 		session.save(s);
-		s = new Status(Status.CLOSE_FAIL,user,"Закрыта без результата",0);
+		s = new Status(StatusWrapper.CLOSE_FAIL,user,"Закрыта без результата",0);
 		session.save(s);
 		
 	}

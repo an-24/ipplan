@@ -101,6 +101,16 @@ h1 {
 	border-collapse:collapse;
 }
 
+.link {
+	border-bottom: 1px dashed #004276;
+	text-decoration: none;	
+}
+
+.link:hover {
+	border-color: #cc0000;
+	color: #cc0000;
+}
+
 .linkcell div {
 	border-bottom: 1px dashed #004276;
 	text-decoration: none;	
@@ -129,4 +139,9 @@ h1 {
   padding: 10px 10px 10px 10px;
 }
 
-
+.FormBargain {
+  left: 50%;
+  margin-left: -300px;
+  position: relative;
+  width: 600px;
+}

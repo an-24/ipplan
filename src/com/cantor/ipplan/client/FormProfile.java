@@ -54,7 +54,7 @@ public class FormProfile extends Form {
 	private Button btnDelete;
 	private ListBox lbChildren;
 	private PUserWrapper user;
-	private ListBox cbTarif;
+	private ComboBox cbTarif;
 	private DataGrid<SyncWrapper> syncGrid;
 	private DataGrid<PaymentsWrapper> payGrid;
 
@@ -234,7 +234,7 @@ public class FormProfile extends Form {
 		Label l9 = new Label("Тарифный план");
 		Tabl1.setWidget(4, 0, l9);
 		
-		cbTarif = new ListBox();
+		cbTarif = new ComboBox();
 		cbTarif.setStyleName("gwt-ListBox");
 		cbTarif.addItem("Минимальный");
 		cbTarif.addItem("Стандартный");

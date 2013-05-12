@@ -1,5 +1,7 @@
 package com.cantor.ipplan.shared;
 
+import java.util.Date;
+
 public class Utils {
 
 	
@@ -33,5 +35,18 @@ public class Utils {
 	            return forms[2];
 	    }
 		return forms[0];
-	}	
+	}
+
+	static final long dayTime = 24 * 60 * 60 * 1000; // 24 h * 60 min * 60 s * 1000 millis
+	static final long weekTime = 7 * dayTime; 
+	
+	static public String getDuration(Date d1, Date d2) {
+		long duration = d2.getTime()-d1.getTime();
+		long wcount = duration/weekTime;
+		long dcount = (duration%weekTime)/dayTime;
+		String s = wcount+" "+getNumberPadeg(new String[]{"неделя","недели","недель"},(int)wcount);
+		if(dcount>0) 
+			s+=", "+dcount+" "+getNumberPadeg(new String[]{"день","дня","дней"},(int)dcount);
+		return s;
+	}
 }

@@ -40,7 +40,10 @@ input:focus{
 button:focus{
   outline: none; 
 }
-	
+
+select:focus {
+  outline: none; 
+}	
 
 /**
  * The reference theme can be used to determine when this style sheet has
@@ -122,9 +125,13 @@ a:hover {
   background: url("images/ui-bg_highlight-hard_100_eeeeee_1x100.png") repeat-x scroll 50% 50% #EEEEEE;
 }
 
+
 .gwt-TextBox,
 .gwt-PasswordTextBox,
-.gwt-DateBox {
+.gwt-DateBox,
+.gwt-TextArea,
+.gwt-DoubleBox,
+.gwt-CurrencyBox {
   padding: 5px 4px;
   border: 1px solid #D8DCDF;
   border-radius: 6px;
@@ -133,7 +140,10 @@ a:hover {
 
 .gwt-TextBox:focus,
 .gwt-PasswordTextBox:focus,
-.gwt-DateBox:focus {
+.gwt-DateBox:focus,
+.gwt-TextArea:focus,
+.gwt-DoubleBox:focus,
+.gwt-CurrencyBox:focus {
   padding: 5px 4px;
   border: 1px solid #939393;
   border-radius: 6px;
@@ -144,9 +154,96 @@ a:hover {
   width: 8em;
 }
 
+.gwt-CurrencyBox {
+  text-align:right;
+}
+
+.gwt-CurrencyBox:focus {
+  text-align:left;
+}
+
 .gwt-TextBox-readonly,
-.gwt-DateBox-readonly {
+.gwt-DateBox-readonly,
+.gwt-TextArea-readonly,
+.gwt-DoubleBox-readonly,
+.gwt-CurrencyBox-readonly {
   color: #888;
+}
+
+
+.gwt-ComboBox-inner {
+  background: transparent;
+  width:120%;
+  border:0;
+  padding:0;
+  outline: none;
+}
+
+.gwt-ComboBox-button {
+  border: 1px solid #D8DCDF;
+  border-radius: 6px 6px 6px 6px;
+  height: 20px;
+  margin: -10px -3px -10px auto;
+  position: relative;
+  top: 10px;
+  width: 20px;
+  z-index: 999;
+  background: url(images/ui-icons_cc0000_256x240.png) no-repeat -62px -14px;
+}
+
+.gwt-ComboBox-popup {
+  min-height: 20px;
+  max-height: 80px;
+  padding: 2px 0;
+  border: 1px solid #939393;
+  background-color: white;
+  overflow: hidden;
+  border-radius: 6px;
+  cursor:default;
+}
+
+.gwt-ComboBox-popup div {
+  outline: none; 
+}
+
+.gwt-ComboBox-item {
+  margin-top:2px;
+  margin-bottom:2px;
+  white-space: nowrap;
+  padding-left:8px;
+  padding-right:8px;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+}
+
+.gwt-ComboBox-item-selected {
+  background-color: #f6f6f6;
+  font-weight: bold;
+}
+
+.gwt-ComboBox-item:hover {
+  background-color: #f6f6f6;
+  color:#cc0000;
+}
+
+.gwt-ListBox,
+.gwt-ComboBox {
+  padding: 2px 5px;
+  border: 1px solid #D8DCDF;
+  border-radius: 6px;
+  background-color: white;
+  overflow: hidden;
+  outline: none;
+}
+
+
+.gwt-ListBox:focus,
+.gwt-ComboBox:focus {
+  padding: 2px 5px;
+  border: 1px solid #939393;
+  border-radius: 6px;
+  background-color: #f6f6f6;
+  overflow: hidden;
 }
 
 .gwt-Label {
@@ -337,6 +434,10 @@ a:hover {
 }
 
 
+.gwt-InputPrompt {
+    color: #999;
+}
+
 /* ipplan> ----------------------- */
 
 
@@ -463,9 +564,6 @@ a:hover {
 }
 
 .gwt-Image {
-}
-
-.gwt-ListBox {
 }
 
 .gwt-MenuBar {
@@ -1022,7 +1120,7 @@ a:hover {
 }
 
 .gwt-TabBar {
-  background-color: #006699;
+  background-color: #004276;
   padding-top: 6px;
 }
 .gwt-TabBar .gwt-TabBarFirst {
@@ -1038,7 +1136,7 @@ a:hover {
   color: white;
   font-weight: normal;
   text-align: center;
-  background: #004276;
+  background: #006699;
   -moz-border-radius: 3px 3px 0px 0px;
   border-radius: 3px 3px 0px 0px;
 }
@@ -1157,16 +1255,6 @@ a:hover {
   color: #999999;
 }
 
-.gwt-TextArea {
-  padding: 4px;
-  border: 1px solid #ccc;
-  border-top: 1px solid #666;
-  font-size: 100%;
-  font-family: Arial Unicode MS, Arial, sans-serif;
-}
-.gwt-TextArea-readonly {
-  color: #888;
-}
 
 .gwt-ToggleButton-up,
 .gwt-ToggleButton-up-hovering,

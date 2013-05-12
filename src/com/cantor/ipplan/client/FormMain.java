@@ -7,12 +7,14 @@ import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -21,6 +23,7 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -40,6 +43,9 @@ import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.cantor.ipplan.client.Slider;
+import com.cantor.ipplan.client.Slider.ChangeEvent;
+import com.google.gwt.user.client.ui.TextBoxBase;
+import com.google.gwt.user.client.ui.ValueBoxBase.TextAlignment;
 
 public class FormMain extends Form {
 	
@@ -90,6 +96,7 @@ public class FormMain extends Form {
 		
 		tabPanel = new MainTabPanel();
 		p0.add(tabPanel);
+		p0.setCellHorizontalAlignment(tabPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		tabPanel.setSize("100%", "564px");
 		tabPanel.setAnimationEnabled(true);
 		
@@ -100,7 +107,11 @@ public class FormMain extends Form {
 		Button btnNew = new Button("Создать новую сделку");
 		btnNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				addNew();
+				try {
+					addNew();
+				} catch (Exception e) {
+					Ipplan.error(e);
+				}
 			}
 		});
 		tab1.setWidget(0, 0, btnNew);
@@ -272,14 +283,6 @@ public class FormMain extends Form {
 		tabPanel.add(tab2, "Сделки", false);
 		tab2.setSize("100%", "3cm");
 		
-		Button btnNewButton = new Button("New button");
-		tab2.setWidget(0, 0, btnNewButton);
-		
-		Slider slider = new Slider();
-		tab2.setWidget(0, 1, slider);
-		slider.setSize("286px", "");
-		slider.setPosition(5.);
-		
 		FlexTable tab3 = new FlexTable();
 		tabPanel.add(tab3, "Клиенты", false);
 		tab3.setSize("100%", "3cm");
@@ -296,55 +299,117 @@ public class FormMain extends Form {
 		prepare();
 	}
 
-	protected void addNew() {
+	protected void addNew() throws Exception {
+		
+		Label l;
+		final long weekTime = 7 * 24 * 60 * 60 * 1000; // 7 d * 24 h * 60 min * 60 s * 1000 millis
 		
 		final Dialog dialog = new Dialog("Создание новой сделки");
 		FlexTable table = dialog.getContent();
-		table.setWidget(0,0,new Label("Наименование сделки"));
+		//table.setWidget(0,0,new Label("Наименование сделки"));
 		final TextBox tbBargainName = new TextBox();
-		tbBargainName.setWidth("200px");
-		table.setWidget(0, 1, tbBargainName);
+		final InputPrompt ipBargainName = new InputPrompt("Введите наименование сделки",tbBargainName);
+		tbBargainName.setWidth("400px");
+		table.setWidget(0, 0, tbBargainName);
 		tbBargainName.setName("bargainName");
 		tbBargainName.getElement().setAttribute("autocomplete", "on");
+		table.getFlexCellFormatter().setColSpan(0, 0, 2);
 
-		RadioButton rb1 = new RadioButton("status","Начать с продажи");
+		final RadioButton rb1 = new RadioButton("status","Начать с продажи");
 		table.setWidget(1, 0, rb1);
 		table.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		RadioButton rb2 = new RadioButton("status","Осталось только исполнить");
+		final RadioButton rb2 = new RadioButton("status","Осталось только исполнить");
 		table.setWidget(1, 1, rb2);
 		table.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
 		rb1.setValue(true);
+
+		VerticalPanel p1 = new VerticalPanel();
+		l = new Label("Начать");
+		p1.add(l);
+		l.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		final DateBox dbstart = new DateBox();
+		dbstart.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		dbstart.setValue(new Date());
+		p1.add(dbstart);
+		p1.setWidth("100%");
+		table.setWidget(2, 0, p1);
+		p1.setCellHorizontalAlignment(dbstart, HasHorizontalAlignment.ALIGN_CENTER);
+
 		
-		table.setWidget(2, 0, new Label("Начать"));
-		table.setWidget(2, 1, new Label("Закончить"));
+		VerticalPanel p2 = new VerticalPanel();
+		l = new Label("Закончить");
+		p2.add(l);
+		l.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		final DateBox dbfinish = new DateBox();
+		dbfinish.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		p2.add(dbfinish);
+		p2.setWidth("100%");
+		table.setWidget(2, 1, p2);
+		p2.setCellHorizontalAlignment(dbfinish, HasHorizontalAlignment.ALIGN_CENTER);
+		
 		table.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		table.getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_CENTER);
 		
-		DateBox dbstart = new DateBox();
-		dbstart.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
-		dbstart.setValue(new Date());
-		table.setWidget(3, 0, dbstart);
+		VerticalPanel p3 = new VerticalPanel();
+		p3.setSpacing(6);
+		Slider s = new Slider();
+		s.setWidth("300px");
+		s.setMin(1., "1 неделя");
+		s.setMax(12., "3 месяца");
+		s.setValues(new Double[]{2.0,3.0,4.0,5.,6.,7.,8.,9.,10.,11.}, 
+				    new String[]{"2 недели","3 недели","месяц", "1 месяц, 1 неделя","1 месяц, 2 недели","1 месяц, 3 недели", "2 месяца",
+							     "2 месяца, 1 неделя", "2 месяца, 2 недели", "2 месяца, 3 недели"});
+		final Label lduration = new Label("");
+		p3.add(lduration);
+		lduration.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		s.setChangePositionEvent(new ChangeEvent() {
+			@Override
+			public void onChangePosition(double value, String label) {
+				lduration.setText(label);
+				Date start = dbstart.getValue();
+				dbfinish.setValue(new Date(start.getTime()+Math.round(value)*weekTime));
+			}
+
+			@Override
+			public void onDragPosition(double value, String label) {
+				lduration.setText(label);
+			}
+		});
+		s.setPosition(s.getMin()+2);
+		p3.add(s);
+		p3.setCellHorizontalAlignment(s, HasHorizontalAlignment.ALIGN_CENTER);
+		table.setWidget(3, 0, p3);
+		table.getFlexCellFormatter().setColSpan(3, 0, 2);
 		table.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		DateBox dbfinish = new DateBox();
-		dbfinish.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
-		table.setWidget(3, 1, dbfinish);
-		table.getCellFormatter().setHorizontalAlignment(3, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		table.getCellFormatter().getElement(3, 0).getStyle().setPaddingTop(0, Unit.PX);
+		table.getCellFormatter().getElement(2, 0).getStyle().setPaddingBottom(0, Unit.PX);
+		table.getCellFormatter().getElement(2, 1).getStyle().setPaddingBottom(0, Unit.PX);
+		
 		
 		dialog.getButtonOk().setText("Создать");
 		dialog.setButtonOkClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				dialog.cancel();
 				dialog.resetErrors();
-				if(tbBargainName.getText().isEmpty()) {
+				if(ipBargainName.isEmpty()) {
 					dialog.showError(1, "Наименование сделки не может быть пустым");
 					return;
 				}
+				if(dbstart.getValue().after(dbfinish.getValue())) {
+					dialog.showError(3, "Дата начала должна быть меньше даты окончания");
+					return;
+				}
+				
 				DatabaseServiceAsync db = getDataBaseService();
-				db.newBargain(tbBargainName.getText(), 1, new AsyncCallback<BargainWrapper>() {
+				db.newBargain(tbBargainName.getText(), rb1.getValue()?StatusWrapper.PRIMARY_CONTACT:StatusWrapper.EXECUTION,
+						dbstart.getValue(),dbfinish.getValue(),
+					new AsyncCallback<BargainWrapper>() {
 					@Override
 					public void onSuccess(BargainWrapper result) {
-						tabPanel.add(result);
+						BargainFlexTable bft = tabPanel.add(result);
 						tabPanel.selectBargain(result);
+						bft.setMode(BargainFlexTable.EDIT_MODE);
 						dialog.hide();
 					}
 					
@@ -353,7 +418,6 @@ public class FormMain extends Form {
 						Ipplan.showError(caught);
 					}
 				});
-				dialog.cancel();
 			}
 		});
 			
@@ -436,7 +500,9 @@ public class FormMain extends Form {
 			@Override
 			public void onSuccess(List<BargainWrapper> result) {
 				for (BargainWrapper bw : result) {
-					tabPanel.add(bw);
+					BargainFlexTable bft = tabPanel.add(bw);
+					if(bw.isDirty()) 
+						bft.setMode(BargainFlexTable.EDIT_MODE);
 				}
 			}
 			

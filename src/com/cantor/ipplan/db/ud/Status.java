@@ -28,16 +28,6 @@ import com.cantor.ipplan.shared.StatusWrapper;
 @Table(name = "STATUS")
 public class Status implements java.io.Serializable,IdGetter,DataBridge<StatusWrapper> {
 
-	public static final int PRIMARY_CONTACT = 1;
-	public static final int TALK = 10;
-	public static final int DECISION_MAKING = 20;
-	public static final int RECONCILIATION_AGREEMENT = 30;
-	public static final int EXECUTION = 40;
-	public static final int SUSPENDED = 50;
-	public static final int COMPLETION = 60;
-	public static final int CLOSE_OK = 100;
-	public static final int CLOSE_FAIL = 99;
-	
 	private int statusId;
 	private PUserIdent puser;
 	private String statusName;

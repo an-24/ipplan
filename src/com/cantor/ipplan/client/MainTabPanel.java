@@ -6,9 +6,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class MainTabPanel extends TabPanel {
 	
-	public void add(BargainWrapper bw) {
+	public BargainFlexTable add(BargainWrapper bw) {
 		BargainFlexTable bft = new BargainFlexTable(bw);
 		super.add(bft,bft.getTitle());
+		return bft;
 	}
 
 	public void selectBargain(int bargainId) {
