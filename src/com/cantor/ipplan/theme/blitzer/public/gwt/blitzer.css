@@ -13,7 +13,7 @@
  */
 
 body, table td, select, button {
-  font-family: Arial Unicode MS, Arial, sans-serif;
+  font-family: Calibri,'Arial Unicode MS', Arial, sans-serif;
   font-size: small;
 }
 pre {
@@ -131,7 +131,8 @@ a:hover {
 .gwt-DateBox,
 .gwt-TextArea,
 .gwt-DoubleBox,
-.gwt-CurrencyBox {
+.gwt-CurrencyBox,
+.gwt-SuggestBox {
   padding: 5px 4px;
   border: 1px solid #D8DCDF;
   border-radius: 6px;
@@ -143,7 +144,8 @@ a:hover {
 .gwt-DateBox:focus,
 .gwt-TextArea:focus,
 .gwt-DoubleBox:focus,
-.gwt-CurrencyBox:focus {
+.gwt-CurrencyBox:focus,
+.gwt-SuggestBox:focus {
   padding: 5px 4px;
   border: 1px solid #939393;
   border-radius: 6px;
@@ -166,7 +168,8 @@ a:hover {
 .gwt-DateBox-readonly,
 .gwt-TextArea-readonly,
 .gwt-DoubleBox-readonly,
-.gwt-CurrencyBox-readonly {
+.gwt-CurrencyBox-readonly,
+.gwt-SuggestBox-readonly {
   color: #888;
 }
 
@@ -185,7 +188,7 @@ a:hover {
   height: 20px;
   margin: -10px -3px -10px auto;
   position: relative;
-  top: 10px;
+  top: 0.9em;
   width: 20px;
   z-index: 999;
   background: url(images/ui-icons_cc0000_256x240.png) no-repeat -62px -14px;
@@ -318,7 +321,6 @@ a:hover {
   color:white;
   padding: 6px 10px;
   cursor: default;
-  font-family: Arial Unicode MS, Arial, sans-serif;
   font-weight: bold;
   border-radius:6px;
   margin:4px;
@@ -571,7 +573,6 @@ a:hover {
 }
 .gwt-MenuBar .gwt-MenuItem {
   cursor: default;
-  font-family: Arial Unicode MS, Arial, sans-serif;
 }
 .gwt-MenuBar .gwt-MenuItem-selected {
   background: #E3E8F3;
@@ -1007,14 +1008,6 @@ a:hover {
 .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItemTopLeft,
 .gwt-DecoratedStackPanel .gwt-StackPanelItem-below-selected .stackItemTopRight {
   background-color: white;
-}
-
-.gwt-SuggestBox {
-  padding: 5px 4px;
-  border: 1px solid #ccc;
-  border-top: 1px solid #999;
-  font-size: 100%;
-  font-family: Arial Unicode MS, Arial, sans-serif;
 }
 
 .gwt-SuggestBoxPopup {

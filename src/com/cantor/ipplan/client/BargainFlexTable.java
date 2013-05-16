@@ -37,7 +37,7 @@ public class BargainFlexTable extends FlexTable implements ValueChangeHandler{
 	private DateBox dbFinish;
 	private Label lAttention;
 	private InlineHTML eStatus;
-	private InlineHTML eCustomer;
+	private CustomerBox eCustomer;
 	
 	private int mode = EDIT_VIEW;
 	private CurrencyBox eRevenue;
@@ -131,21 +131,17 @@ public class BargainFlexTable extends FlexTable implements ValueChangeHandler{
 		l = new Label("Заказчик:");
 		setWidget(4, 0, l);
 		getCellFormatter().setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		getCellFormatter().setVerticalAlignment(4, 0, HasVerticalAlignment.ALIGN_TOP);
+		getCellFormatter().setVerticalAlignment(4, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		eCustomer = new InlineHTML("Исполнение");
-		eCustomer.setStyleName("link");
+		eCustomer = new CustomerBox();
 		setWidget(4, 1, eCustomer);
-		getCellFormatter().setVerticalAlignment(4, 1, HasVerticalAlignment.ALIGN_TOP);
-		if(bargain.customer == null) eCustomer.setText("<необходимо определить>"); 
-							    else eCustomer.setText(bargain.customer.customerName);
+		getCellFormatter().setVerticalAlignment(4, 1, HasVerticalAlignment.ALIGN_MIDDLE);
+		getFlexCellFormatter().setColSpan(4, 1, 2);
+		eCustomer.setCustomer(bargain.customer);
+		eCustomer.getElement().setAttribute("placeholder", "введите имя клиента");
+		eCustomer.setWidth("415px");
+		getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_RIGHT);
 			
-		eCustomer.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if(mode==EDIT_MODE) showCustomer();
-			}
-		});
 		getCellFormatter().setHeight(4,0,"36px");
 		
 		getCellFormatter().setStyleName(5, 0, "grayBorder");

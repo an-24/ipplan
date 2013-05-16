@@ -2,6 +2,8 @@ package com.cantor.ipplan.client;
 
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 
 public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 
@@ -16,8 +18,8 @@ public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 	}
 
 	private void setKeyEvents() {
+		DOM.sinkEvents(getElement(), Event.ONKEYDOWN);
 		addKeyDownHandler(new KeyDownHandler() {
-			
 			@Override
 			public void onKeyDown(KeyDownEvent event) {
 				if(event.getNativeKeyCode() == 32) 
