@@ -103,6 +103,14 @@ public class Dialog extends DialogBox {
 		return buttonCancel;
 	}
 
+	public void setButtonCancel(Button buttonCancel) {
+		this.buttonCancel = buttonCancel;
+	}
+
+	public void setButtonOk(Button buttonOk) {
+		this.buttonOk = buttonOk;
+	}
+
 	public void setButtonCancelHandler(ClickHandler handler) {
 		this.cancelHandler = handler;
 	}

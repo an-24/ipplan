@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -18,4 +19,13 @@ public interface DatabaseServiceAsync {
 	void newBargain(String name, int startStatus, Date start, Date finish,
 			AsyncCallback<BargainWrapper> callback);
 	void getTemporalyBargains(AsyncCallback<List<BargainWrapper>> callback);
+	void editBargain(int id, AsyncCallback<BargainWrapper> callback);
+	void deleteBargain(int id, AsyncCallback<Boolean> callback);
+	void dropTemporalyBargain(int id, AsyncCallback<Void> callback);
+	void saveBargain(BargainWrapper bargain, boolean drop,
+			AsyncCallback<Void> callback);
+	void saveTemporalyBargain(BargainWrapper bargain,
+			AsyncCallback<Void> callback);
+	void findCustomer(String query,
+			AsyncCallback<List<CustomerWrapper>> callback);
 }

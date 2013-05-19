@@ -235,7 +235,6 @@ public class FormProfile extends Form {
 		Tabl1.setWidget(4, 0, l9);
 		
 		cbTarif = new ComboBox();
-		cbTarif.setStyleName("gwt-ListBox");
 		cbTarif.addItem("Минимальный");
 		cbTarif.addItem("Стандартный");
 		cbTarif.setSelectedIndex(user.puserTarif);

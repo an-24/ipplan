@@ -313,10 +313,10 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,
 		BargainWrapper wrap = new BargainWrapper();
 		wrap.bargainId = bargainId;
 		wrap.bargainName = bargainName;
-		//wrap.contract;
+		//TODO wrap.contract; 
 		wrap.customer = customer==null?null:customer.toClient();
 		wrap.puser = puser.toClient();
-		//wrap.bargain;
+		//TODO wrap.bargain;
 		wrap.status = status.toClient();
 		wrap.bargainVer =  bargainVer;
 		wrap.bargainStart = bargainStart;
@@ -337,9 +337,31 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,
 	}
 
 	@Override
-	public void fromClient(BargainWrapper data) {
-		// TODO Auto-generated method stub
+	public void fromClient(BargainWrapper wrap) {
+		bargainId = wrap.bargainId;
+		bargainName = wrap.bargainName;
+		//TODO wrap.contract; 
+		if(wrap.customer==null) customer = null; else {
+			customer = new Customer();
+			customer.fromClient(wrap.customer);
+		}
+		puser.fromClient(wrap.puser);
+		//TODO wrap.bargain;
+		status.fromClient(wrap.status);
+		bargainVer =  wrap.bargainVer;
+		bargainStart = wrap.bargainStart;
+		bargainFinish = wrap.bargainFinish;
+		bargainRevenue = wrap.bargainRevenue;
+		bargainPrepayment = wrap.bargainPrepayment;
+		bargainCosts = wrap.bargainCosts;
+		bargainPaymentCosts = wrap.bargainPaymentCosts;
+		bargainFine = wrap.bargainFine;
+		bargainTax = wrap.bargainTax;
+		bargainHead = wrap.bargainHead;
+		bargainCreated = wrap.bargainCreated;
 		
+		newState = wrap.isnew;
+		dirty = wrap.isDirty(); 
 	}
 
 	@Override

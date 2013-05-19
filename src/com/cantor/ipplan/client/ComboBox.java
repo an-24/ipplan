@@ -88,6 +88,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 */
 	public ComboBox() {
 		this(false);
+		setStyleName("gwt-ComboBox");
 	}
 
 	/**

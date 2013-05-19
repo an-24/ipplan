@@ -64,4 +64,58 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public boolean isDirty() {
 		return dirty;
 	}
+
+	public int getProfit() {
+		int v = bargainRevenue!=null?bargainRevenue:0; 
+		v-= (bargainCosts!=null?bargainCosts:0);
+		v-= (bargainFine!=null?bargainFine:0);
+		v-= (bargainTax!=null?bargainTax:0);
+		return v;   
+	}
+
+	public int getMargin() {
+		int v = bargainRevenue!=null?bargainRevenue:0; 
+		v-= (bargainCosts!=null?bargainCosts:0);
+		return v;
+	}
+
+	public int calcTax() {
+		//6% от дохода
+		if(puser.puserTaxtype==1) return ((Long)Math.round(0.06*bargainRevenue)).intValue(); else
+			if(puser.puserTaxtype==2) 
+				return ((Long)Math.max(Math.round(0.15*getMargin()), Math.round(0.01*bargainRevenue))).intValue();
+		return 0;
+	}
+
+	static final int MILLISSECOND_PER_DAY = 24 * 60 * 60 * 1000;
+	
+	public Attention calcAttention() {
+		Attention at = new Attention();
+		int daycount;
+		switch (status.statusId ) {
+		case StatusWrapper.COMPLETION:
+		case StatusWrapper.EXECUTION:
+			daycount = (int) ((bargainFinish.getTime()-new Date().getTime())/MILLISSECOND_PER_DAY);
+			if(daycount<0) {
+				at.type = 3;
+				at.message = "Срок истек "+(-daycount)+" дн. назад"; 
+				return at;
+			} else 
+			if (daycount<5){
+				at.type = 2;
+				at.message = "Осталось "+daycount+" дн.";
+				return at;
+			}
+			break;
+		default:
+			daycount = (int) ((bargainFinish.getTime()-new Date().getTime())/MILLISSECOND_PER_DAY);
+			if(daycount<0) {
+				at.type = 3;
+				at.message = "Срок истек "+(-daycount)+" дн. назад"; 
+				return at;
+			}; 
+		}
+		return null;
+	}
+	
 }

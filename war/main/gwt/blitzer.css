@@ -186,12 +186,18 @@ a:hover {
   border: 1px solid #D8DCDF;
   border-radius: 6px 6px 6px 6px;
   height: 20px;
-  margin: -10px -3px -10px auto;
+  margin: -1px -4px -22px auto;
   position: relative;
-  top: 0.9em;
+  top: 50%;
   width: 20px;
   z-index: 999;
   background: url(images/ui-icons_cc0000_256x240.png) no-repeat -62px -14px;
+}
+
+@-moz-document url-prefix() {
+.gwt-ComboBox-button {
+ margin: -1px -4px -18px auto;
+}
 }
 
 .gwt-ComboBox-popup {
@@ -247,6 +253,10 @@ a:hover {
   border-radius: 6px;
   background-color: #f6f6f6;
   overflow: hidden;
+}
+
+.gwt-ComboBox:focus select {
+  background-color: #f6f6f6;
 }
 
 .gwt-Label {
@@ -314,6 +324,7 @@ a:hover {
 
 .gwt-DialogBox {
   width: 400px;
+  z-index:999;
 }
 
 .gwt-DialogBox .Caption {
@@ -1120,7 +1131,25 @@ a:hover {
   width: 5px;  /* first tab distance from the left */
 }
 .gwt-TabBar .gwt-TabBarRest {
-}                  
+}            
+
+.gwt-TabBarItem-CloseBtn {
+    display: inline-block;
+    height: 16px;
+    position: relative;
+    vertical-align: middle;
+    width: 16px;
+    margin-left: 5px;
+}
+
+.gwt-TabBarItem-CloseBtn {
+    background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -96px -129px transparent;
+}
+
+.gwt-TabBarItem-CloseBtn:hover {
+    background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -96px -129px transparent;
+}
+      
 .gwt-TabBar .gwt-TabBarItem {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;

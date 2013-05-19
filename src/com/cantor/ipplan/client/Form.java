@@ -152,7 +152,7 @@ public class Form extends Composite {
 	    for (int row = 0; row < table.getRowCount(); row++) {
 	      for (int col = 0; col < table.getCellCount(row); col++) {
 	        Widget w = table.getWidget(row, col);
-	        if (w instanceof FocusWidget ) {
+	        if (w instanceof FocusWidget && ((FocusWidget) w).isEnabled()) {
 	          return (FocusWidget) w;
 	        }
 	      }
@@ -167,7 +167,7 @@ public class Form extends Composite {
 	protected void lockControl() {
 	}
 
-	public void toast(Widget w, String message) {
+	static public void toast(Widget w, String message) {
 		Balloon b = new Balloon(message, true);
 		b.show(w);
 	}

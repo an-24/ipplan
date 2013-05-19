@@ -51,6 +51,15 @@ h1 {
 .rpad10 {
   padding-right:10px;
 }
+
+.bpad10 {
+  padding-bottom:10px;
+}
+
+.tpad10 {
+  padding-top:10px;
+}
+
 .bold-text {
 	font-weight: bold;
 }
@@ -144,3 +153,79 @@ h1 {
   position: relative;
   width: 600px;
 }
+
+.gwt-CurrencyLabel {
+	display:block;
+	text-align: right;
+	padding: 5px 4px;
+	border: 1px solid #D8DCDF;
+	border-radius: 6px;
+	background-color: #FFFAFA;
+}
+
+.errorHint {
+    border: 1px solid red;
+    border-radius: 10px;
+    color: red;
+    font-weight: normal;
+    margin: 10px;
+    padding: 5px;
+    position: relative;
+}
+
+.errorHint:before {
+    border-color: red transparent;
+    border-style: solid;
+    border-width: 0 10px 11px;
+    bottom: 21px;
+    content: "";
+    display: block;
+    height: 0;
+    left: 50%;
+    position: absolute;
+    top: -11px;
+    width: 0; 
+}
+
+.errorHint:after {
+    border-color: #FFFAFA transparent;
+    border-style: solid;
+    border-width: 0 10px 10px;
+    bottom: 21px;
+    content: "";
+    display: block;
+    height: 0;
+    left: 50%;
+    position: absolute;
+    top: -10px;
+    width: 0; 
+}
+
+.mainCommand {
+    padding:10px  !important;
+    font-weight: bold !important;
+}
+
+.gwt-CustomerBox {
+    border:0px none;
+}
+
+.gwt-SuggestBox div {
+    width:20px;
+    height:20px;
+    float: right;
+}
+
+.Customer-bind {
+    font-weight: bold;
+}
+
+.Customer-bind+div {
+    background: url("main/gwt/images/ui-icons_cc0000_256x240.png") no-repeat scroll -30px -191px transparent;
+}
+
+.Customer-add+div {
+    background: url("main/gwt/images/ui-icons_cc0000_256x240.png") no-repeat scroll 5px -191px transparent;
+}
+
+

@@ -105,6 +105,7 @@ public class FormMain extends Form {
 		tab1.setSize("100%", "3cm");
 		
 		Button btnNew = new Button("Создать новую сделку");
+		btnNew.addStyleName("mainCommand");
 		btnNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				try {
@@ -308,7 +309,7 @@ public class FormMain extends Form {
 		FlexTable table = dialog.getContent();
 		//table.setWidget(0,0,new Label("Наименование сделки"));
 		final TextBox tbBargainName = new TextBox();
-		final InputPrompt ipBargainName = new InputPrompt("Введите наименование сделки",tbBargainName);
+		tbBargainName.getElement().setAttribute("placeholder", "Введите наименование сделки");
 		tbBargainName.setWidth("400px");
 		table.setWidget(0, 0, tbBargainName);
 		tbBargainName.setName("bargainName");
@@ -392,7 +393,7 @@ public class FormMain extends Form {
 			public void onClick(ClickEvent event) {
 				dialog.cancel();
 				dialog.resetErrors();
-				if(ipBargainName.isEmpty()) {
+				if(tbBargainName.getText().isEmpty()) {
 					dialog.showError(1, "Наименование сделки не может быть пустым");
 					return;
 				}
@@ -407,9 +408,9 @@ public class FormMain extends Form {
 					new AsyncCallback<BargainWrapper>() {
 					@Override
 					public void onSuccess(BargainWrapper result) {
-						BargainFlexTable bft = tabPanel.add(result);
+						FormBargain bft = tabPanel.add(result);
 						tabPanel.selectBargain(result);
-						bft.setMode(BargainFlexTable.EDIT_MODE);
+						bft.setMode(FormBargain.EDIT_MODE);
 						dialog.hide();
 					}
 					
@@ -500,9 +501,9 @@ public class FormMain extends Form {
 			@Override
 			public void onSuccess(List<BargainWrapper> result) {
 				for (BargainWrapper bw : result) {
-					BargainFlexTable bft = tabPanel.add(bw);
+					FormBargain bft = tabPanel.add(bw);
 					if(bw.isDirty()) 
-						bft.setMode(BargainFlexTable.EDIT_MODE);
+						bft.setMode(FormBargain.EDIT_MODE);
 				}
 			}
 			

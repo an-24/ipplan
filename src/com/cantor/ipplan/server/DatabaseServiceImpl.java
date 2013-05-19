@@ -19,7 +19,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -28,28 +27,25 @@ import org.firebirdsql.gds.impl.GDSType;
 import org.firebirdsql.management.BackupManager;
 import org.firebirdsql.management.FBBackupManager;
 import org.hibernate.Query;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.internal.SessionFactoryImpl;
-import org.hibernate.service.Service;
 import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.hibernate.transform.Transformers;
 
 import com.cantor.ipplan.client.DatabaseService;
 import com.cantor.ipplan.client.LoginService;
 import com.cantor.ipplan.core.IdGenerator;
 import com.cantor.ipplan.db.ud.Bargain;
+import com.cantor.ipplan.db.ud.Customer;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.db.ud.Status;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
@@ -89,6 +85,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 
 	@Override
 	public List<BargainWrapper> attention() throws Exception {
+		checkAccess();
 		SessionFactory sessionFactory = getSessionFactory();
 		List<BargainWrapper> list = new ArrayList<BargainWrapper>();
     	Session session = sessionFactory.openSession();
@@ -126,6 +123,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 
 	@Override
 	public BargainTotals[] getTotals() throws Exception {
+		checkAccess();
 		BargainTotals b,bold;
 		SessionFactory sessionFactory = getSessionFactory();
     	Session session = sessionFactory.openSession();
@@ -164,8 +162,9 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 
 	@Override
 	public BargainWrapper newBargain(String name, int status) throws Exception {
+		checkAccess();
 		Bargain b = newEmptyBargain(name,status);
-		addTempBargain(b);
+		putTempBargain(b);
 		BargainWrapper bw = b.toClient();
 		return bw;
 	}
@@ -173,22 +172,82 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	@Override
 	public BargainWrapper newBargain(String name, int startStatus, Date start,
 			Date finish) throws Exception {
+		checkAccess();
 		Bargain b = newEmptyBargain(name,startStatus);
 		b.setBargainStart(start);
 		b.setBargainFinish(finish);
-		addTempBargain(b);
+		putTempBargain(b);
 		BargainWrapper bw = b.toClient();
 		return bw;
 	}
 
 	@Override
 	public List<BargainWrapper> getTemporalyBargains() throws Exception {
+		checkAccess();
 		HashMap<Integer, Bargain> bl = getTempBargains();
 		List<BargainWrapper> bwl = new ArrayList<BargainWrapper>();
 		for (Bargain b : bl.values()) {
 			bwl.add(b.toClient());
 		}
 		return bwl;
+	}
+	@Override
+	public BargainWrapper editBargain(int id) throws Exception {
+		checkAccess();
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean deleteBargain(int id) throws Exception {
+		checkAccess();
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void dropTemporalyBargain(int id) {
+		HashMap<Integer, Bargain> bl =  getTempBargains();
+		bl.remove(id);
+	}
+
+	@Override
+	public void saveTemporalyBargain(BargainWrapper bw) throws Exception {
+		checkAccess();
+		Bargain b = new Bargain();
+		b.fromClient(bw);
+		putTempBargain(b);
+	}
+
+	@Override
+	public void saveBargain(BargainWrapper bargain, boolean drop)
+			throws Exception {
+		checkAccess();
+		// TODO Auto-generated method stub
+		
+		if(drop)
+			dropTemporalyBargain(bargain.bargainId);
+	}
+
+	@Override
+	public List<CustomerWrapper> findCustomer(String query) {
+		List<CustomerWrapper> list = new ArrayList<CustomerWrapper>();
+		if(isLogged()==null) return list;
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+      		String sql = "select C.customer_id \"CustomerId\", C.customer_name \"CustomerName\"," +
+      				     "       C.customer_lookup_key \"CustomerLookupKey\" from customer C where ";
+      		sql+="UPPER(C.customer_name) like :q";
+			Query q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(Customer.class));
+			q.setParameter("q", "%"+query.toUpperCase()+"%");
+			List<Customer> lc = q.list();
+			for (Customer customer : lc) 
+				list.add(customer.toClient());
+    		return list;
+    	} finally {
+    		session.close();
+    	}
 	}
 	
 	private Bargain newEmptyBargain(String name, int status) {
@@ -211,7 +270,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	}
 	}
 
-	private void addTempBargain(Bargain b) {
+	private void putTempBargain(Bargain b) {
 		HashMap<Integer, Bargain> bl =  getTempBargains();
 		bl.put(b.getId(),b);
 	}
@@ -239,6 +298,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			setLoginUser(u);
 		};
 		return u;
+	}
+	
+	private void checkAccess() throws Exception {
+		if(isLogged()==null)
+			throw new Exception("Доступ запрещен");
 	}
 
 
@@ -381,6 +445,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		HttpSession sess = this.getThreadLocalRequest().getSession();
 		return (Integer) sess.getAttribute("userId");
 	}
+
 
 
 

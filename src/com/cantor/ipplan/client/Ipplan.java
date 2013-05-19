@@ -2,6 +2,7 @@ package com.cantor.ipplan.client;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +12,8 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
@@ -19,7 +22,9 @@ import com.google.gwt.user.client.rpc.StatusCodeException;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -28,6 +33,7 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	private static Logger rootLogger = Logger.getLogger("iPPlan");
 	static String INIT_TOKEN = "";
     protected static Map<String, Class> tokenForms = new HashMap<String, Class>();
+	private static Stack<Dialog> activeDialogs = new Stack<Dialog>();
 	
     public Ipplan() {
     	super();
@@ -86,10 +92,10 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		return RootPanel.get("formContainer");
 	}
 
-	private static DialogBox configEventBox(String errtext) {
+	private static Dialog configEventBox(String errtext) {
 		Button closeButton = null;
 		Label textToServerLabel = null;
-		final DialogBox eventBox = new Dialog("Сообщение сервера",true);
+		final Dialog eventBox = new Dialog("Сообщение сервера",true);
 		closeButton = new Button("Закрыть");
 		closeButton.getElement().setId("closeButton");
 
@@ -123,6 +129,42 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		return eventBox;
 		
 	}
+
+	
+	private static Dialog configSaveConfirmationBox(String text,ClickHandler ok,ClickHandler withoutSave) {
+		final Dialog eventBox = new Dialog("Требуется подтверждение",true);
+		VerticalPanel dialogVPanel = new VerticalPanel();
+		dialogVPanel.setWidth("300px");
+		dialogVPanel.setSpacing(5);
+		dialogVPanel.addStyleName("dialogVPanel");
+		dialogVPanel.add(new HTML(text));
+		dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
+		hp.setSpacing(5);
+		
+		dialogVPanel.add(hp);
+		Button cancelButton = new Button("Отмена");
+		eventBox.setButtonCancel(cancelButton);
+		eventBox.setWidget(dialogVPanel);
+		
+		Button withoutSaveButton = new Button("Не сохранять");
+		withoutSaveButton.addClickHandler(withoutSave);
+		
+		Button okButton = new Button("Сохранить");
+		okButton.addClickHandler(ok);
+
+		hp.add(okButton);
+		hp.add(withoutSaveButton);
+		hp.add(cancelButton);
+		
+		cancelButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				eventBox.hide();
+			}
+		});
+		return eventBox;
+	}
 	
 	public static void showError(Throwable e) {
 		String s = e.getMessage();
@@ -130,8 +172,32 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 			int code = ((StatusCodeException) e).getStatusCode();
 			s = "Ошибка сети. Код "+code+":"+HttpStatusText.get(code);
 		};	
-		DialogBox eventBox = configEventBox(s);
-		eventBox.center();
+		Dialog box = configEventBox(s);
+		activeDialogs.push(box);
+		box.addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				activeDialogs.pop();
+			}
+		});
+		box.center();
+	}
+	
+	public static Dialog showSaveConfirmation(String text, ClickHandler ok,ClickHandler withoutSave) {
+		Dialog box = configSaveConfirmationBox(text,ok,withoutSave);
+		activeDialogs.push(box);
+		box.addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				activeDialogs.pop();
+			}
+		});
+		box.center();
+		return box;
+	}
+
+	public static DialogBox getActiveDialog() {
+		return activeDialogs.peek();
 	}
 
 
