@@ -106,8 +106,11 @@ public class Status implements java.io.Serializable,IdGetter,DataBridge<StatusWr
 
 	@Override
 	public void fromClient(StatusWrapper data) {
-		// TODO Auto-generated method stub
-		
+		statusId = data.statusId;
+		statusName = data.statusName;
+		statusDayLimit = data.statusDayLimit;
+		puser = new PUserIdent();
+		puser.setPuserId(data.puser_owner_id);
 	}
 
 	@Override
@@ -115,7 +118,7 @@ public class Status implements java.io.Serializable,IdGetter,DataBridge<StatusWr
 		StatusWrapper wrap = new StatusWrapper();
 		wrap.statusId =statusId;
 		wrap.statusName = statusName;
-		wrap.puser_owner_id = puser.getId();
+		wrap.puser_owner_id =  getPuser().getId();
 		return wrap;
 	}
 

@@ -80,6 +80,7 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	}
 
 	public int calcTax() {
+		if(bargainRevenue==null) return 0;
 		//6% от дохода
 		if(puser.puserTaxtype==1) return ((Long)Math.round(0.06*bargainRevenue)).intValue(); else
 			if(puser.puserTaxtype==2) 

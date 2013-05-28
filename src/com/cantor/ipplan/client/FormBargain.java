@@ -27,12 +27,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.InlineHTML;
 
 @SuppressWarnings("rawtypes")
 public class FormBargain extends FlexTable implements ValueChangeHandler{
@@ -50,7 +50,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private DateBox dbStart;
 	private DateBox dbFinish;
 	private Label lAttention;
-	private InlineHTML eStatus;
+	private StatusBox eStatus;
 	private CustomerBox eCustomer;
 	
 	private int mode = EDIT_VIEW;
@@ -67,11 +67,13 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private NumberLabel<Double> lMargin;
 	private NumberLabel<Double> lProfit;
 	private NumberLabel<Double> lDeltaProfit;
-	private InlineHTML lContract;
+	private ContractBox eContract;
 	private MainTabPanel tabPanel;
 	private int index;
 	private Label lTitle;
 	private List<Integer> errorList = new ArrayList<Integer>();
+	private Label lVersion;
+	private Label lDateCreated;
 
 	public FormBargain(BargainWrapper b) {
 		super();
@@ -97,11 +99,12 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		p = new VerticalPanel();
 		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		
-		l = new Label("Версия "+(bargain.bargainVer+1));
-		l.addStyleName("gwt-FormSubCaption");
-		p.add(l);
-		l = new Label(DateTimeFormat.getMediumDateFormat().format(bargain.bargainCreated));
-		p.add(l);
+		lVersion = new Label("Версия "+(bargain.bargainVer+1));
+		lVersion.addStyleName("gwt-FormSubCaption");
+		p.add(lVersion);
+		
+		lDateCreated = new Label(DateTimeFormat.getMediumDateFormat().format(bargain.bargainCreated));
+		p.add(lDateCreated);
 		
 		setWidget(1, 1, p);
 		getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
@@ -135,10 +138,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		setWidget(3, 0, l);
 		getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		eStatus = new InlineHTML("Исполнение");
-		eStatus.setStyleName("link");
+		eStatus = new StatusBox(bargain.status);
 		setWidget(3, 1, eStatus);
-		eStatus.setText(bargain.status.statusName);
 		eStatus.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -167,9 +168,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		eCustomer.getElement().setAttribute("placeholder", "введите имя клиента");
 		eCustomer.setWidth("415px");
 		
-		lContract = new InlineHTML("<договор>");
-		lContract.setStyleName("link");
-		p.add(lContract);
+		eContract = new ContractBox(bargain.contract);
+		p.add(eContract);
 
 		setWidget(4, 1, p);
 		getFlexCellFormatter().setColSpan(4, 1, 2);
@@ -272,17 +272,42 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		setWidget(13, 2, lDeltaProfit);
 		lDeltaProfit.addStyleName("bold-text");
 
+
+		HorizontalPanel ph = new HorizontalPanel();
+		ph.setSpacing(10);
+		ph.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		
 		btnSave = new Button("Сохранить");
-		setWidget(14, 0, btnSave);
 		btnSave.addStyleName("mainCommand");
-		getFlexCellFormatter().setColSpan(14, 0, 3);
-		getCellFormatter().setHorizontalAlignment(14, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		ph.add(btnSave);
 		btnSave.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				save(false);
 			}
 		});
+		btn  = new Button("Сохранить и Закрыть");
+		ph.add(btn);
+		btn.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				save(true);
+			}
+		});
+		btn  = new Button("Закрыть");
+		ph.add(btn);
+		btn.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				close();
+			}
+		});
+		
+		setWidget(14, 0, ph);
+		getFlexCellFormatter().setColSpan(14, 0, 3);
+		getCellFormatter().setHorizontalAlignment(14, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		getCellFormatter().setVerticalAlignment(14, 0, HasVerticalAlignment.ALIGN_MIDDLE);
+		
 		
 		setAttention();
 		lockControl();
@@ -298,6 +323,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		eRevenue.addValueChangeHandler(this);
 		ePrePayment.addValueChangeHandler(this);
 		eFine.addValueChangeHandler(this);
+		eCustomer.addValueChangeHandler(this);
 		
 		initButtonClose();
 	}
@@ -330,12 +356,13 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		resetErrors();
 		validate();
 		if(errorList.size()>0) return;
+		formFieldToBargain(bargain);
 		
 		DatabaseServiceAsync db = getDataBaseService();
-		db.saveBargain(bargain, closed, new AsyncCallback<Void>() {
+		db.saveBargain(bargain, closed, new AsyncCallback<BargainWrapper>() {
 			
 			@Override
-			public void onSuccess(Void result) {
+			public void onSuccess(BargainWrapper result) {
 				bargain.saveCompleted();
 				refreshTitle();				
 				String message = "Сделка \""+getTitle()+"\" сохранена";
@@ -343,8 +370,11 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 					Form.toast(FormBargain.this, message);
 					tabPanel.remove(FormBargain.this);
 					History.back();
-				} else 
+				} else { 
 					Form.toast(FormBargain.this.btnSave, message);
+					bargainToFormField(result);
+					bargain = result;
+				};	
 				
 			}
 			
@@ -355,6 +385,31 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		});
 		
 	};
+
+	protected void bargainToFormField(BargainWrapper bw) {
+		lTitle.setText(bargain.getFullName());
+		lVersion.setText("Версия "+(bw.bargainVer+1));
+		lDateCreated.setText(DateTimeFormat.getMediumDateFormat().format(bw.bargainCreated));
+		dbStart.setValue(bw.bargainStart);
+		dbFinish.setValue(bw.bargainFinish);
+		eStatus.setStatus(bw.status);
+		eCustomer.setCustomer(bw.customer);
+		eContract.setContract(bw.contract);
+		eRevenue.setValue(bw.bargainRevenue);
+		ePrePayment.setValue(bw.bargainPrepayment);
+		eFine.setValue(bw.bargainFine);
+	}
+
+	private void formFieldToBargain(BargainWrapper bw) {
+		bw.customer = eCustomer.getCustomer();
+		bw.contract = eContract.getContract();
+		bw.status = eStatus.getStatus();
+		bw.bargainStart = dbStart.getValue();
+		bw.bargainFinish=dbFinish.getValue();
+		bw.bargainRevenue = eRevenue.getValue();
+		bw.bargainPrepayment = ePrePayment.getValue();
+		bw.bargainFine = eFine.getValue();
+	}
 
 	private void validate() {
 		int offs =0;

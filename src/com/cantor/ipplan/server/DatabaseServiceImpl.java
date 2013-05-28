@@ -99,9 +99,9 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		// все Приостановленные
     		hsq+=" (b.status.statusId="+StatusWrapper.SUSPENDED+")";
     		// за N дней, до финиша, если Выполнение
-    		hsq+=" or (b.status.statusId= "+StatusWrapper.EXECUTION+" and b.bargainFinish-current_date<b.status.statusDayLimit)";
+    		hsq+=" or (b.status.statusId= "+StatusWrapper.EXECUTION+" and b.bargainFinish-current_timestamp<b.status.statusDayLimit)";
     		// за N дней, до финиша, если Выполнение
-    		hsq+=" or (b.status.statusId= "+StatusWrapper.COMPLETION+" and b.bargainFinish-current_date<b.status.statusDayLimit)";
+    		hsq+=" or (b.status.statusId= "+StatusWrapper.COMPLETION+" and b.bargainFinish-current_timestamp<b.status.statusDayLimit)";
     		hsq+=")\n";
     		// самые близкие по плану
     		hsq+=" order by b.bargainFinish, b.bargainRevenue desc";
@@ -139,7 +139,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     			  "where b.bargain_head=1 AND "+
     			  "b.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+')';
     		if(usrid != PUserIdent.USER_ROOT_ID)
-    			sql+=" AND b.puser.puserId="+usrid;
+    			sql+=" AND b.puser_id="+usrid;
     		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
     		b = (BargainTotals) q.uniqueResult();
     		// запрашиваем начальные данные
@@ -150,7 +150,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
       			  "where b.bargain_id=b.root_bargain_id AND "+
       			  "b.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+')';
       		if(usrid != PUserIdent.USER_ROOT_ID)
-      			sql+=" AND b.puser.puserId="+usrid;
+      			sql+=" AND b.puser_id="+usrid;
       		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
     		bold = (BargainTotals) q.uniqueResult();
     		
@@ -194,8 +194,16 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	@Override
 	public BargainWrapper editBargain(int id) throws Exception {
 		checkAccess();
-		// TODO Auto-generated method stub
-		return null;
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		Bargain b = (Bargain) session.load(Bargain.class, id);
+    		putTempBargain(b);
+    		BargainWrapper bw = b.toClient();
+    		return bw;
+    	} finally {
+    		session.close();
+    	}
 	}
 
 	@Override
@@ -220,13 +228,57 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	}
 
 	@Override
-	public void saveBargain(BargainWrapper bargain, boolean drop)
+	public BargainWrapper saveBargain(BargainWrapper bargain, boolean drop)
 			throws Exception {
 		checkAccess();
-		// TODO Auto-generated method stub
 		
-		if(drop)
-			dropTemporalyBargain(bargain.bargainId);
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				Bargain b = (Bargain) session.get(Bargain.class, bargain.bargainId);
+				boolean isnew = false;
+				if(b==null) {
+					// новая запись
+					b = new Bargain();
+					// на всякий случай перепишем, 
+					// мало ли что придет с клиента
+					bargain.bargainVer = 0;
+					bargain.bargainHead = 1;
+					bargain.bargainCreated = new Date();
+					bargain.puser = getLoginUser();
+					isnew = true;
+				}
+				b.fromClient(bargain);
+				if(isnew) {
+					// root - он же
+					b.setRootBargain(b); 
+					session.save(b);
+				} else
+					session.update(b);
+
+				// если не сбрасываем, то читаем вновь добавленный объект, тчобы возвратить 
+				if(!drop) 
+					bargain = b.toClient();
+				
+				b.saveCompleted();
+				bargain.saveCompleted();
+				
+				tx.commit();
+				if(drop) dropTemporalyBargain(bargain.bargainId); else
+					putTempBargain(b);
+				// возвратим вновь добавленный объект 
+				if(!drop) return bargain; else return null;
+				
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+		
 	}
 
 	@Override
@@ -259,7 +311,9 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		b.setBargainName(name);
     		b.setBargainHead(1);
     		b.setPuser(new PUserIdent(getLoginUser()));
-    		b.setStatus((Status) session.load(Status.class,status));
+    		Status st = (Status) session.load(Status.class,status);
+    		st.fetch(true);
+    		b.setStatus(st);
     		b.setBargainId(IdGenerator.generatorId(sessionFactory,session));
     		b.fetch(true);
     		b.setNew(true);

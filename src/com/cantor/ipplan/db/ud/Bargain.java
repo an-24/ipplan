@@ -21,6 +21,7 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.GenericGenerator;
 
 import com.cantor.ipplan.core.DataBridge;
 import com.cantor.ipplan.core.IdGetter;
@@ -35,7 +36,7 @@ import com.cantor.ipplan.shared.StatusWrapper;
 @Entity
 @Table(name = "BARGAIN", uniqueConstraints = @UniqueConstraint(columnNames = {
 		"ROOT_BARGAIN_ID", "BARGAIN_VER" }))
-public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,IdGetter {
+public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>,IdGetter {
 	private int bargainId;
 	private String bargainName;
 	private PUserIdent puser;
@@ -110,8 +111,8 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,
 	}
 
 	@Id
-	@javax.persistence.SequenceGenerator(name="newRec", sequenceName="NEWRECORDID")	
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "newRec")
+	@GenericGenerator(name="newRec", strategy="com.cantor.ipplan.core.IdGenerator")
+	@GeneratedValue(generator = "newRec")
 	@Column(name = "BARGAIN_ID", unique = true, nullable = false)
 	public int getBargainId() {
 		return this.bargainId;
@@ -313,12 +314,23 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,
 		BargainWrapper wrap = new BargainWrapper();
 		wrap.bargainId = bargainId;
 		wrap.bargainName = bargainName;
-		//TODO wrap.contract; 
-		wrap.customer = customer==null?null:customer.toClient();
+		wrap.contract = contract!=null?contract.toClient():null; 
+		wrap.customer = customer!=null?customer.toClient():null;
 		wrap.puser = puser.toClient();
-		//TODO wrap.bargain;
-		wrap.status = status.toClient();
+		wrap.status = getStatus().toClient();
 		wrap.bargainVer =  bargainVer;
+		
+		if(rootBargain==this || bargainVer==0) wrap.bargain = wrap;
+			else {
+				// опасность зацикливания, когда rootBargain и this один и 
+				// тот же объект. Все проверки, которые ниже не помогают. 
+				// Ключевая проверка bargainVer==0 
+				Bargain root = getRootBargain();
+				if(root==null) wrap.bargain = null; else
+					if(root.bargainId==bargainId) wrap.bargain = wrap; 
+						else wrap.bargain = root.toClient();
+			}
+		
 		wrap.bargainStart = bargainStart;
 		wrap.bargainFinish = bargainFinish;
 		wrap.bargainRevenue = bargainRevenue;
@@ -340,14 +352,30 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,
 	public void fromClient(BargainWrapper wrap) {
 		bargainId = wrap.bargainId;
 		bargainName = wrap.bargainName;
-		//TODO wrap.contract; 
+		if(wrap.contract==null) contract = null; else {
+			contract = new Contract();
+			contract.fromClient(wrap.contract);
+		}
 		if(wrap.customer==null) customer = null; else {
 			customer = new Customer();
 			customer.fromClient(wrap.customer);
 		}
-		puser.fromClient(wrap.puser);
-		//TODO wrap.bargain;
-		status.fromClient(wrap.status);
+		if(wrap.puser==null) puser = null; else {
+			puser = new PUserIdent();
+			puser.fromClient(wrap.puser);
+		}
+		if(wrap.bargain==null) rootBargain = null; else {
+			if(wrap.bargain==wrap) {
+				rootBargain = this;
+			} else {
+				rootBargain = new Bargain();
+				rootBargain.fromClient(wrap.bargain);
+			}
+		}
+		if(wrap.status==null) status = null; else {
+			status = new Status();
+			status.fromClient(wrap.status);
+		}
 		bargainVer =  wrap.bargainVer;
 		bargainStart = wrap.bargainStart;
 		bargainFinish = wrap.bargainFinish;
@@ -377,7 +405,7 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,
 			if(this.getContract()!=null) this.getContract().fetch(deep);
 			if(this.getCustomer()!=null) this.getCustomer().fetch(deep);
 			if(this.getPuser()!=null) this.getPuser().fetch(deep);
-			if(this.getRootBargain()!=null) this.getRootBargain().fetch(deep);
+			if(this.getRootBargain()!=null && this.getRootBargain()!=this) this.getRootBargain().fetch(deep);
 			if(this.getStatus()!=null) this.getStatus().fetch(deep);
 		}
 	}
@@ -435,5 +463,9 @@ public class Bargain implements java.io.Serializable,DataBridge<BargainWrapper>,
 
 	public void setDirty(boolean dirty) {
 		this.dirty = dirty;
+	}
+
+	public void saveCompleted() {
+		dirty = false;
 	}
 }

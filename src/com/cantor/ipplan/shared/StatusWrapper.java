@@ -18,4 +18,5 @@ public class StatusWrapper  implements java.io.Serializable,com.google.gwt.user.
 	public int statusId;
 	public int puser_owner_id;
 	public String statusName;
+	public int statusDayLimit;
 }

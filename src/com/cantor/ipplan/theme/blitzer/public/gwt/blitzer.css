@@ -202,7 +202,7 @@ a:hover {
 
 .gwt-ComboBox-popup {
   min-height: 20px;
-  max-height: 80px;
+  max-height: 180px;
   padding: 2px 0;
   border: 1px solid #939393;
   background-color: white;
@@ -1022,6 +1022,14 @@ a:hover {
 }
 
 .gwt-SuggestBoxPopup {
+  min-height: 20px;
+  max-height: 180px;
+  padding: 2px 0;
+  border: 1px solid #939393;
+  background-color: white;
+  overflow: hidden;
+  border-radius: 6px;
+  cursor:default;
 }
 
 .gwt-SuggestBoxPopup .item {
@@ -1037,10 +1045,10 @@ a:hover {
   background: white;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopCenter {
-  border-top: 1px solid #bbb;
+  border:0;
 }
 .gwt-SuggestBoxPopup .suggestPopupBottomCenter {
-  border-bottom: 1px solid #bbb;
+  border:0;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopCenterInner,
 .gwt-SuggestBoxPopup .suggestPopupBottomCenterInner {
@@ -1048,10 +1056,10 @@ a:hover {
   line-height: 1px;
 }
 .gwt-SuggestBoxPopup .suggestPopupMiddleLeft {
-  border-left: 1px solid #bbb;
+  border:0;
 }
 .gwt-SuggestBoxPopup .suggestPopupMiddleRight {
-  border-right: 1px solid #bbb;
+  border:0;
 }
 .gwt-SuggestBoxPopup .suggestPopupMiddleLeftInner,
 .gwt-SuggestBoxPopup .suggestPopupMiddleRightInner {
@@ -1079,28 +1087,16 @@ a:hover {
   zoom: 1;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopLeft {
-  background: url(images/circles.png) no-repeat 0px -6px;
-  -background: url(images/circles_ie6.png) no-repeat 0px -6px;
-  width:5px;
-  height:5px;
+  border:0;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopRight {
-  background: url(images/circles.png) no-repeat -5px -6px;
-  -background: url(images/circles_ie6.png) no-repeat -5px -6px;
-  width:5px;
-  height:5px;
+  border:0;
 }
 .gwt-SuggestBoxPopup .suggestPopupBottomLeft {
-  background: url(images/circles.png) no-repeat 0px -11px;
-  -background: url(images/circles_ie6.png) no-repeat 0px -11px;
-  width:5px;
-  height:5px;
+  border:0;
 }
 .gwt-SuggestBoxPopup .suggestPopupBottomRight {
-  background: url(images/circles.png) no-repeat -5px -11px;
-  -background: url(images/circles_ie6.png) no-repeat -5px -11px;
-  width:5px;
-  height:5px;
+  border:0;
 }
 * html .gwt-SuggestBoxPopup .suggestPopupTopLeftInner {
   width: 0px;

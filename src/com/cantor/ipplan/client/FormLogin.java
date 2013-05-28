@@ -20,12 +20,14 @@ import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineHyperlink;
 
-public class FormLogin extends Form {
+public class FormLogin extends Form implements ValueChangeHandler {
 
 	private TextBox tbLogin;
 	private PasswordTextBox tbPassword;
@@ -39,7 +41,7 @@ public class FormLogin extends Form {
 		form.setEncoding(FormPanel.ENCODING_MULTIPART);
 		form.setMethod(FormPanel.METHOD_POST);
 		form.setWidth("600px");
-		//form.setAction("/login");
+		form.setAction("/login");
 		
 		initWidget(form);
 		
@@ -112,6 +114,7 @@ public class FormLogin extends Form {
 		
 		form.addSubmitHandler(new SubmitHandler() {
 			public void onSubmit(SubmitEvent event) {
+				resetErrors();
 				event.cancel();
 				
 				if(cb1.getValue()!=null && cb1.getValue()) {
@@ -155,6 +158,9 @@ public class FormLogin extends Form {
 		flexTable.getCellFormatter().setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		flexTable.getCellFormatter().setVerticalAlignment(4, 0, HasVerticalAlignment.ALIGN_TOP);
 
+		tbLogin.addValueChangeHandler(this);
+		tbPassword.addValueChangeHandler(this);
+		
 		setFirstFocusedWidget(tbLogin);
 	}
 
@@ -179,6 +185,15 @@ public class FormLogin extends Form {
 		flexTable.getCellFormatter().setVerticalAlignment(rowError, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 		flexTable.setWidget(rowError, 0, l);
 		flexTable.getFlexCellFormatter().setColSpan(rowError, 0, 2);
+	}
+
+	private void resetErrors() {
+		if(rowError>=0) flexTable.removeRow(rowError);
+		rowError = -1;
+	}
+	
+	@Override
+	public void onValueChange(ValueChangeEvent event) {
 	}
 	
 }

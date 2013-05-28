@@ -107,7 +107,9 @@ public class Customer implements java.io.Serializable, DataBridge<CustomerWrappe
 
 	@Override
 	public void fromClient(CustomerWrapper data) {
-		// TODO Auto-generated method stub
+		customerId = data.customerId;
+		customerLookupKey = data.customerLookupKey;
+		customerName = data.customerName;
 		
 	}
 

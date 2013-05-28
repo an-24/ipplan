@@ -23,7 +23,7 @@ public interface DatabaseServiceAsync {
 	void deleteBargain(int id, AsyncCallback<Boolean> callback);
 	void dropTemporalyBargain(int id, AsyncCallback<Void> callback);
 	void saveBargain(BargainWrapper bargain, boolean drop,
-			AsyncCallback<Void> callback);
+			AsyncCallback<BargainWrapper> callback);
 	void saveTemporalyBargain(BargainWrapper bargain,
 			AsyncCallback<Void> callback);
 	void findCustomer(String query,

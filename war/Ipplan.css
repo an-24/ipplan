@@ -122,11 +122,13 @@ h1 {
 .linkcell div {
 	border-bottom: 1px dashed #004276;
 	text-decoration: none;	
+	display: inline-block;
 }
 
 .linkcell:hover  div {
 	border-color: #cc0000;
 	color: #cc0000;
+	display: inline-block;
 }
 
 .Attention1 {
@@ -221,11 +223,21 @@ h1 {
 }
 
 .Customer-bind+div {
-    background: url("main/gwt/images/ui-icons_cc0000_256x240.png") no-repeat scroll -30px -191px transparent;
+    background: url("main/gwt/images/ui-icons_004276_256x240.png") no-repeat scroll -30px -191px transparent;
 }
 
 .Customer-add+div {
+    background: url("main/gwt/images/ui-icons_004276_256x240.png") no-repeat scroll 5px -191px transparent;
+}
+
+.Customer-bind+div:hover {
+    background: url("main/gwt/images/ui-icons_cc0000_256x240.png") no-repeat scroll -30px -191px transparent;
+}
+
+.Customer-add+div:hover {
     background: url("main/gwt/images/ui-icons_cc0000_256x240.png") no-repeat scroll 5px -191px transparent;
 }
+
+
 
 

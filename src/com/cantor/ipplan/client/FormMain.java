@@ -183,6 +183,7 @@ public class FormMain extends Form {
 		
 		lProfit = newNumberLabel();
 		tableStats.setWidget(4, 1, lProfit);
+		lProfit.setStyleName("gwt-CurrencyLabel");
 		lProfit.addStyleName("bold-text");
 		
 		lProfitDelta = newDeltaNumberLabel();
@@ -233,7 +234,7 @@ public class FormMain extends Form {
 		c1.setFieldUpdater(new FieldUpdater<BargainWrapper, String>() {
 			@Override
 			public void update(int index, BargainWrapper object, String value) {
-				Window.alert("jump");
+				edit(object);
 			}
 		});
 		c1.setCellStyleNames("linkcell");
@@ -298,6 +299,24 @@ public class FormMain extends Form {
 		
 		currentTabId = numTab;
 		prepare();
+	}
+
+	protected void edit(BargainWrapper b) {
+		DatabaseServiceAsync db = getDataBaseService();
+		db.editBargain(b.bargainId, new AsyncCallback<BargainWrapper>() {
+			
+			@Override
+			public void onSuccess(BargainWrapper result) {
+				FormBargain bft = tabPanel.add(result);
+				tabPanel.selectBargain(result);
+				bft.setMode(FormBargain.EDIT_MODE);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Ipplan.showError(caught);
+			}
+		});
 	}
 
 	protected void addNew() throws Exception {
