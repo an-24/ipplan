@@ -47,6 +47,12 @@ public class Dialog extends DialogBox {
 		FormPanel f = new FormPanel();
 		f.setAction("#");
 		f.setMethod("POST");
+		f.addSubmitHandler(new SubmitHandler() {
+			@Override
+			public void onSubmit(SubmitEvent event) {
+				event.cancel();
+			}
+		});
 		
 		f.setWidget(pm);
 		setWidget(f);

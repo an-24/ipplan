@@ -301,6 +301,23 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		session.close();
     	}
 	}
+
+	@Override
+	public List<StatusWrapper> getAllStatuses() {
+		List<StatusWrapper> list = new ArrayList<StatusWrapper>();
+		if(isLogged()==null) return list;
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Query q = session.createQuery("from Status");
+			List<Status> lc = q.list();
+			for (Status st : lc) 
+				list.add(st.toClient());
+    		return list;
+    	} finally {
+    		session.close();
+    	}
+	}
 	
 	private Bargain newEmptyBargain(String name, int status) {
 		SessionFactory sessionFactory = getSessionFactory();
@@ -480,7 +497,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		session.save(s);
 		s = new Status(StatusWrapper.EXECUTION,user,"Исполнение",Bargain.EXECUTE_WARNING_DURATION_LIMIT);
 		session.save(s);
-		s = new Status(StatusWrapper.SUSPENDED,user,"Приостановлено для изменения условий",0);
+		s = new Status(StatusWrapper.SUSPENDED,user,"Приостановлена",0);
 		session.save(s);
 		s = new Status(StatusWrapper.COMPLETION,user,"Завершение",Bargain.COMPLETION_WARNING_DURATION_LIMIT);
 		session.save(s);
@@ -499,6 +516,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		HttpSession sess = this.getThreadLocalRequest().getSession();
 		return (Integer) sess.getAttribute("userId");
 	}
+
 
 
 

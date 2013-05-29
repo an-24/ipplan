@@ -309,7 +309,6 @@ public class FormMain extends Form {
 			public void onSuccess(BargainWrapper result) {
 				FormBargain bft = tabPanel.add(result);
 				tabPanel.selectBargain(result);
-				bft.setMode(FormBargain.EDIT_MODE);
 			}
 			
 			@Override
@@ -429,7 +428,6 @@ public class FormMain extends Form {
 					public void onSuccess(BargainWrapper result) {
 						FormBargain bft = tabPanel.add(result);
 						tabPanel.selectBargain(result);
-						bft.setMode(FormBargain.EDIT_MODE);
 						dialog.hide();
 					}
 					
@@ -482,6 +480,9 @@ public class FormMain extends Form {
 		startRecoveryEditBargain();
 		
 		tabPanel.getTabBar().selectTab(currentTabId);
+		
+		// получим все статусы
+		StatusWrapper.requestStatusesOnServer(getDataBaseService());
 	}
 
 
@@ -521,8 +522,6 @@ public class FormMain extends Form {
 			public void onSuccess(List<BargainWrapper> result) {
 				for (BargainWrapper bw : result) {
 					FormBargain bft = tabPanel.add(bw);
-					if(bw.isDirty()) 
-						bft.setMode(FormBargain.EDIT_MODE);
 				}
 			}
 			

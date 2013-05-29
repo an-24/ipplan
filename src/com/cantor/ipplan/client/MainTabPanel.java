@@ -1,6 +1,7 @@
 package com.cantor.ipplan.client;
 
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.TabBar.Tab;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -8,11 +9,16 @@ import com.google.gwt.user.client.ui.Widget;
 public class MainTabPanel extends TabPanel {
 	
 	public FormBargain add(BargainWrapper bw) {
-		FormBargain bft = new FormBargain(bw);
+		final FormBargain bft = new FormBargain(bw);
 		bft.setOwner(this);
 		bft.setIndex(getTabBar().getTabCount());
 		super.add(bft,bft.makeHTMLTab(),true);
-		bft.init();
+		new Timer(){
+			@Override
+			public void run() {
+				bft.init();
+			}
+		}.schedule(0);
 		return bft;
 	}
 

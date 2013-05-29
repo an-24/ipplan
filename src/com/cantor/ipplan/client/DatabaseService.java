@@ -21,6 +21,7 @@ import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.cantor.ipplan.shared.StatusWrapper;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -39,5 +40,6 @@ public interface DatabaseService extends RemoteService {
 	public void saveTemporalyBargain(BargainWrapper bargain) throws Exception;
 	public BargainWrapper saveBargain(BargainWrapper bargain, boolean drop) throws Exception;
 	public List<CustomerWrapper> findCustomer(String query);
+	public List<StatusWrapper> getAllStatuses();
 	
 }

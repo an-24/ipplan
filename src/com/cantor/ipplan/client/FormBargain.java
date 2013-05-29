@@ -3,9 +3,12 @@ package com.cantor.ipplan.client;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
+import com.cantor.ipplan.client.StatusBox.StatusChangeEventListiner;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -23,6 +26,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -30,6 +34,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -37,9 +42,6 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 @SuppressWarnings("rawtypes")
 public class FormBargain extends FlexTable implements ValueChangeHandler{
 
-	public static final int EDIT_VIEW = 0;
-	public static final int EDIT_MODE = 1;
-	
 	private DatabaseServiceAsync dbservice;
 	
 	private BargainWrapper bargain;
@@ -53,7 +55,6 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private StatusBox eStatus;
 	private CustomerBox eCustomer;
 	
-	private int mode = EDIT_VIEW;
 	private CurrencyBox eRevenue;
 	private NumberLabel<Double> lRevenueDelta;
 	private CurrencyBox ePrePayment;
@@ -138,14 +139,34 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		setWidget(3, 0, l);
 		getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		eStatus = new StatusBox(bargain.status);
-		setWidget(3, 1, eStatus);
-		eStatus.addClickHandler(new ClickHandler() {
+		eStatus = new StatusBox(null);
+		eStatus.setChangeListiner(new StatusChangeEventListiner() {
+			
 			@Override
-			public void onClick(ClickEvent event) {
-				if(mode==EDIT_MODE) showStatusForm();
+			public void onPause(StatusWrapper oldStatus) {
+				eStatus.lock(true);
+				eStatus.setStatus(StatusWrapper.getPauseStatus());
+			}
+			
+			@Override
+			public void onNext(StatusWrapper oldStatus) {
+				int[] newState =  StatusWrapper.getNextState(oldStatus.statusId,false);
+				if(newState.length==1) {
+					eStatus.lock(true);
+					eStatus.setStatus(StatusWrapper.getStatus(newState[0])); 
+				}
+			    else showStatusForm(newState);
 			}
 		});
+		// пускаем таймер для выполнения установки статуса
+		new Timer(){
+			@Override
+			public void run() {
+				eStatus.setStatus(bargain.status);
+			}
+		}.schedule(0);
+			
+		setWidget(3, 1, eStatus);
 		
 		lAttention = new Label("");
 		setWidget(3, 2, lAttention);
@@ -324,6 +345,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		ePrePayment.addValueChangeHandler(this);
 		eFine.addValueChangeHandler(this);
 		eCustomer.addValueChangeHandler(this);
+		eStatus.addValueChangeHandler(this);
 		
 		initButtonClose();
 	}
@@ -374,6 +396,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 					Form.toast(FormBargain.this.btnSave, message);
 					bargainToFormField(result);
 					bargain = result;
+					if(eStatus.isLocked()) eStatus.lock(false);
+					eStatus.refreshStatus();
 				};	
 				
 			}
@@ -464,9 +488,9 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private void lockControl() {
 		btnPrev.setEnabled(bargain.bargainVer>0);
 		btnNext.setEnabled(!bargain.isNew());
-		dbStart.setEnabled(mode==EDIT_MODE);
-		dbFinish.setEnabled(mode==EDIT_MODE);
-		eRevenue.setEnabled(mode==EDIT_MODE);
+		dbStart.setEnabled(bargain.isNew());
+		dbFinish.setEnabled(true);
+		eRevenue.setEnabled(true);
 	}
 
 	public String getTitle() {
@@ -479,57 +503,74 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		return bargain; 
 	}
 
-	public void setMode(int newmode) {
-		if(mode!=newmode) {
-			mode = newmode;
-			lockControl();
-		}
-	}
-
-
-	protected void showStatusForm() {
+	protected void showStatusForm(int[] newState) {
 		// TODO Auto-generated method stub
-		
+		final Dialog dialog = new Dialog("Выберите следующий статус");
+		FlexTable table = dialog.getContent();
+		final HashMap<RadioButton,StatusWrapper> list = new HashMap<RadioButton,StatusWrapper>();
+		int j = 0;
+		for (int i = 0, len = newState.length; i < len; i++) {
+			StatusWrapper st = StatusWrapper.getStatus(newState[i]);
+			if(st.statusId!=StatusWrapper.SUSPENDED) {
+				RadioButton rb = new RadioButton("gr", st.statusName);
+				list.put(rb,st);
+				table.setWidget(j, 0, rb);
+				j++;
+			}  
+		}
+		dialog.getButtonOk().setText("Установить");
+		dialog.setButtonOkClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				dialog.cancel();
+				for (RadioButton rb : list.keySet()) {
+					if(rb.getValue()) {
+						eStatus.lock(true);
+						eStatus.setStatus(list.get(rb));
+						dialog.hide();
+						return;
+					}
+				}
+				dialog.showError(list.size(), "Необходимо выбрать статус");
+			}
+		});
+		dialog.center();
 	}
 
 	@Override
 	public void onValueChange(ValueChangeEvent event) {
-		if(mode==EDIT_MODE) {
-			resetErrors();
-			
-			bargain.modify();
-			
-			// обновляем в объекте
-			if(event.getSource()==dbStart) bargain.bargainStart = dbStart.getValue();
-			if(event.getSource()==dbFinish) {
-				bargain.bargainFinish = dbFinish.getValue();
-				bargain.attention = bargain.calcAttention();
-			}
-			if(event.getSource()==eRevenue) bargain.bargainRevenue = eRevenue.getValue();
-			if(event.getSource()==ePrePayment) bargain.bargainPrepayment = ePrePayment.getValue();
-			if(event.getSource()==eFine) bargain.bargainFine = eFine.getValue();
-			if(event.getSource()==eRevenue || event.getSource()==eFine)
-				bargain.bargainTax = bargain.calcTax(); 
-			
-			// обновляем на форме
-			if(event.getSource()==dbFinish)
-				setAttention();
-			
-			if(event.getSource()==eRevenue) {
-				lMargin.setValue(bargain.getMargin()/100.0);
-				lTax.setValue(bargain.bargainTax/100.0);
-				lProfit.setValue(bargain.getProfit()/100.0);
-				setAttention();
-			};
-			if(event.getSource()==eFine) {
-				lTax.setValue(bargain.bargainTax/100.0);
-				lProfit.setValue(bargain.getProfit()/100.0);
-				setAttention();
-			};
-			refreshTitle();
-		}	
+		resetErrors();
 		
+		bargain.modify();
 		
+		// обновляем в объекте
+		if(event.getSource()==dbStart) bargain.bargainStart = dbStart.getValue();
+		if(event.getSource()==dbFinish) {
+			bargain.bargainFinish = dbFinish.getValue();
+			bargain.attention = bargain.calcAttention();
+		}
+		if(event.getSource()==eRevenue) bargain.bargainRevenue = eRevenue.getValue();
+		if(event.getSource()==ePrePayment) bargain.bargainPrepayment = ePrePayment.getValue();
+		if(event.getSource()==eFine) bargain.bargainFine = eFine.getValue();
+		if(event.getSource()==eRevenue || event.getSource()==eFine)
+			bargain.bargainTax = bargain.calcTax(); 
+		
+		// обновляем на форме
+		if(event.getSource()==dbFinish)
+			setAttention();
+		
+		if(event.getSource()==eRevenue) {
+			lMargin.setValue(bargain.getMargin()/100.0);
+			lTax.setValue(bargain.bargainTax/100.0);
+			lProfit.setValue(bargain.getProfit()/100.0);
+			setAttention();
+		};
+		if(event.getSource()==eFine) {
+			lTax.setValue(bargain.bargainTax/100.0);
+			lProfit.setValue(bargain.getProfit()/100.0);
+			setAttention();
+		};
+		refreshTitle();
 	}
 
 	private void refreshTitle() {

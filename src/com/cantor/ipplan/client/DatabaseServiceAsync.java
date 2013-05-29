@@ -7,6 +7,7 @@ import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.cantor.ipplan.shared.StatusWrapper;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface DatabaseServiceAsync {
@@ -28,4 +29,5 @@ public interface DatabaseServiceAsync {
 			AsyncCallback<Void> callback);
 	void findCustomer(String query,
 			AsyncCallback<List<CustomerWrapper>> callback);
+	void getAllStatuses(AsyncCallback<List<StatusWrapper>> callback);
 }

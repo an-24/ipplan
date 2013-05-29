@@ -44,9 +44,13 @@ public class Utils {
 		long duration = d2.getTime()-d1.getTime();
 		long wcount = duration/weekTime;
 		long dcount = (duration%weekTime)/dayTime;
-		String s = wcount+" "+getNumberPadeg(new String[]{"неделя","недели","недель"},(int)wcount);
-		if(dcount>0) 
-			s+=", "+dcount+" "+getNumberPadeg(new String[]{"день","дня","дней"},(int)dcount);
+		String s = "";
+		if(wcount>0) 
+			s+= wcount+" "+getNumberPadeg(new String[]{"неделя","недели","недель"},(int)wcount);
+		if(dcount>0) {
+			if(wcount>0) s+=", ";
+			s+=dcount+" "+getNumberPadeg(new String[]{"день","дня","дней"},(int)dcount);
+		}
 		return s;
 	}
 }
