@@ -1,0 +1,39 @@
+@CHARSET "UTF-8";
+
+
+.cellTableWidget {
+  table-layout: fixed;	
+}
+
+
+.cellTableCell {
+  padding: 4px;
+  height: 2em;
+  white-space: nowrap;
+}
+
+.cellTableCell div{
+  overflow: hidden;
+  text-overflow: ellipsis;
+}	
+ 
+
+.cellTableSelectedRow {
+	background: none repeat scroll 0 0 #004276;
+}
+
+.cellTableSelectedRowCell {
+	border: 2px solid #004276;
+}
+
+.cellTableHeader {
+    background: none repeat scroll 0 0 #F3F7FB;
+    border-bottom: 2px solid #004276;
+    border-top: 1px dotted;
+    color: #004276;
+    font-weight: bold;
+    overflow: hidden;
+    padding: 3px 15px;
+    text-align: center;
+    text-shadow: 0 0 0 transparent;	
+}

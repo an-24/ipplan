@@ -1,5 +1,6 @@
 package com.cantor.ipplan.client;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.DOM;
@@ -37,4 +38,12 @@ public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 	public void setTabIndex(int index) {
 		getElement().setTabIndex(index);
     }
+	
+	public Element getLabelElement() {
+		return (Element) getElement().getChild(1);
+	}
+
+	public Element getInputElement() {
+		return (Element) getElement().getChild(0);
+	}
 }

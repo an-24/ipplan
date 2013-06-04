@@ -21,31 +21,45 @@ public class MainTabPanel extends TabPanel {
 		}.schedule(0);
 		return bft;
 	}
+	
+	public FormBargain getFormBargain(int index) {
+		return (FormBargain) getWidget(index);
+	}
 
 	public void selectBargain(int bargainId) {
+		int idx = find(bargainId);
+		if(idx>=0) getTabBar().selectTab(idx);
+	}
+
+	public void selectBargain(BargainWrapper bw) {
+		int idx = find(bw);
+		if(idx>=0) getTabBar().selectTab(idx);
+	}
+	
+	public int find(int bargainId) {
 		for (int i = 0,len = getWidgetCount(); i < len; i++) {
 			Widget w = getWidget(i);
 			if(w instanceof FormBargain) {
 				BargainWrapper b = ((FormBargain)w).getBargain();
 				if(b.bargainId==bargainId) {
-					getTabBar().selectTab(i);
-					return;
+					return i;
 				}
 			}
 		}
+		return -1;
 	}
 
-	public void selectBargain(BargainWrapper bw) {
+	public int find(BargainWrapper bw) {
 		for (int i = 0,len = getWidgetCount(); i < len; i++) {
 			Widget w = getWidget(i);
 			if(w instanceof FormBargain) {
 				BargainWrapper b = ((FormBargain)w).getBargain();
 				if(b==bw) {
-					getTabBar().selectTab(i);
-					return;
+					return i;
 				}
 			}
 		}
+		return -1;
 	}
 
 }

@@ -15,13 +15,13 @@ import com.google.gwt.user.client.ui.FocusWidget;
 
 public class StatusBox extends FocusWidget implements HasValueChangeHandlers<StatusWrapper>{
 
-	StatusWrapper status;
+	private StatusWrapper status;
+	private StatusWrapper oldStatus;
 	private Element divStatusName;
 	private Element divNext;
 	private StatusChangeEventListiner changeListiner;
 	private Element divPause;
 	private boolean locked = false;
-	private StatusWrapper oldStatus;
 
 	public StatusBox(StatusWrapper status) {
 		super(DOM.createDiv());

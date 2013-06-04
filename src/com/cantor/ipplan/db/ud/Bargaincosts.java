@@ -24,7 +24,7 @@ public class Bargaincosts implements java.io.Serializable {
 	private Costs costs;
 	private Bargain bargain;
 	private int bargaincostsValue;
-	private Integer bargaincostsPayment;
+	private int bargaincostsPayment;
 	private String bargaincostsNote;
 
 	public Bargaincosts() {
@@ -91,11 +91,11 @@ public class Bargaincosts implements java.io.Serializable {
 	}
 
 	@Column(name = "BARGAINCOSTS_PAYMENT")
-	public Integer getBargaincostsPayment() {
+	public int getBargaincostsPayment() {
 		return this.bargaincostsPayment;
 	}
 
-	public void setBargaincostsPayment(Integer bargaincostsPayment) {
+	public void setBargaincostsPayment(int bargaincostsPayment) {
 		this.bargaincostsPayment = bargaincostsPayment;
 	}
 

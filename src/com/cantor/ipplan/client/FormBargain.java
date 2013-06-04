@@ -34,7 +34,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -224,6 +223,13 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		setWidget(7, 0, l);
 
 		Button btn = new Button(bargain.bargainCosts==null?"<нет>":NumberFormat.getFormat("#,##0.00").format(bargain.bargainCosts/100.0));
+		btn.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				FormCost f = new FormCost(bargain);
+				f.center();
+			}
+		});
 		setWidget(7, 1, btn);
 		btn.setWidth("140px");
 		
@@ -398,6 +404,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 					bargain = result;
 					if(eStatus.isLocked()) eStatus.lock(false);
 					eStatus.refreshStatus();
+					setAttention();					
 				};	
 				
 			}
@@ -504,7 +511,6 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	}
 
 	protected void showStatusForm(int[] newState) {
-		// TODO Auto-generated method stub
 		final Dialog dialog = new Dialog("Выберите следующий статус");
 		FlexTable table = dialog.getContent();
 		final HashMap<RadioButton,StatusWrapper> list = new HashMap<RadioButton,StatusWrapper>();
@@ -513,6 +519,10 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			StatusWrapper st = StatusWrapper.getStatus(newState[i]);
 			if(st.statusId!=StatusWrapper.SUSPENDED) {
 				RadioButton rb = new RadioButton("gr", st.statusName);
+				
+				if(st.statusId==StatusWrapper.CLOSE_FAIL)
+					rb.getLabelElement().addClassName("Attention3");
+				
 				list.put(rb,st);
 				table.setWidget(j, 0, rb);
 				j++;
@@ -658,6 +668,11 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			offs--;
 		}	
 		errorList.clear();
+	}
+
+	public void selectHeadVersion() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

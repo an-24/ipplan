@@ -178,6 +178,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		b.setBargainFinish(finish);
 		putTempBargain(b);
 		BargainWrapper bw = b.toClient();
+		bw.attention = b.makeAttention();
 		return bw;
 	}
 
@@ -187,7 +188,9 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		HashMap<Integer, Bargain> bl = getTempBargains();
 		List<BargainWrapper> bwl = new ArrayList<BargainWrapper>();
 		for (Bargain b : bl.values()) {
-			bwl.add(b.toClient());
+			BargainWrapper bw = b.toClient();
+			bw.attention = b.makeAttention();
+			bwl.add(bw);
 		}
 		return bwl;
 	}
@@ -200,6 +203,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		Bargain b = (Bargain) session.load(Bargain.class, id);
     		putTempBargain(b);
     		BargainWrapper bw = b.toClient();
+    		bw.attention = b.makeAttention();
     		return bw;
     	} finally {
     		session.close();
@@ -259,8 +263,10 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 					session.update(b);
 
 				// если не сбрасываем, то читаем вновь добавленный объект, тчобы возвратить 
-				if(!drop) 
+				if(!drop) {
 					bargain = b.toClient();
+					bargain.attention = b.makeAttention();
+				}	
 				
 				b.saveCompleted();
 				bargain.saveCompleted();

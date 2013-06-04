@@ -328,7 +328,7 @@ a:hover {
 }
 
 .gwt-DialogBox .Caption {
-  background: #cc0000;
+  background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent;
   color:white;
   padding: 6px 10px;
   cursor: default;

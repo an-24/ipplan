@@ -10,9 +10,9 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
-import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
@@ -70,16 +70,20 @@ public class Form extends Composite {
 		this.getElement().getStyle().setCursor(Cursor.DEFAULT);
 	}
 	
-	public static <T> void prepareGrid(AbstractCellTable<T> grid, Collection<T> c) {
-		prepareGrid(grid, c, true);
+	public static <T> ListDataProvider<T> prepareGrid(AbstractCellTable<T> grid, Collection<T> c) {
+		return prepareGrid(grid, c, true);
 	}
 
-	public static <T> void prepareGrid(AbstractCellTable<T> grid, Collection<T> c, boolean sorting) {
+	public static <T> ListDataProvider<T> prepareGrid(AbstractCellTable<T> grid, Collection<T> c, boolean sorting) {
 	    ListDataProvider<T> dataProvider = new ListDataProvider<T>();
 	    dataProvider.addDataDisplay(grid);
 		dataProvider.getList().addAll(c);
 		if(sorting) setSortingColumns(grid, dataProvider.getList());
 		grid.setEmptyTableWidget(new Label("Записи отсутствуют"));
+		if(grid instanceof CellTable) {
+			((CellTable<T>)grid).setDataProvider(dataProvider);
+		}
+		return dataProvider;
 		/*
 		display: table-cell;
 		vertical-align: middle;
@@ -160,6 +164,20 @@ public class Form extends Composite {
 		return null;
 	};
 	
+	public static native Element getActiveElement(Element element) /*-{
+	   return element.ownerDocument.activeElement;
+	}-*/; 	
+	
+	public static native boolean isHasChild(Element parent, Element child)/*-{
+		while (child != null) {
+			if (parent==child) {
+				return true;
+			}
+			child = child.parentNode;
+		}
+		return false;		
+	}-*/;
+	
 	protected boolean validate() {
 		return true;
 	}
@@ -180,5 +198,6 @@ public class Form extends Composite {
 	    };
 	    t.scheduleRepeating(SHEDULE_LOCK_CONTROL);
 	}
+
 
 }

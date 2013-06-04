@@ -416,13 +416,14 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 	/*
 	 * Метод генерирует предупреждение. Внимание, не проверяет условия
 	 */
+	@Transient
 	public Attention makeAttention() {
 		Attention at = new Attention();
 		int daycount;
 		switch (status.getId()) {
 		case StatusWrapper.SUSPENDED:
-			at.type = 1;
-			at.message = "Необходимо согласование";
+			at.type = 2;
+			at.message = "Приостановлена. Необходимо согласование";
 			break;
 		case StatusWrapper.COMPLETION:
 		case StatusWrapper.EXECUTION:
@@ -430,10 +431,12 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			if(daycount<0) {
 				at.type = 3;
 				at.message = "Срок истек "+daycount+" дн. назад"; 
-			} else {
+			} else 
+			if(daycount<status.getStatusDayLimit()) {
 				at.type = 2;
 				at.message = "Осталось "+daycount+" дн.";
-			}
+			} else
+			return null;
 			break;
 		default:
 			return null;

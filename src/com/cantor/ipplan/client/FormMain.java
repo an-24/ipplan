@@ -185,6 +185,7 @@ public class FormMain extends Form {
 		tableStats.setWidget(4, 1, lProfit);
 		lProfit.setStyleName("gwt-CurrencyLabel");
 		lProfit.addStyleName("bold-text");
+		lProfit.addStyleName("auto-width");
 		
 		lProfitDelta = newDeltaNumberLabel();
 		tableStats.setWidget(4, 2, lProfitDelta);
@@ -302,6 +303,14 @@ public class FormMain extends Form {
 	}
 
 	protected void edit(BargainWrapper b) {
+		// поиск в окрытых вкладках
+		int tabidx = tabPanel.find(b.bargainId);
+		if(tabidx>=0) {
+			tabPanel.selectBargain(b.bargainId);
+			tabPanel.getFormBargain(tabidx).selectHeadVersion();
+			return;
+		}
+		
 		DatabaseServiceAsync db = getDataBaseService();
 		db.editBargain(b.bargainId, new AsyncCallback<BargainWrapper>() {
 			

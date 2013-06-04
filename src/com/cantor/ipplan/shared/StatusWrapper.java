@@ -33,9 +33,9 @@ public class StatusWrapper  implements java.io.Serializable,com.google.gwt.user.
 
 	static public int[] getNextState(int state, boolean skipSuspended) {
 		switch (state) {
-			case PRIMARY_CONTACT: return new int[]{TALK}; 
-			case TALK: return new int[]{DECISION_MAKING}; 
-			case DECISION_MAKING: return new int[]{RECONCILIATION_AGREEMENT};
+			case PRIMARY_CONTACT: return new int[]{TALK,CLOSE_FAIL}; 
+			case TALK: return new int[]{DECISION_MAKING,CLOSE_FAIL}; 
+			case DECISION_MAKING: return new int[]{RECONCILIATION_AGREEMENT,CLOSE_FAIL};
 			case RECONCILIATION_AGREEMENT: return new int[]{EXECUTION};
 			case EXECUTION: if(skipSuspended) return new int[]{COMPLETION,CLOSE_FAIL}; 
 										else  return new int[]{SUSPENDED,COMPLETION,CLOSE_FAIL};  

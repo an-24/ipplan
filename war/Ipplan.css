@@ -132,16 +132,17 @@ h1 {
 }
 
 .Attention1 {
-	color: #339900;
+	color: #339900 !important;;
 }
 
 .Attention2 {
-	color: #FF9900;
+	color: #FF9900 !important;;
 }
 
 .Attention3 {
-	color: #CC0000;
+	color: #CC0000 !important;
 }
+
 .gwt-FormSubCaption {
   font-size: 1.2em;
   font-weight: bold;
@@ -202,6 +203,7 @@ h1 {
     top: -10px;
     width: 0; 
 }
+
 
 .mainCommand {
     padding:10px  !important;
@@ -315,3 +317,10 @@ h1 {
   display:none;
 }
 
+.auto-width {
+  display:inline-block;
+}
+
+.gwt-InplaceEditor {
+  width:100%;
+}
