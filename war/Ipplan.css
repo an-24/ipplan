@@ -60,6 +60,10 @@ h1 {
   padding-top:10px;
 }
 
+.pad0 {
+  padding:0px !important;
+}
+
 .bold-text {
 	font-weight: bold;
 }

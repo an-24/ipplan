@@ -7,6 +7,7 @@ import static com.google.gwt.dom.client.BrowserEvents.KEYUP;
 
 import com.google.gwt.cell.client.AbstractEditableCell;
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -34,13 +35,19 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 	private FocusWidget widget;
 	private CellTable owner;
 	public ViewData currentViewEdit;
+	private DisplayValueFormatter<C> formatter;
 
 	public InplaceEditor(FocusWidget editor, CellTable owner) {
+	    this(editor,owner,null);
+	}
+
+	public InplaceEditor(FocusWidget editor, CellTable owner, DisplayValueFormatter<C> formatter) {
 	    super(CLICK, KEYUP, KEYDOWN, BLUR);
 	    widget = editor;
 		widget.setTabIndex(0);
 	    this.renderer = SimpleSafeHtmlRenderer.getInstance();
 	    this.owner = owner;
+	    this.formatter = formatter;
 	}
 	
 	static class ViewData<C> {
@@ -113,15 +120,19 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		} else
 			viewData = currentViewEdit;
 
-	    String toRender = value!=null?value.toString():"";
-	    
+		String toRender = "";
+		if(value!=null) 
+			toRender = formatter==null?value.toString():formatter.format(value); 
+		
+		
 	    if (viewData != null) {
 	      if (viewData.isEditing) {
 	    	  com.google.gwt.user.client.Element e = this.widget.getElement();
 	    	  sb.appendHtmlConstant(e.toString());
 	        return;
-	      } else { 
-	    	  toRender = viewData.value.toString();
+	      } else {
+	    	  C v = (C) viewData.value;
+	    	  toRender = formatter==null?v.toString():formatter.format(v);
 	      }  
 	    }
 
@@ -192,7 +203,8 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		        public void update(C value) {
 		        	// внимание context.getKey(), в случае использования keyProvider булет
 		        	// возврашать не record
-		        	col.getFieldUpdater().update(context.getIndex(), record, value);
+		        	FieldUpdater upd = col.getFieldUpdater();
+		        	if(upd!=null) upd.update(context.getIndex(), record, value);
 		        }
 		    };
 		    Element elRow = owner.getRowElement(owner.getCurrentRowOnPage());
@@ -243,7 +255,7 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 	    		new Timer() {
 					@Override
 					public void run() {
-						owner.resetSelection();
+						owner.resetSelection(false);
 					}
 	    			
 	    		}.schedule(0);
@@ -322,6 +334,9 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		return (FocusWidget) ((HasInplaceEdit)widget).wrapElement(el);
 	}
 
+	public interface DisplayValueFormatter<C> {
+		public String format(C value);
+	}
 
 
 }

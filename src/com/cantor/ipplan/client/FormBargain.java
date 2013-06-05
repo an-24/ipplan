@@ -16,6 +16,8 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -74,6 +76,10 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private List<Integer> errorList = new ArrayList<Integer>();
 	private Label lVersion;
 	private Label lDateCreated;
+
+	private Button btnCosts;
+
+	private Label lAttentionPrePayment;
 
 	public FormBargain(BargainWrapper b) {
 		super();
@@ -217,21 +223,36 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 		ePrePayment = new CurrencyBox(bargain.bargainPrepayment);
 		ePrePayment.setWidth("130px");
+		ePrePayment.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				bargain.bargainPrepayment = ePrePayment.getValue(); 
+				setAttention();
+			}
+		});
 		setWidget(6, 1, ePrePayment);
+		
 
 		l = new Label("Расходы,");
 		setWidget(7, 0, l);
 
-		Button btn = new Button(bargain.bargainCosts==null?"<нет>":NumberFormat.getFormat("#,##0.00").format(bargain.bargainCosts/100.0));
-		btn.addClickHandler(new ClickHandler() {
+		btnCosts = new Button(getTotalCostDisplay());
+		btnCosts.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				FormCost f = new FormCost(bargain);
+				FormCost f = new FormCost(bargain, new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						btnCosts.setText(getTotalCostDisplay());
+						lPaymentCost.setValue(bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts/100.0);
+						setAttention();
+					}
+				});
 				f.center();
 			}
 		});
-		setWidget(7, 1, btn);
-		btn.setWidth("140px");
+		setWidget(7, 1, btnCosts);
+		btnCosts.setWidth("140px");
 		
 		lDeltaCosts = newDeltaNumberLabel(0); //TODO
 		setWidget(7, 2, lDeltaCosts);
@@ -244,12 +265,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		lPaymentCost.setWidth("130px");
 		setWidget(8, 1, lPaymentCost);
 		
-		if(bargain.bargainPaymentCosts!=null && bargain.bargainPaymentCosts>bargain.bargainPrepayment) {
-			l = new Label("(аванс не покрывает расходы)");
-			l.setStyleName("Attention3");
-			setWidget(8, 3, l);
-			
-		};
+		lAttentionPrePayment = new Label("");
+		setWidget(8, 2, lAttentionPrePayment);
 		
 		l = new Label("Маржа");
 		setWidget(9, 0, l);
@@ -313,7 +330,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 				save(false);
 			}
 		});
-		btn  = new Button("Сохранить и Закрыть");
+		Button btn  = new Button("Сохранить и Закрыть");
 		ph.add(btn);
 		btn.addClickHandler(new ClickHandler() {
 			@Override
@@ -339,6 +356,10 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		setAttention();
 		lockControl();
 
+	}
+
+	private String getTotalCostDisplay() {
+		return bargain.bargainCosts==null?"<нет>":NumberFormat.getFormat("#,##0.00").format(bargain.bargainCosts/100.0);
 	}
 
 	/**
@@ -488,7 +509,16 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			lAttention.removeStyleName("Attention1");
 			lAttention.removeStyleName("Attention2");
 			lAttention.removeStyleName("Attention3");
-		}	
+		}
+		int prePay = bargain.bargainPrepayment==null?0:bargain.bargainPrepayment;
+		int cost = bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts;
+		if(cost>prePay) {
+			lAttentionPrePayment.setText("(аванс не покрывает расходы)");
+			lAttentionPrePayment.addStyleName("Attention3");
+		} else {
+			lAttentionPrePayment.setText("");
+			lAttentionPrePayment.removeStyleName("Attention3");
+		}
 			
 	}
 

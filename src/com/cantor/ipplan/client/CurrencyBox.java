@@ -4,6 +4,7 @@ package com.cantor.ipplan.client;
 import java.text.ParseException;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -12,19 +13,21 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.text.shared.AbstractRenderer;
 import com.google.gwt.text.shared.Parser;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ValueBox;
+import com.google.gwt.user.client.ui.Widget;
 
-public class CurrencyBox extends ValueBox<Integer> {
+public class CurrencyBox extends ValueBox<Integer> implements HasInplaceEdit {
 	
 	static final private NumberFormat displayFormat = NumberFormat.getFormat("#,##0.00");
 	static final private String decimalSep = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
 
 	public CurrencyBox() {
-	    super(Document.get().createTextInputElement(), new CurrencyRenderer(), new CurrencyParser());
+		this((Integer)null);
 	}
-	
+
 	public CurrencyBox(Integer v) {
-		this();
+		super(Document.get().createTextInputElement(), new CurrencyRenderer(), new CurrencyParser());
 		setStyleName("gwt-CurrencyBox");
 		setValue(v);
 		
@@ -43,7 +46,12 @@ public class CurrencyBox extends ValueBox<Integer> {
 	}
 	
 
-	  static public class CurrencyRenderer extends AbstractRenderer<Integer> {
+	protected CurrencyBox(Element e) {
+		    super(e, new CurrencyRenderer(), new CurrencyParser());
+	}
+
+
+	static public class CurrencyRenderer extends AbstractRenderer<Integer> {
 		  @Override
 		  public String render(Integer object) {
 			  if (object == null) return "";
@@ -80,6 +88,25 @@ public class CurrencyBox extends ValueBox<Integer> {
 		    }
 		}
 		  
-	  };
+	  }
+
+	@Override
+	public Widget wrapElement(Element e) {
+	    assert Document.get().getBody().isOrHasChild(e);
+	    CurrencyBox valueBox = new CurrencyBox(e);
+	    valueBox.onAttach();
+	    return valueBox;
+	}
+
+	@Override
+	public boolean setEditValue(Object value) {
+		setValue((Integer) value);
+		return true;
+	}
+
+	@Override
+	public Object getEditValue() {
+		return getValue();
+	};
 	  
 }

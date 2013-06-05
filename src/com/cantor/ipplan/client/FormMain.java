@@ -35,7 +35,6 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.NumberLabel;
-import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -43,9 +42,11 @@ import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.cantor.ipplan.client.Slider;
+import com.cantor.ipplan.client.CellTable.SelectionEventManager;
 import com.cantor.ipplan.client.Slider.ChangeEvent;
 import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.ValueBoxBase.TextAlignment;
+import com.google.gwt.view.client.NoSelectionModel;
 
 public class FormMain extends Form {
 	
@@ -221,7 +222,9 @@ public class FormMain extends Form {
 		tab1.setWidget(4, 0, simplePanel);
 		simplePanel.setSize("100%", "200px");
 		
-		tableAttention = new CellTable<BargainWrapper>();
+		tableAttention = new CellTable<BargainWrapper>(5);
+		tableAttention.setSelectionModel(null);
+
 		simplePanel.setWidget(tableAttention);
 		tableAttention.setSize("100%", "");
 		
@@ -278,6 +281,11 @@ public class FormMain extends Form {
 		tableAttention.addColumn(c2,"Сотрудник");
 		tableAttention.addColumn(с3,"Выручка");
 		tableAttention.addColumn(c4,"");
+		
+		tableAttention.setColumnWidth(c1, "300px");
+		tableAttention.setColumnWidth(c2, "150px");
+		tableAttention.setColumnWidth(с3, "80px");
+		
 		tab1.getFlexCellFormatter().setColSpan(4, 0, 3);
 		tab1.getCellFormatter().setVerticalAlignment(1, 0, HasVerticalAlignment.ALIGN_BOTTOM);
 		tab1.getCellFormatter().setVerticalAlignment(3, 0, HasVerticalAlignment.ALIGN_BOTTOM);

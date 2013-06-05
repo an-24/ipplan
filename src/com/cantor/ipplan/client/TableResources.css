@@ -2,7 +2,8 @@
 
 
 .cellTableWidget {
-  table-layout: fixed;	
+  table-layout: fixed;
+  outline: none;	
 }
 
 

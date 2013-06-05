@@ -4,17 +4,24 @@ import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.cantor.ipplan.shared.BargaincostsWrapper;
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.CheckboxCell;
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.view.client.CellPreviewEvent;
@@ -24,6 +31,7 @@ import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.MultiSelectionModel;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.Range;
+import com.google.gwt.view.client.RowCountChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SelectionModel;
@@ -36,6 +44,8 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	private ListDataProvider<T> provider;
 	private T currentValue;
 	protected boolean alwaysShowEditor = true;
+	private List<T> checkedList = new ArrayList<T>();
+	private DataChangeEvent<T> dataChangeEvent =  null;
 
 	public CellTable(int pageSize) {
 		this(pageSize,null);
@@ -44,7 +54,6 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	public CellTable(int pageSize, ProvidesKey<T> keyProvider) {
 		super(pageSize, (CellTable.Resources)GWT.create(TableResources.class), keyProvider);
 		getElement().setAttribute("tabindex", "0");
-		//setStyleName("gwt-CellTable");
 		
 		final RecordSelectionModel smodel = new RecordSelectionModel(new CanSelection<T>() {
 			@Override
@@ -64,14 +73,75 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 			        @Override
 			        public void execute() {
 						currentValue = smodel.getSelectedObject();
-						if(alwaysShowEditor) setEditorMode(true);
+						if(alwaysShowEditor && currentValue!=null) {
+							int row = getCurrentRowOnPage();
+							// нужно сменить страницу
+							if(row<0) {
+								int index = provider.getList().indexOf(currentValue);
+								int pageSize = getPageSize();
+							    setVisibleRange(pageSize * index/pageSize, pageSize);
+							    // нужно чтобы обновился state
+							    ScheduledCommand pending = new ScheduledCommand() {
+									@Override
+									public void execute() {
+										setEditorMode(true);
+									}
+							    };
+							    Scheduler.get().scheduleFinally(pending);
+							} else
+							setEditorMode(true);
+						}
 			        }
 			    };
 			    Scheduler.get().scheduleFinally(pendingEditMode);
 			}
 		});
 		setSelectionModel(smodel,new SelectionEventManager());
+		setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 	}
+	
+	public Column createCheckedColumn(final ChangeCheckListEvent handler) {
+		Column<T, Boolean> c0 = new Column<T, Boolean>(new CheckboxCell()) { 
+	        @Override 
+	        public Boolean getValue(T object) { 
+	            return checkedList.contains(object); 
+	        } 
+	    }; 
+
+	    c0.setFieldUpdater(new FieldUpdater<T, Boolean>() { 
+	        public void update(int index, T object, Boolean value) {
+	        	if(value) checkedList.add(object); 
+	        		 else checkedList.remove(object);
+	        	if(handler!=null) handler.onChange();
+	        	//btnDelete.setEnabled(checkedList.size()>0);
+	        } 
+	    });
+	    
+	    Header<Boolean> c0Header = new Header<Boolean>(new CheckboxCell(true,false)) { 
+	        @Override 
+	        public Boolean getValue() { 
+	        	int len = provider.getList().size();
+	            return len>0 && checkedList.size()==len; 
+	        } 
+	    }; 
+	    c0Header.setHeaderStyleNames("pad0");
+	    c0Header.setUpdater(new ValueUpdater<Boolean>() {
+	        @Override
+	        public void update(Boolean value) {
+        		checkedList.clear();
+	        	if(value) checkedList.addAll(provider.getList());
+				resetSelection(true);
+				redraw();
+	        	if(handler!=null) handler.onChange();
+	        	//btnDelete.setEnabled(checkedList.size()>0);
+	        }
+	    });
+	    insertColumn(0, c0,c0Header);
+	    setColumnWidth(c0, "30px");	    
+	    return c0;
+	}
+	
+	
 	
 	public void setEditorMode(boolean b) {
 		for (int i = 0, len = getColumnCount(); i < len; i++) {
@@ -81,6 +151,12 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 			}
 		}
 	}
+	
+	// stub 
+	public HandlerRegistration addRowCountChangeHandler(RowCountChangeEvent.Handler handler) {
+		if(handler instanceof GridPager.PagerHandler) return super.addRowCountChangeHandler(handler);
+		return null;
+	};
 	
 	public boolean isEditorMode() {
 		for (int i = 0, len = getColumnCount(); i < len; i++) {
@@ -113,16 +189,6 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		return null;
 	}
 	
-	public boolean post() {
-		for (int i = 0, len = getColumnCount(); i < len; i++) {
-			Cell<?> cell = getColumn(i).getCell();
-			if(cell instanceof InplaceEditor) {
-				if(!((InplaceEditor<?>)cell).commit()) return false;
-			}	
-		}
-		return true;
-	}
-
 	public void setDataProvider(ListDataProvider<T> provider) {
 		this.provider = provider;
 	}
@@ -131,11 +197,11 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		return provider;
 	}
 	
-	public void setValues(List<? extends T> values) {
+	public void setValues(List<T> values) {
 		setRowData(0,values);
 	}
 
-	public List<? extends T> getValues() {
+	public List<T> getValues() {
 		return provider.getList();
 	}
 	
@@ -206,6 +272,8 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 
 	protected void onBrowserEvent2(Event event) {
     	String type = event.getType();
+    	
+    	if(getSelectionModel()!=null)
     	if(KEYDOWN.equals(type)) {
     		T n = null;
     		final int code = event.getKeyCode();
@@ -284,10 +352,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 				@Override
 				public void run() {
 					if(isEditorMode()) {
-			    		Element e = Form.getActiveElement(getElement());
-			    		if(e==null || !Form.isHasChild(getElement(),e)) {
-			    			if(post()) setEditorMode(false);
-			    		}
+						resetSelection(false);
 					}
 				}
     			
@@ -296,9 +361,9 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		super.onBrowserEvent2(event);
 	}
 	
-	public boolean resetSelection() {
+	public boolean resetSelection(boolean always) {
 		Element e = Form.getActiveElement(getElement());
-		if(e==null || !Form.isHasChild(getElement(),e)) {
+		if(e==null || !Form.isHasChild(getElement(),e) || always) {
 			if(post()) {
 				setEditorMode(false);
 				((RecordSelectionModel)getSelectionModel()).clear();
@@ -321,7 +386,8 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	
 	private void priorPage() {
 		Range range = getVisibleRange();
-	    setPageStart(range.getStart() - range.getLength());
+		int idx = range.getStart() - range.getLength();
+	    setPageStart(idx<0?0:idx);
 	}
 	
 	protected boolean hasPriorPage() {
@@ -376,11 +442,55 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		        }
 		    }
 	    }
-		
-
-		
 	}
 
+	public boolean post() {
+		if(dataChangeEvent!=null && !dataChangeEvent.onBeforePost()) return false;
+		for (int i = 0, len = getColumnCount(); i < len; i++) {
+			Cell<?> cell = getColumn(i).getCell();
+			if(cell instanceof InplaceEditor) {
+				if(!((InplaceEditor<?>)cell).commit()) return false;
+			}	
+		}
+		if(dataChangeEvent!=null) dataChangeEvent.onAfterPost();
+		return true;
+	}
+
+
+	public void edit(T object) {
+		getSelectionModel().setSelected(object, true);
+	    ScheduledCommand pending = new ScheduledCommand() {
+	        @Override
+	        public void execute() {
+	    		InplaceEditor<?> editor = getFirstEditor();
+	    		if(editor!=null) editor.setFocus();
+	        }
+	    };
+	    Scheduler.get().scheduleFinally(pending);
+	}
+
+	public void delete(T c) {
+		if(dataChangeEvent!=null && !dataChangeEvent.onBeforeDelete(c)) return;
+	    if(provider.getList().remove(c))
+	    	dataChangeEvent.onAfterDelete(c);
+	}
+
+	public ListDataProvider<T> getProvider() {
+		return provider;
+	}
+
+	public List<T> getCheckedList() {
+		return checkedList;
+	}
+
+	public DataChangeEvent<T> getDataChangeEvent() {
+		return dataChangeEvent;
+	}
+
+	public void setDataChangeEvent(DataChangeEvent<T> dataChangeEvent) {
+		this.dataChangeEvent = dataChangeEvent;
+	}
+	
     // copy SingleSelectionModel  
     class RecordSelectionModel extends AbstractSelectionModel<T> implements SetSelectionModel<T> {
 
@@ -496,6 +606,14 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
     	    };
     	  }
     }
+
+	public interface ChangeCheckListEvent {
+		public void onChange();
+	}
+
+
+
+    
 
 
 }
