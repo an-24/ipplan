@@ -78,6 +78,15 @@ public class StatusWrapper  implements java.io.Serializable,com.google.gwt.user.
 		return allStatuses;
 	}
 
+	public StatusWrapper copy() {
+		StatusWrapper wrap = new StatusWrapper();
+		wrap.statusId = statusId;
+		wrap.puser_owner_id = puser_owner_id;
+		wrap.statusName = statusName;
+		wrap.statusDayLimit = statusDayLimit;
+		return wrap;
+	}
+
 
 	
 }

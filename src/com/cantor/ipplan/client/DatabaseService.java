@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
@@ -41,5 +42,6 @@ public interface DatabaseService extends RemoteService {
 	public BargainWrapper saveBargain(BargainWrapper bargain, boolean drop) throws Exception;
 	public List<CustomerWrapper> findCustomer(String query);
 	public List<StatusWrapper> getAllStatuses();
+	public List<CostsWrapper> findCost(String newtext);
 	
 }

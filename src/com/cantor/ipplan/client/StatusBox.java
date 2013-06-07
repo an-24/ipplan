@@ -66,8 +66,8 @@ public class StatusBox extends FocusWidget implements HasValueChangeHandlers<Sta
 	
 	protected void undo() {
 		if(locked) {
-			setStatus(oldStatus);
 			lock(false);
+			setStatus(oldStatus);
 		}
 	}
 

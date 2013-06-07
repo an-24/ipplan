@@ -13,6 +13,7 @@ import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
@@ -33,12 +34,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 
 @SuppressWarnings("rawtypes")
 public class FormBargain extends FlexTable implements ValueChangeHandler{
@@ -84,7 +85,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	public FormBargain(BargainWrapper b) {
 		super();
 		setCellPadding(4);
-		setSize("600px", "");
+		setSize("460px", "");
+		//getElement().getStyle().setTableLayout(TableLayout.FIXED);
 		setStyleName("FormBargain");
 		addStyleName("tableBorderCollapse");
 		this.bargain = b;
@@ -121,7 +123,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		
 		dbStart = new DateBox();
 		setWidget(2, 0, dbStart);
-		getCellFormatter().setWidth(2, 0, "160px");
+		getCellFormatter().setWidth(2, 0, "150px");
 		dbStart.setWidth("113px");
 		dbStart.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
 		dbStart.setValue(bargain.bargainStart);
@@ -129,11 +131,12 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		
 		Button button = new Button("Календарь");
 		setWidget(2, 1, button);
+		getCellFormatter().setWidth(2, 1, "150px");
 		getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		dbFinish = new DateBox();
 		setWidget(2, 2, dbFinish);
-		getCellFormatter().setWidth(2, 2, "160px");
+		getCellFormatter().setWidth(2, 2, "150px");
 		dbFinish.setWidth("113px");
 		dbFinish.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
 		dbFinish.setValue(bargain.bargainFinish);
@@ -179,7 +182,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getCellFormatter().setHorizontalAlignment(3, 2, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		l = new Label("Заказчик:");
-		l.addStyleName("tpad10");
+		//l.addStyleName("tpad10");
+		l.getElement().getStyle().setPaddingTop(20, Unit.PX);
 		setWidget(4, 0, l);
 		getCellFormatter().setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		getCellFormatter().setVerticalAlignment(4, 0, HasVerticalAlignment.ALIGN_TOP);
@@ -187,15 +191,18 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 		p = new VerticalPanel();
 		p.addStyleName("bpad10");
+		p.addStyleName("tpad10");
+		//p.getElement().getStyle().setMargin(-10., Unit.PX);
 		
 		eCustomer = new CustomerBox(getDataBaseService());
 		p.add(eCustomer);		
 		eCustomer.setCustomer(bargain.customer);
 		eCustomer.getElement().setAttribute("placeholder", "введите имя клиента");
-		eCustomer.setWidth("415px");
+		eCustomer.setWidth("100%");
 		
 		eContract = new ContractBox(bargain.contract);
 		p.add(eContract);
+		p.setWidth("100%");
 
 		setWidget(4, 1, p);
 		getFlexCellFormatter().setColSpan(4, 1, 2);
@@ -238,17 +245,32 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 		btnCosts = new Button(getTotalCostDisplay());
 		btnCosts.addClickHandler(new ClickHandler() {
+			private FormCost formCost;
+
 			@Override
 			public void onClick(ClickEvent event) {
-				FormCost f = new FormCost(bargain, new ClickHandler() {
+				formCost = new FormCost(bargain, dbservice, new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
+						BargainWrapper nb = formCost.getBargain();
+						bargain.bargaincostses.clear();
+						bargain.bargaincostses.addAll(nb.bargaincostses);
+						bargain.bargainPaymentCosts = nb.bargainPaymentCosts;
+						bargain.bargainCosts = nb.bargainCosts;
+						
 						btnCosts.setText(getTotalCostDisplay());
 						lPaymentCost.setValue(bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts/100.0);
-						setAttention();
+						
+						class ChangeEvent extends ValueChangeEvent<BargainWrapper> {
+							protected ChangeEvent(BargainWrapper value, Object source) {
+								super(value);
+								setSource(source);
+							}
+						};
+						onValueChange(new ChangeEvent(bargain, btnCosts));
 					}
 				});
-				f.center();
+				formCost.center();
 			}
 		});
 		setWidget(7, 1, btnCosts);
@@ -351,6 +373,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getFlexCellFormatter().setColSpan(14, 0, 3);
 		getCellFormatter().setHorizontalAlignment(14, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		getCellFormatter().setVerticalAlignment(14, 0, HasVerticalAlignment.ALIGN_MIDDLE);
+		
 		
 		
 		setAttention();
@@ -592,7 +615,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		if(event.getSource()==eRevenue) bargain.bargainRevenue = eRevenue.getValue();
 		if(event.getSource()==ePrePayment) bargain.bargainPrepayment = ePrePayment.getValue();
 		if(event.getSource()==eFine) bargain.bargainFine = eFine.getValue();
-		if(event.getSource()==eRevenue || event.getSource()==eFine)
+		if(event.getSource()==eRevenue || event.getSource()==eFine || event.getSource()==btnCosts)
 			bargain.bargainTax = bargain.calcTax(); 
 		
 		// обновляем на форме
@@ -606,6 +629,12 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			setAttention();
 		};
 		if(event.getSource()==eFine) {
+			lTax.setValue(bargain.bargainTax/100.0);
+			lProfit.setValue(bargain.getProfit()/100.0);
+			setAttention();
+		};
+		if(event.getSource()==btnCosts) {
+			lMargin.setValue(bargain.getMargin()/100.0);
 			lTax.setValue(bargain.bargainTax/100.0);
 			lProfit.setValue(bargain.getProfit()/100.0);
 			setAttention();
@@ -704,6 +733,5 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		// TODO Auto-generated method stub
 		
 	}
-	
 	
 }

@@ -40,11 +40,13 @@ import com.cantor.ipplan.client.DatabaseService;
 import com.cantor.ipplan.client.LoginService;
 import com.cantor.ipplan.core.IdGenerator;
 import com.cantor.ipplan.db.ud.Bargain;
+import com.cantor.ipplan.db.ud.Costs;
 import com.cantor.ipplan.db.ud.Customer;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.db.ud.Status;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
@@ -253,14 +255,15 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 					bargain.bargainCreated = new Date();
 					bargain.puser = getLoginUser();
 					isnew = true;
-				}
+				} else
+					session.update(b);
+					
 				b.fromClient(bargain);
 				if(isnew) {
 					// root - он же
 					b.setRootBargain(b); 
 					session.save(b);
-				} else
-					session.update(b);
+				};
 
 				// если не сбрасываем, то читаем вновь добавленный объект, тчобы возвратить 
 				if(!drop) {
@@ -302,6 +305,28 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			List<Customer> lc = q.list();
 			for (Customer customer : lc) 
 				list.add(customer.toClient());
+    		return list;
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public List<CostsWrapper> findCost(String query) {
+		List<CostsWrapper> list = new ArrayList<CostsWrapper>();
+		if(isLogged()==null) return list;
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+      		String sql = "select C.costs_id \"CostsId\", C.costs_name \"CostsName\"," +
+      				     "       C.costs_sortcode \"CostsSortcode\" from costs C where ";
+      		sql+="UPPER(C.costs_name) like :q";
+      		sql+=" order by C.costs_sortcode";
+			Query q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(Costs.class));
+			q.setParameter("q", "%"+query.toUpperCase()+"%");
+			List<Costs> lc = q.list();
+			for (Costs c : lc) 
+				list.add(c.toClient());
     		return list;
     	} finally {
     		session.close();
@@ -522,6 +547,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		HttpSession sess = this.getThreadLocalRequest().getSession();
 		return (Integer) sess.getAttribute("userId");
 	}
+
 
 
 

@@ -1030,6 +1030,7 @@ a:hover {
   overflow: hidden;
   border-radius: 6px;
   cursor:default;
+  z-index:9999;
 }
 
 .gwt-SuggestBoxPopup .item {
@@ -1518,4 +1519,9 @@ td.datePickerMonth {
 .gwt-SplitLayoutPanel-VDragger {
   background: #e7e7e7 url(images/thumb_horz.png) center center no-repeat;
   cursor: row-resize;
+}
+
+.gwt-CellTable-Error {
+  background-color: #cc0000 !important;
+  border-color: #cc0000 !important;
 }

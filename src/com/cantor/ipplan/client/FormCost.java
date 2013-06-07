@@ -7,20 +7,23 @@ import com.cantor.ipplan.client.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.client.InplaceEditor.DisplayValueFormatter;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.BargaincostsWrapper;
+import com.cantor.ipplan.shared.CostsWrapper;
 import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.view.client.ListDataProvider;
-import com.google.web.bindery.event.shared.Event;
 
 public class FormCost extends Dialog {
 
@@ -28,11 +31,13 @@ public class FormCost extends Dialog {
 	private CellTable<BargaincostsWrapper> mainTable;
 	private ListDataProvider<BargaincostsWrapper> listProvider;
 	private ClickHandler okExternalHandler;
-	//private List<T> checkedList = new ArrayList<T>();
+	private HTML lTotal;
+	private Button btnAdd;
+	private NumberFormat currencyFormat = NumberFormat.getFormat("#,##0.00");
 
-	public FormCost(BargainWrapper bw, ClickHandler ok) {
+	public FormCost(BargainWrapper bw, DatabaseServiceAsync dbservice, ClickHandler ok) {
 		super("Расходы");
-		this.bargain = bw;
+		this.bargain = bw.copy();
 		this.okExternalHandler = ok;
 		
 		FlexTable table = getContent();
@@ -42,7 +47,8 @@ public class FormCost extends Dialog {
 		table.setCellPadding(2);
 		HorizontalPanel p = new HorizontalPanel();
 		p.setSpacing(5);
-		Button btnAdd = new Button("Новый");
+		p.setWidth("100%");
+		btnAdd = new Button("Новый");
 		btnAdd.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -58,6 +64,15 @@ public class FormCost extends Dialog {
 				}.schedule(0);
 			}
 		});
+		btnAdd.addAttachHandler(new AttachEvent.Handler() {
+			@Override
+			public void onAttachOrDetach(AttachEvent event) {
+				if(event.isAttached()) {
+					btnAdd.getElement().getParentElement().getStyle().setWidth(70,Unit.PX);
+				}
+			}
+		});
+		
 		final Button btnDelete = new Button("Удалить");
 		btnDelete.setEnabled(false);
 		btnDelete.addClickHandler(new ClickHandler() {
@@ -75,27 +90,38 @@ public class FormCost extends Dialog {
 		
 		p.add(btnAdd);
 		p.add(btnDelete);
+		
+		lTotal = new HTML("");
+		lTotal.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		p.add(lTotal);
+		
 		table.setWidget(0, 0, p);
 		table.getFlexCellFormatter().setHeight(0, 0, "20px");
 
 		mainTable = new CellTable<BargaincostsWrapper>(10);
 		
-		TextBox tb = new TextBox();
+		//TextBox tb = new TextBox();
+		CostItemBox tb = new CostItemBox(dbservice);
 		tb.getElement().setAttribute("placeholder", "Введите расходную статью");
-		Column<BargaincostsWrapper,String> c1 = new Column<BargaincostsWrapper,String>(new InplaceEditor(tb,mainTable)) {
+		
+		Column<BargaincostsWrapper,CostsWrapper> c1 = new Column<BargaincostsWrapper,CostsWrapper>(new InplaceEditor(tb,mainTable, 
+				new DisplayValueFormatter<CostsWrapper>(){
+					@Override
+					public String format(CostsWrapper value) {
+						return (value==null)?"":value.costsName;
+					}
+				})) {
+						@Override
+						public CostsWrapper getValue(BargaincostsWrapper object) {
+							return (object==null)?null:object.cost;
+						}
+				};
+		c1.setFieldUpdater(new FieldUpdater<BargaincostsWrapper, CostsWrapper>() {
 			@Override
-			public String getValue(BargaincostsWrapper object) {
-				return (object==null || object.cost==null)?"":object.cost.costsName;
-			}
-		};
-		c1.setFieldUpdater(new FieldUpdater<BargaincostsWrapper, String>() {
-			@Override
-			public void update(int index, BargaincostsWrapper object, String value) {
-				//TODO
+			public void update(int index, BargaincostsWrapper object, CostsWrapper value) {
+				object.cost = value;
 			}
 		});
-		
-		final NumberFormat currencyFormat = NumberFormat.getFormat("#,##0.00");
 		
 		DisplayValueFormatter<Integer> currFormater = new InplaceEditor.DisplayValueFormatter<Integer>(){
 			@Override
@@ -176,11 +202,14 @@ public class FormCost extends Dialog {
 		setButtonOkClickHandler(new ClickHandler() {
 			
 			@Override
-			public void onClick(ClickEvent event) {
+			public void onClick(final ClickEvent event) {
+				cancel();
+				mainTable.post();
 				if(validate()) {
 					bargain.bargaincostses.clear();
 					bargain.bargaincostses.addAll(mainTable.getValues());
 					if(okExternalHandler!=null) okExternalHandler.onClick(event);
+					hide();
 				}
 			}
 		});
@@ -223,12 +252,19 @@ public class FormCost extends Dialog {
 	}
 
 	protected void showTotals() {
-		// TODO Auto-generated method stub
-		
+		String s =  "Всего <span class=\"main-text\">"+currencyFormat.format(bargain.bargainCosts/100.0)+"</span>"+
+				    " (оплачено <span class=\"main-text\">"+currencyFormat.format(bargain.bargainPaymentCosts/100.0)+"</span>)";
+		lTotal.setHTML(s);
 	}
 
 	protected boolean validate() {
-		// TODO Auto-generated method stub
+		List<BargaincostsWrapper> list = mainTable.getValues();
+		for (BargaincostsWrapper bcw : list) {
+			if(bcw.cost==null) {
+				mainTable.showError(bcw,1,"Отсутствует расходная статья");
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -236,6 +272,10 @@ public class FormCost extends Dialog {
 		listProvider = Form.prepareGrid(mainTable, bargain.bargaincostses,false);
 		mainTable.setRowCount(bargain.bargaincostses.size());
 		showTotals();
+	}
+
+	public BargainWrapper getBargain() {
+		return bargain;
 	}
 	
 }

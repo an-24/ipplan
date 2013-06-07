@@ -24,27 +24,29 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.view.client.Range;
+import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.event.dom.client.HasBlurHandlers;
 
 @SuppressWarnings("rawtypes")
 public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewData> {
 
 	private SimpleSafeHtmlRenderer renderer;
-	private FocusWidget widget;
+	private Widget widget;
 	private CellTable owner;
 	public ViewData currentViewEdit;
 	private DisplayValueFormatter<C> formatter;
 
-	public InplaceEditor(FocusWidget editor, CellTable owner) {
+	public InplaceEditor(Widget editor, CellTable owner) {
 	    this(editor,owner,null);
 	}
 
-	public InplaceEditor(FocusWidget editor, CellTable owner, DisplayValueFormatter<C> formatter) {
+	public InplaceEditor(Widget editor, CellTable owner, DisplayValueFormatter<C> formatter) {
 	    super(CLICK, KEYUP, KEYDOWN, BLUR);
 	    widget = editor;
-		widget.setTabIndex(0);
+		((Focusable)widget).setTabIndex(0);
 	    this.renderer = SimpleSafeHtmlRenderer.getInstance();
 	    this.owner = owner;
 	    this.formatter = formatter;
@@ -53,7 +55,7 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 	static class ViewData<C> {
 
 	    private boolean isEditing;
-	    private FocusWidget editor;
+	    private Widget editor;
 
 	    private C original;
 	    private C value;
@@ -94,7 +96,7 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		private void prepareEditor() {
 			if(editor instanceof ValueBoxBase)
 				((ValueBoxBase)editor).selectAll();
-			editor.setFocus(true);
+			((Focusable)editor).setFocus(true);
 		}
 		
 	}
@@ -132,7 +134,8 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 	        return;
 	      } else {
 	    	  C v = (C) viewData.value;
-	    	  toRender = formatter==null?v.toString():formatter.format(v);
+	    	  if(v!=null)
+	    		  toRender = formatter==null?v.toString():formatter.format(v);
 	      }  
 	    }
 
@@ -249,7 +252,9 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		parent.getStyle().setMarginRight(10, Unit.PX);
 		parent.getStyle().setOverflow(Overflow.VISIBLE);
 		
-		viewData.editor.addBlurHandler(new BlurHandler() {
+		
+		
+		((HasBlurHandlers)viewData.editor).addBlurHandler(new BlurHandler() {
 			@Override
 			public void onBlur(final BlurEvent event) {
 	    		new Timer() {
@@ -330,8 +335,8 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		updater.update((C) ((HasInplaceEdit)viewData.editor).getEditValue());
 	}
 
-	private FocusWidget wrap(Element el) {
-		return (FocusWidget) ((HasInplaceEdit)widget).wrapElement(el);
+	private Widget wrap(Element el) {
+		return (Widget) ((HasInplaceEdit)widget).wrapElement(el);
 	}
 
 	public interface DisplayValueFormatter<C> {

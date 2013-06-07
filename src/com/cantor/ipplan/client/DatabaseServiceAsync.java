@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
@@ -30,4 +31,5 @@ public interface DatabaseServiceAsync {
 	void findCustomer(String query,
 			AsyncCallback<List<CustomerWrapper>> callback);
 	void getAllStatuses(AsyncCallback<List<StatusWrapper>> callback);
+	void findCost(String newtext,AsyncCallback<List<CostsWrapper>> asyncCallback);
 }

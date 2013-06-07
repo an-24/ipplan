@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.cantor.ipplan.db.ud.Bargain;
+import com.cantor.ipplan.db.ud.Bargaincosts;
+
 
 @SuppressWarnings("serial")
 public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable {
@@ -117,6 +120,37 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 			}; 
 		}
 		return null;
+	}
+
+	public BargainWrapper copy() {
+		BargainWrapper wrap = new BargainWrapper();
+		wrap.bargainId = bargainId;
+		wrap.bargainName = bargainName;
+		wrap.contract = contract!=null?contract.copy():null; 
+		wrap.customer = customer!=null?customer.copy():null;
+		wrap.puser = puser;  //no copy
+		wrap.status = status.copy();
+		wrap.bargainVer =  bargainVer;
+		wrap.bargain = bargain;
+		wrap.bargainStart = bargainStart;
+		wrap.bargainFinish = bargainFinish;
+		wrap.bargainRevenue = bargainRevenue;
+		wrap.bargainPrepayment = bargainPrepayment;
+		wrap.bargainCosts = bargainCosts;
+		wrap.bargainPaymentCosts = bargainPaymentCosts;
+		wrap.bargainFine = bargainFine;
+		wrap.bargainTax = bargainTax;
+		wrap.bargainHead = bargainHead;
+		wrap.bargainCreated = bargainCreated;
+		
+		wrap.bargaincostses = new HashSet<BargaincostsWrapper>(0);
+		for (BargaincostsWrapper bcw : bargaincostses) {
+			wrap.bargaincostses.add(bcw.copy());
+		}
+		
+		wrap.isnew = isnew;
+		wrap.dirty = dirty; 
+		return wrap;
 	}
 	
 }

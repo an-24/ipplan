@@ -161,6 +161,12 @@ h1 {
   width: 600px;
 }
 
+.main-text {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #004276;
+}
+
 .gwt-CurrencyLabel {
 	display:block;
 	text-align: right;
@@ -244,6 +250,21 @@ h1 {
     background: url("main/gwt/images/ui-icons_cc0000_256x240.png") no-repeat scroll 5px -191px transparent;
 }
 
+.gwt-InnerBox {
+    border:0px none;
+    width: 100%;
+    padding-right: 20px;
+    -moz-box-sizing: border-box; /* Äëÿ Firefox */
+    -webkit-box-sizing: border-box; /* Äëÿ Safari è Chrome */
+    box-sizing: border-box; /* Äëÿ IE è Opera */
+}
+
+.gwt-InnerBox-Button {
+    position: relative;
+    margin-top: -20px;
+}
+
+
 .gwt-StatusBox {
   padding: 5px 4px;
   border: 1px solid #D8DCDF;
@@ -326,5 +347,5 @@ h1 {
 }
 
 .gwt-InplaceEditor {
-  width:100%;
+  width:100% !important;
 }

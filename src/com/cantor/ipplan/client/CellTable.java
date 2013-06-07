@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.cantor.ipplan.shared.BargaincostsWrapper;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
@@ -18,6 +17,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.Column;
@@ -363,7 +365,8 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	
 	public boolean resetSelection(boolean always) {
 		Element e = Form.getActiveElement(getElement());
-		if(e==null || !Form.isHasChild(getElement(),e) || always) {
+		boolean isMenubar = e.getAttribute("role").equals("menubar");
+		if(e==null || (!Form.isHasChild(getElement(),e) && !isMenubar) || always) {
 			if(post()) {
 				setEditorMode(false);
 				((RecordSelectionModel)getSelectionModel()).clear();
@@ -445,6 +448,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	}
 
 	public boolean post() {
+		resetErrors(getCurrentRowOnPage());
 		if(dataChangeEvent!=null && !dataChangeEvent.onBeforePost()) return false;
 		for (int i = 0, len = getColumnCount(); i < len; i++) {
 			Cell<?> cell = getColumn(i).getCell();
@@ -609,6 +613,37 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 
 	public interface ChangeCheckListEvent {
 		public void onChange();
+	}
+
+	public void showError(final T bcw, final int idx, final String text) {
+		final Column<T, ?> column = getColumn(idx);
+		resetSelection(true);
+		edit(bcw);
+	    ScheduledCommand pending = new ScheduledCommand() {
+	        @Override
+	        public void execute() {
+	        	InplaceEditor<?> editor = (column==null)?getFirstEditor():(InplaceEditor<?>)column.getCell(); 
+	    		if(editor!=null) {
+	    			editor.setFocus();
+	    			TableRowElement row = getRowElement(getVisibleItems().indexOf(bcw));
+	    			TableCellElement td = row.getCells().getItem(idx);
+	    			td.addClassName("gwt-CellTable-Error");
+	    			td.setAttribute("title", text);
+	    		}
+	        }
+	    };
+	    Scheduler.get().scheduleFinally(pending);
+	}
+	
+	public void resetErrors(int rowOnPage) {
+		if(rowOnPage<0) return;
+		TableRowElement row = getRowElement(rowOnPage);
+		NodeList<TableCellElement> cells = row.getCells();
+		for (int i = 0, len = cells.getLength(); i < len; i++) {
+			TableCellElement td = cells.getItem(i);
+			td.removeClassName("gwt-CellTable-Error");
+			td.removeAttribute("title");
+		}
 	}
 
 

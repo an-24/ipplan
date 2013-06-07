@@ -5,6 +5,8 @@ package com.cantor.ipplan.db.ud;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -27,6 +29,7 @@ import com.cantor.ipplan.core.DataBridge;
 import com.cantor.ipplan.core.IdGetter;
 import com.cantor.ipplan.shared.Attention;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.BargaincostsWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 
 /**
@@ -282,7 +285,7 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		this.bargainCreated = bargainCreated;
 	}
 	
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "bargain")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "bargain", cascade = CascadeType.ALL, orphanRemoval=true)
 	public Set<Bargaincosts> getBargaincostses() {
 		return this.bargaincostses;
 	}
@@ -342,6 +345,13 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		wrap.bargainHead = bargainHead;
 		wrap.bargainCreated = bargainCreated;
 		
+		wrap.bargaincostses.clear();
+		for (Bargaincosts bc : bargaincostses) { 
+			BargaincostsWrapper bcw = bc.toClient();
+			bcw.bargain = wrap;
+			wrap.bargaincostses.add(bcw);
+		}	
+		
 		wrap.isnew = newState;
 		if(dirty) wrap.modify();
 
@@ -387,6 +397,16 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		bargainTax = wrap.bargainTax;
 		bargainHead = wrap.bargainHead;
 		bargainCreated = wrap.bargainCreated;
+
+		Set<Bargaincosts> costes = getBargaincostses();
+		costes.clear();
+		for (BargaincostsWrapper bcw : wrap.bargaincostses) {
+			Bargaincosts bc = new Bargaincosts();
+			bc.fromClient(bcw);
+			bc.setBargain(this);
+			bc.setBargaincostsId(0); // нужно, чтобы запись вновь была добавлена
+			costes.add(bc);
+		};
 		
 		newState = wrap.isnew;
 		dirty = wrap.isDirty(); 
