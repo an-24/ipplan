@@ -15,8 +15,6 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.DataGrid;
-import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -36,9 +34,6 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.ui.ValuePicker;
-import com.google.gwt.user.cellview.client.CellList;
-import com.google.gwt.cell.client.TextCell;
 
 
 public class FormProfile extends Form {
@@ -55,8 +50,8 @@ public class FormProfile extends Form {
 	private ListBox lbChildren;
 	private PUserWrapper user;
 	private ComboBox cbTarif;
-	private DataGrid<SyncWrapper> syncGrid;
-	private DataGrid<PaymentsWrapper> payGrid;
+	private CellTable<SyncWrapper> syncGrid;
+	private CellTable<PaymentsWrapper> payGrid;
 
 	private LoginServiceAsync loginService = null;
 	private ProfileServiceAsync profService = null;
@@ -394,10 +389,10 @@ public class FormProfile extends Form {
 		Button button = new Button("Заплатить за полгода");
 		p33.add(button);
 		
-		SimplePager pagerPayTop = new SimplePager();
+		GridPager pagerPayTop = new GridPager();
 		Tab2.setWidget(1, 0, pagerPayTop);
 		
-		payGrid = new DataGrid<PaymentsWrapper>();
+		payGrid = new CellTable<PaymentsWrapper>(15);
 		pagerPayTop.setDisplay(payGrid);
 		Tab2.setWidget(2, 0, payGrid);
 		Tab2.getCellFormatter().setHeight(2, 0, "");
@@ -439,7 +434,7 @@ public class FormProfile extends Form {
 		prepareGrid(payGrid, user.paymentses);
 		Tab2.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		SimplePager pagerPayBottom = new SimplePager();
+		GridPager pagerPayBottom = new GridPager();
 		pagerPayBottom.setDisplay(payGrid);
 		Tab2.setWidget(3, 0, pagerPayBottom);
 		Tab2.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -471,11 +466,11 @@ public class FormProfile extends Form {
 			public void onClick(ClickEvent event) {
 				resetErrors();
 				if(tbNewPassword.getText().length()<7) {
-					showError(1, "Пароль слишком короткий. Требуется более 6 знаков");
+					showError(currentTab, tbNewPassword, "Пароль слишком короткий. Требуется более 6 знаков");
 					return;
 				};	
 				if(!tbNewPassword.getText().equals(tbRepeatPassword.getText())) {
-					showError(2, "Вам не удалось повторить пароль");
+					showError(currentTab, tbRepeatPassword, "Вам не удалось повторить пароль");
 					return;
 				};
 				if(loginService==null) loginService = GWT.create(LoginService.class);
@@ -499,10 +494,10 @@ public class FormProfile extends Form {
 		tabPanel.add(Tab4, "Синхронизация", false);
 		Tab4.setSize("100%", "3cm");
 		
-		SimplePager pagerSyncTop = new SimplePager();
+		GridPager pagerSyncTop = new GridPager();
 		Tab4.setWidget(0, 0, pagerSyncTop);
 		
-		syncGrid = new DataGrid<SyncWrapper>();
+		syncGrid = new CellTable<SyncWrapper>(15);
 		pagerSyncTop.setDisplay(syncGrid);
 		Tab4.setWidget(1, 0, syncGrid);
 		syncGrid.setSize("100%", "400px");
@@ -534,7 +529,7 @@ public class FormProfile extends Form {
 	    syncGrid.getColumnSortList().push(c2);
 	    Tab4.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 	    
-	    SimplePager pagerSyncBottom = new SimplePager();
+	    GridPager pagerSyncBottom = new GridPager();
 	    pagerSyncBottom.setDisplay(syncGrid);
 	    Tab4.setWidget(2, 0, pagerSyncBottom);
 	    Tab4.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -572,12 +567,12 @@ public class FormProfile extends Form {
 				dialog.resetErrors();
 				if(tbChildEmail.getText().isEmpty()) {
 					dialog.cancel();
-					dialog.showError(2, "Адрес электронной почты подчиненного не может быть пустым");
+					dialog.showError(tbChildEmail, "Адрес электронной почты подчиненного не может быть пустым");
 					return;
 				}
 				if (tbChildEmail.getText().equalsIgnoreCase(FormProfile.this.user.puserEmail)) {
 					dialog.cancel();
-					dialog.showError(2, "Нельзя быть подчиненным у самого себя");
+					dialog.showError(tbChildEmail, "Нельзя быть подчиненным у самого себя");
 					return;
 				}
 				if(profService==null) profService = GWT.create(ProfileService.class);
@@ -586,11 +581,11 @@ public class FormProfile extends Form {
 					@Override
 					public void onSuccess(Boolean result) {
 						if(!result) { 
-							dialog.showError(2, "Такой пользователь отсутствует");
+							dialog.showError(tbChildName, "Такой пользователь отсутствует");
 							return;
 						};
 						if(findChildren(tbChildEmail.getText())!=null) { 
-							dialog.showError(2, "Такой пользователь уже добавлен в список");
+							dialog.showError(tbChildName, "Такой пользователь уже добавлен в список");
 							return;
 						};
 						lbChildren.addItem(tbChildName.getText()+"("+tbChildEmail.getText()+")");
@@ -617,7 +612,7 @@ public class FormProfile extends Form {
 
 	protected boolean validateTab1() {
 		if(tbEmail.getText().isEmpty()) {
-			showError(3, "Электронный адрес не может быть пустым");
+			showError(currentTab, tbEmail, "Электронный адрес не может быть пустым");
 			return false;
 		}
 		return true;
@@ -634,22 +629,6 @@ public class FormProfile extends Form {
 		}
 		return null;
 	}
-
-	public void showError(int beforeRow,String message) {
-		rowError = currentTab.insertRow(beforeRow);
-		Label l = new Label(message);
-		l.setStyleName("serverResponseLabelError");
-		currentTab.getCellFormatter().setHorizontalAlignment(rowError, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		currentTab.getCellFormatter().setVerticalAlignment(rowError, 0, HasVerticalAlignment.ALIGN_MIDDLE);
-		currentTab.setWidget(rowError, 0, l);
-		currentTab.getFlexCellFormatter().setColSpan(rowError, 0, 2);
-	}
-
-	private void resetErrors() {
-		if(rowError>=0) currentTab.removeRow(rowError);
-		rowError = -1;
-	}
-	
 
 	private int getWidgetRow(Widget widget, FlexTable table) {
 	    for (int row = 0; row < table.getRowCount(); row++) {

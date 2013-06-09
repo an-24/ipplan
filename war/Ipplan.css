@@ -11,6 +11,15 @@ h1 {
 }
 
 
+#formContainer {
+  display: inline-block;
+  left: 50%;
+  margin-left: -125px;
+  margin-top: -20px;
+  position: absolute;
+  top: 50%;
+}
+
 /** Most GWT widgets already have a style name defined */
 
 
@@ -348,4 +357,20 @@ h1 {
 
 .gwt-InplaceEditor {
   width:100% !important;
+}
+
+.logo {
+  height: 40px;
+  width: 250px;
+}
+.logo img {
+  height:36px;
+/*  margin-left: -403px; */
+}
+
+img#apploader {
+  height: auto; 
+  padding-left: 10px; 
+  position: relative; 
+  top: -10px;
 }

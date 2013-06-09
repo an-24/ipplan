@@ -1,5 +1,8 @@
 package com.cantor.ipplan.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -16,7 +19,9 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 
 public class Dialog extends DialogBox {
@@ -29,6 +34,7 @@ public class Dialog extends DialogBox {
 	private ClickHandler okHandler;
 	private ClickHandler cancelHandler;
 	private boolean canceled;
+	private List<Integer> errorList = new ArrayList<Integer>();
 
 	public Dialog(String caption, boolean noPanelButton) {
 		super();
@@ -151,19 +157,32 @@ public class Dialog extends DialogBox {
 		super.center();
 	}
 
+	public void showError(Widget w,String message) {
+		for (int r = 0, len = table.getRowCount(); r < len; r++) 
+			for (int c = 0, len1 = table.getCellCount(r); c < len1; c++) { 
+				if(w==table.getWidget(r, c))
+					showError(r+1,message);
+		}
+	}
+	
 	public void showError(int beforeRow,String message) {
-		rowError = table.insertRow(beforeRow);
+		int rowError = table.insertRow(beforeRow);
 		Label l = new Label(message);
-		l.setStyleName("serverResponseLabelError");
+		l.setStyleName("errorHint");
 		table.getCellFormatter().setHorizontalAlignment(rowError, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		table.getCellFormatter().setVerticalAlignment(rowError, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 		table.setWidget(rowError, 0, l);
-		table.getFlexCellFormatter().setColSpan(rowError, 0, 2);
+		table.getFlexCellFormatter().setColSpan(rowError, 0, 3);
+		errorList.add(rowError);
 	}
 
 	public void resetErrors() {
-		if(rowError>=0) table.removeRow(rowError);
-		rowError = -1;
+		int offs = 0;
+		for (int row : errorList ) { 
+			table.removeRow(row+offs);
+			offs--;
+		}
+		errorList.clear();
 	}
 	
 	@Override

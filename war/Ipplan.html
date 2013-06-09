@@ -23,7 +23,7 @@
     <!-- If you add any GWT meta tags, they must   -->
     <!-- be added before this line.                -->
     <!--                                           -->
-    <script type="text/javascript" language="javascript" src="ipplan/ipplan.nocache.js"></script>
+    <!--<script type="text/javascript" language="javascript" src="ipplan/ipplan.nocache.js"></script>-->
   </head>
 
   <!--                                           -->
@@ -31,7 +31,15 @@
   <!-- you can leave the body empty if you want  -->
   <!-- to create a completely dynamic UI.        -->
   <!--                                           -->
-  <body>
+  <body onload="alert('load ok');">
+
+
+    <div id="formContainer">
+     <div class="logo">
+      <img src="ipplan/gwt/images/logo5.png"/>
+      <img src="ipplan/gwt/images/loader.gif" id="apploader"/>
+     </div>
+    </div>
 
     <!-- OPTIONAL: include this if you want history support -->
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
@@ -43,18 +51,13 @@
         для того, чтобы это приложение отображалось и работало корректно.
       </div>
     </noscript>
-
-    <h1>иППлан</h1>
-    
-    <div id="formContainer" align="center"></div>
-
-
-<!-- 
-    <table align="center">
-      <tr>
-        <td id="nameFieldContainer"></td>
-      </tr>
-    </table>
- -->    
+<!--
+    <script>
+        var script = document.createElement("script");
+        script.src = "ipplan/ipplan.nocache.js";
+        document.head.appendChild(script);
+    </script>
+-->
+    <script type="text/javascript" language="javascript" src="ipplan/ipplan.nocache.js"></script>
   </body>
 </html>

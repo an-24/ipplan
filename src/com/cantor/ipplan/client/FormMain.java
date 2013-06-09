@@ -429,11 +429,11 @@ public class FormMain extends Form {
 				dialog.cancel();
 				dialog.resetErrors();
 				if(tbBargainName.getText().isEmpty()) {
-					dialog.showError(1, "Наименование сделки не может быть пустым");
+					dialog.showError(tbBargainName, "Наименование сделки не может быть пустым");
 					return;
 				}
 				if(dbstart.getValue().after(dbfinish.getValue())) {
-					dialog.showError(3, "Дата начала должна быть меньше даты окончания");
+					dialog.showError(dbstart, "Дата начала должна быть меньше даты окончания");
 					return;
 				}
 				

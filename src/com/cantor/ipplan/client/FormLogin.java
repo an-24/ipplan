@@ -132,7 +132,7 @@ public class FormLogin extends Form implements ValueChangeHandler {
 					
 					public void onSuccess(PUserWrapper result) {
 						if(result==null) {
-							showError(3, "Введен неверный пароль или имя или адрес электронной почты.");
+							showError(flexTable, tbPassword, "Неверный пароль или имя пользователя");
 						} else {
 							((UserProfile)getMain()).setUser(result);
 							History.newItem("profile");
@@ -166,34 +166,19 @@ public class FormLogin extends Form implements ValueChangeHandler {
 
 	protected boolean validate() {
 		if(tbLogin.getText().isEmpty()) {
-			showError(1, "Имя пользователя или электронный адрес не может быть пустым");
+			showError(flexTable,tbLogin, "Имя пользователя или электронный адрес не может быть пустым");
 			return false;
 		}
 		if(tbPassword.getText().isEmpty()) {
-			showError(2, "Пароль пользователя не может быть пустым");
+			showError(flexTable, tbPassword, "Пароль пользователя не может быть пустым");
 			return false;
 		}
 		return true;
 	}
-
-	public void showError(int beforeRow,String message) {
-		if(rowError>=0) flexTable.removeRow(rowError);
-		rowError = flexTable.insertRow(beforeRow);
-		Label l = new Label(message);
-		l.setStyleName("serverResponseLabelError");
-		flexTable.getCellFormatter().setHorizontalAlignment(rowError, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		flexTable.getCellFormatter().setVerticalAlignment(rowError, 0, HasVerticalAlignment.ALIGN_MIDDLE);
-		flexTable.setWidget(rowError, 0, l);
-		flexTable.getFlexCellFormatter().setColSpan(rowError, 0, 2);
-	}
-
-	private void resetErrors() {
-		if(rowError>=0) flexTable.removeRow(rowError);
-		rowError = -1;
-	}
 	
 	@Override
 	public void onValueChange(ValueChangeEvent event) {
+		resetErrors();
 	}
 	
 }
