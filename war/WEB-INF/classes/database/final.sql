@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     06.05.2013 11:10:26                          */
+/* Created on:     11.06.2013 15:12:22                          */
 /*==============================================================*/
 
 
@@ -122,6 +122,15 @@ create table customer (
 customer_id          INTEGER                        not null,
 customer_name        VARCHAR(256)                   not null,
 customer_lookup_key  VARCHAR(256),
+customer_primary_email VARCHAR(256),
+customer_emails      VARCHAR(256),
+customer_primary_phone VARCHAR(256),
+customer_phones      VARCHAR(256),
+customer_company     VARCHAR(120),
+customer_position    VARCHAR(120),
+customer_birthday    TIMESTAMP,
+customer_photo       BLOB,
+customer_lastupdate  TIMESTAMP,
 constraint PK_CUSTOMER primary key (customer_id)
 );
 
@@ -133,6 +142,9 @@ puser_id             INTEGER                        not null,
 owner_puser_id       INTEGER,
 puser_login          VARCHAR(320)                   not null,
 puser_taxtype        INTEGER                        not null,
+puser_google_login   VARCHAR(320),
+puser_google_pswd    VARCHAR(30),
+puser_contact_lastsync TIMESTAMP,
 constraint PK_PUSER primary key (puser_id)
 );
 

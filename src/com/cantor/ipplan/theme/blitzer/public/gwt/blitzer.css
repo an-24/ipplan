@@ -341,6 +341,21 @@ a:hover {
   margin:4px;
 }
 
+.gwt-Close-Dialog {
+  background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -32px -192px transparent;
+  display: inline-block;
+  height: 16px;
+  vertical-align: middle;
+  width: 16px;
+  margin-left: 5px;
+  float:right;
+}
+
+.gwt-Close-Dialog:hover {
+  background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -225px -192px transparent;
+}
+
+
 .gwt-DialogBox .dialogTopCenter {
   background: white;
 }
@@ -1031,10 +1046,9 @@ a:hover {
   padding: 2px 0;
   border: 1px solid #939393;
   background-color: white;
-  overflow: hidden;
   border-radius: 6px;
   cursor:default;
-  z-index:9999;
+  z-index:999;
 }
 
 .gwt-SuggestBoxPopup .item {

@@ -23,7 +23,7 @@
     <!-- If you add any GWT meta tags, they must   -->
     <!-- be added before this line.                -->
     <!--                                           -->
-    <script type="text/javascript" language="javascript" src="main/main.nocache.js"></script>
+    <!--<script type="text/javascript" language="javascript" src="main/main.nocache.js"></script>-->
   </head>
 
   <!--                                           -->
@@ -31,7 +31,7 @@
   <!-- you can leave the body empty if you want  -->
   <!-- to create a completely dynamic UI.        -->
   <!--                                           -->
-  <body>
+  <body onload="main.onInjectionDone('main')">
 
     <div id="formContainer">
      <div class="logo">
@@ -52,6 +52,12 @@
       </div>
     </noscript>
 
+
+    <script>
+        var script = document.createElement("script");
+        script.src = "main/main.nocache.js";
+        document.head.appendChild(script);
+    </script>
 
   </body>
 </html>

@@ -4,15 +4,15 @@
 		"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-    <!-- 
+<!--      
         <property name="hibernate.connection.driver_class">org.firebirdsql.jdbc.FBDriver</property>
         <property name="hibernate.connection.url">jdbc:firebirdsql:localhost:D:\DATABASE\ipplan_up.fdb</property>
-     -->   
+ -->        
         <property name="hibernate.connection.username">sysdba</property>
         <property name="hibernate.connection.password">masterkey</property>
         
         <property name="hibernate.dialect">org.hibernate.dialect.FirebirdDialect</property>
-        <property name="hibernate.connection.provider_class">com.cantor.ipplan.server.UserProfilePoolConnection</property>
+		<property name="hibernate.connection.provider_class">com.cantor.ipplan.server.UserProfilePoolConnection</property>
 		<!-- Echo all executed SQL to stdout -->
 		<property name="show_sql">true</property>
 

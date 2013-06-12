@@ -2,7 +2,6 @@ package com.cantor.ipplan.client;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.cantor.ipplan.shared.CostsWrapper;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
@@ -13,9 +12,9 @@ import com.google.gwt.event.dom.client.HasBlurHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.logical.shared.AttachEvent;
+import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
@@ -26,8 +25,8 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplaceEdit {
@@ -41,9 +40,10 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 	public CostItemBox(DatabaseServiceAsync dbservice) {
 		this(dbservice, new TextBox());
 	}
+    
 
 	public CostItemBox(DatabaseServiceAsync dbservice, TextBox textBox) {
-		super(new CustomerSuggestOracle(dbservice),textBox);
+		super(new CustomerSuggestOracle(dbservice),textBox, new HelperSuggestionDisplay());
 		this.dbservice = dbservice;
 		((CustomerSuggestOracle)getSuggestOracle()).box = this;
 		this.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
@@ -90,8 +90,12 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 		// костыль, от того, что SuggestBox не вызывает StopPropagation 
 		if(event instanceof KeyDownEvent && isSuggestionListShowing()) {
 			NativeEvent ne = ((KeyDownEvent)event).getNativeEvent();
-			ne.stopPropagation();
-			ne.preventDefault();
+			int keycode = ne.getKeyCode();
+			if(keycode==KeyCodes.KEY_DOWN || keycode==KeyCodes.KEY_UP ||
+			   keycode==KeyCodes.KEY_PAGEDOWN || keycode==KeyCodes.KEY_PAGEUP) {
+				ne.stopPropagation();
+				ne.preventDefault();
+			}
 			return;
 		} 
 		super.delegateEvent(target, event);

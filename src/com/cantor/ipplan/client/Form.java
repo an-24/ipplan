@@ -51,7 +51,7 @@ public class Form extends Composite {
 		container.getStyle().setMarginLeft(-container.getOffsetWidth()/2, Unit.PX);
 		container.getStyle().setMarginTop(-container.getOffsetHeight()/2, Unit.PX);
 		// удаляем лоадер
-		DOM.getElementById("apploader").removeFromParent();
+		try {DOM.getElementById("apploader").removeFromParent(); } catch (Exception e) {};
 	}
 	
 	public Form(Ipplan main,RootPanel root) {

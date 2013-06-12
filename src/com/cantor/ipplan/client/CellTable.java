@@ -5,8 +5,10 @@ import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.gwt.cell.client.Cell;
@@ -26,6 +28,9 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.view.client.CellPreviewEvent;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.view.client.HasData;
@@ -48,6 +53,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	protected boolean alwaysShowEditor = true;
 	private List<T> checkedList = new ArrayList<T>();
 	private DataChangeEvent<T> dataChangeEvent =  null;
+	protected Map<TableCellElement,PopupPanel> ballons = new HashMap<TableCellElement,PopupPanel>();
 
 	public CellTable(int pageSize) {
 		this(pageSize,null);
@@ -626,9 +632,14 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	    		if(editor!=null) {
 	    			editor.setFocus();
 	    			TableRowElement row = getRowElement(getVisibleItems().indexOf(bcw));
-	    			TableCellElement td = row.getCells().getItem(idx);
+	    			final TableCellElement td = row.getCells().getItem(idx);
 	    			td.addClassName("gwt-CellTable-Error");
-	    			td.setAttribute("title", text);
+	    			final PopupPanel pp = new PopupPanel();
+	    			pp.setWidget(new Label(text));
+	    			pp.setStyleName("errorBalloon");
+	    			pp.setPopupPosition(td.getAbsoluteLeft(), td.getAbsoluteTop()-50);
+					pp.show();
+					ballons.put(td,pp);
 	    		}
 	        }
 	    };
@@ -642,7 +653,8 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		for (int i = 0, len = cells.getLength(); i < len; i++) {
 			TableCellElement td = cells.getItem(i);
 			td.removeClassName("gwt-CellTable-Error");
-			td.removeAttribute("title");
+			PopupPanel pp = ballons.get(td);
+			if(pp!=null) pp.hide();
 		}
 	}
 

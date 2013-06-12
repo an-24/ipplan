@@ -3,11 +3,12 @@ package com.cantor.ipplan.shared;
 import java.util.HashMap;
 import java.util.List;
 
+import com.cantor.ipplan.client.ClonableObject;
 import com.cantor.ipplan.client.DatabaseServiceAsync;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 @SuppressWarnings("serial")
-public class StatusWrapper  implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable {
+public class StatusWrapper extends ClonableObject implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable {
 
 	public static final int PRIMARY_CONTACT = 1;
 	public static final int TALK = 10;
@@ -78,15 +79,8 @@ public class StatusWrapper  implements java.io.Serializable,com.google.gwt.user.
 		return allStatuses;
 	}
 
-	public StatusWrapper copy() {
-		StatusWrapper wrap = new StatusWrapper();
-		wrap.statusId = statusId;
-		wrap.puser_owner_id = puser_owner_id;
-		wrap.statusName = statusName;
-		wrap.statusDayLimit = statusDayLimit;
-		return wrap;
-	}
-
-
+    public StatusWrapper clone() {
+    	return (StatusWrapper) super.clone(new StatusWrapper());    	
+    }
 	
 }

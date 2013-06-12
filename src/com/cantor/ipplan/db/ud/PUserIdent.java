@@ -1,5 +1,7 @@
 package com.cantor.ipplan.db.ud;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -8,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import org.hibernate.annotations.DynamicUpdate;
@@ -25,12 +29,15 @@ import com.cantor.ipplan.shared.PUserWrapper;
 public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PUserWrapper> {
 	
 	@Transient
-	public static final int USER_ROOT_ID = 1;
+	public static final int USER_ROOT_ID = -1;
 	
 	private int puserId;
 	private PUserIdent owner;
 	private String puserLogin;
 	private int puserTaxtype;
+	private String puserGoogleToken;
+	private Integer puserGoogleExpiresIn;
+	private Date puserContactLastsync;
 
 	public PUserIdent() {
 		super();
@@ -87,6 +94,34 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 
 	public void setPuserTaxtype(int puserTaxtype) {
 		this.puserTaxtype = puserTaxtype;
+	}
+
+	@Column(name = "PUSER_GOOGLE_TOKEN", length = 100)
+	public String getPuserGoogleToken() {
+		return this.puserGoogleToken;
+	}
+
+	public void setPuserGoogleToken(String puserGoogleToken) {
+		this.puserGoogleToken = puserGoogleToken;
+	}
+
+	@Column(name = "PUSER_GOOGLE_EXPIRES_IN")
+	public Integer getPuserGoogleExpiresIn() {
+		return this.puserGoogleExpiresIn;
+	}
+
+	public void setPuserGoogleExpiresIn(Integer puserGoogleExpiresIn) {
+		this.puserGoogleExpiresIn = puserGoogleExpiresIn;
+	}
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "PUSER_CONTACT_LASTSYNC", length = 19)
+	public Date getPuserContactLastsync() {
+		return this.puserContactLastsync;
+	}
+
+	public void setPuserContactLastsync(Date puserContactLastsync) {
+		this.puserContactLastsync = puserContactLastsync;
 	}
 	
 	@Transient

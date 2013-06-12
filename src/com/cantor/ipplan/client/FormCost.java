@@ -252,8 +252,10 @@ public class FormCost extends Dialog {
 	}
 
 	protected void showTotals() {
-		String s =  "Всего <span class=\"main-text\">"+currencyFormat.format(bargain.bargainCosts/100.0)+"</span>"+
-				    " (оплачено <span class=\"main-text\">"+currencyFormat.format(bargain.bargainPaymentCosts/100.0)+"</span>)";
+		int cost = bargain.bargainCosts==null?0:bargain.bargainCosts;
+		int pay  = bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts;
+		String s =  "Всего <span class=\"main-text\">"+currencyFormat.format(cost/100.0)+"</span>"+
+				    " (оплачено <span class=\"main-text\">"+currencyFormat.format(pay/100.0)+"</span>)";
 		lTotal.setHTML(s);
 	}
 
@@ -264,6 +266,11 @@ public class FormCost extends Dialog {
 				mainTable.showError(bcw,1,"Отсутствует расходная статья");
 				return false;
 			}
+			if(bcw.bargaincostsValue<bcw.bargaincostsPayment)  {
+				mainTable.showError(bcw,3,"Оплачено больше чем требуется");
+				return false;
+			}
+				
 		}
 		return true;
 	}

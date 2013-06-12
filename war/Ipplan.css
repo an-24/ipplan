@@ -223,6 +223,48 @@ h1 {
     width: 0; 
 }
 
+.errorBalloon {
+    border: 1px solid red;
+    background-color:white;
+    border-radius: 10px;
+    color: red;
+    font-weight: normal;
+    margin: 10px;
+    padding: 10px;
+    z-index:999;
+    position:relative;
+    -moz-box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Для Firefox */
+    -webkit-box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Для Safari и Chrome */
+    box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Параметры тени */
+}
+
+.errorBalloon:before {
+    border-color: red transparent;
+    border-style: solid;
+    border-width: 14px 12px 0;
+    bottom: 21px;
+    content: "";
+    display: block;
+    height: 0;
+    left: 10%;
+    position: absolute;
+    top: 100%;
+    width: 0;
+}
+
+.errorBalloon:after {
+    border-color: #FFFAFA transparent;
+    border-style: solid;
+    border-width: 13px 11px 0;
+    bottom: 21px;
+    content: "";
+    display: block;
+    height: 0;
+    left: 10%;
+    position: absolute;
+    top: 100%;
+    width: 0;
+}
 
 .mainCommand {
     padding:10px  !important;

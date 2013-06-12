@@ -9,8 +9,9 @@
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
   <inherits name="com.google.gwt.logging.Logging"/>
-  <set-property name="gwt.logging.popupHandler" value="DISABLED" />
   <inherits name="com.google.gwt.i18n.I18N"/>
+    
+  <set-property name="gwt.logging.popupHandler" value="DISABLED" />
   <extend-property name="locale" values="ru"/>
   <set-property-fallback name="locale" value="ru"/>
   

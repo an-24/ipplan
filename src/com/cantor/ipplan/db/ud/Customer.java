@@ -2,6 +2,7 @@ package com.cantor.ipplan.db.ud;
 
 // Generated 12.04.2013 19:58:46 by Hibernate Tools 3.4.0.CR1
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.Column;
@@ -12,6 +13,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import com.cantor.ipplan.core.DataBridge;
 import com.cantor.ipplan.shared.CustomerWrapper;
@@ -27,6 +30,15 @@ public class Customer implements java.io.Serializable, DataBridge<CustomerWrappe
 	private int customerId;
 	private String customerName;
 	private String customerLookupKey;
+	private String customerPrimaryEmail;
+	private String customerEmails;
+	private String customerPrimaryPhone;
+	private String customerPhones;
+	private String customerCompany;
+	private String customerPosition;
+	private Date customerBirthday;
+	private Date customerLastupdate;
+	
 	private Set<Contract> contracts = new HashSet<Contract>(0);
 	private Set<Bargain> bargains = new HashSet<Bargain>(0);
 
@@ -78,6 +90,80 @@ public class Customer implements java.io.Serializable, DataBridge<CustomerWrappe
 		this.customerLookupKey = customerLookupKey;
 	}
 
+	@Column(name = "CUSTOMER_PRIMARY_EMAIL", length = 256)
+	public String getCustomerPrimaryEmail() {
+		return this.customerPrimaryEmail;
+	}
+
+	public void setCustomerPrimaryEmail(String customerPrimaryEmail) {
+		this.customerPrimaryEmail = customerPrimaryEmail;
+	}
+
+	@Column(name = "CUSTOMER_EMAILS", length = 256)
+	public String getCustomerEmails() {
+		return this.customerEmails;
+	}
+
+	public void setCustomerEmails(String customerEmails) {
+		this.customerEmails = customerEmails;
+	}
+
+	@Column(name = "CUSTOMER_PRIMARY_PHONE", length = 256)
+	public String getCustomerPrimaryPhone() {
+		return this.customerPrimaryPhone;
+	}
+
+	public void setCustomerPrimaryPhone(String customerPrimaryPhone) {
+		this.customerPrimaryPhone = customerPrimaryPhone;
+	}
+
+	@Column(name = "CUSTOMER_PHONES", length = 256)
+	public String getCustomerPhones() {
+		return this.customerPhones;
+	}
+
+	public void setCustomerPhones(String customerPhones) {
+		this.customerPhones = customerPhones;
+	}
+
+	@Column(name = "CUSTOMER_COMPANY", length = 120)
+	public String getCustomerCompany() {
+		return this.customerCompany;
+	}
+
+	public void setCustomerCompany(String customerCompany) {
+		this.customerCompany = customerCompany;
+	}
+
+	@Column(name = "CUSTOMER_POSITION", length = 120)
+	public String getCustomerPosition() {
+		return this.customerPosition;
+	}
+
+	public void setCustomerPosition(String customerPosition) {
+		this.customerPosition = customerPosition;
+	}
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "CUSTOMER_BIRTHDAY", length = 19)
+	public Date getCustomerBirthday() {
+		return this.customerBirthday;
+	}
+
+	public void setCustomerBirthday(Date customerBirthday) {
+		this.customerBirthday = customerBirthday;
+	}
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "CUSTOMER_LASTUPDATE", length = 19)
+	public Date getCustomerLastupdate() {
+		return this.customerLastupdate;
+	}
+	
+	public void setCustomerLastupdate(Date customerLastupdate) {
+		this.customerLastupdate = customerLastupdate;
+	}
+	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
 	public Set<Contract> getContracts() {
 		return this.contracts;
@@ -102,6 +188,15 @@ public class Customer implements java.io.Serializable, DataBridge<CustomerWrappe
 		wrap.customerId = customerId;
 		wrap.customerName =  customerName;
 		wrap.customerLookupKey = customerLookupKey;
+		wrap.customerPrimaryEmail = customerPrimaryEmail;
+		wrap.customerEmails = customerEmails;
+		wrap.customerPrimaryPhone = customerPrimaryPhone;
+		wrap.customerPhones = customerPhones;
+		wrap.customerCompany = customerCompany;
+		wrap.customerPosition = customerPosition;
+		wrap.customerBirthday = customerBirthday;
+		wrap.customerLastupdate = customerLastupdate;
+		
 		return wrap;
 	}
 
@@ -110,7 +205,14 @@ public class Customer implements java.io.Serializable, DataBridge<CustomerWrappe
 		customerId = data.customerId;
 		customerLookupKey = data.customerLookupKey;
 		customerName = data.customerName;
-		
+		customerPrimaryEmail = data.customerPrimaryEmail;
+		customerEmails = data.customerEmails;
+		customerPrimaryPhone = data.customerPrimaryPhone;
+		customerPhones = data.customerPhones;
+		customerCompany = data.customerCompany;
+		customerPosition = data.customerPosition;
+		customerBirthday = data.customerBirthday;
+		customerLastupdate = data.customerLastupdate;
 	}
 
 	@Override

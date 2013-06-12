@@ -33,7 +33,12 @@
     	<param-value>d:\database\store</param-value>
     </init-param>
   </servlet>
-  
+  <servlet>
+    <servlet-name>OAuthService</servlet-name>
+    <servlet-class>com.cantor.ipplan.server.OAuthService</servlet-class>
+  </servlet>
+
+
   <servlet-mapping>
     <servlet-name>loginServlet</servlet-name>
     <url-pattern>/ipplan/login/*</url-pattern>
@@ -47,6 +52,11 @@
   <servlet-mapping>
     <servlet-name>DatabaseService</servlet-name>
     <url-pattern>/main/database/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>OAuthService</servlet-name>
+    <url-pattern>/main/auth</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->

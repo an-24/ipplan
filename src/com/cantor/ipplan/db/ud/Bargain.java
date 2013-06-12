@@ -450,7 +450,7 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			daycount = (int) ((bargainFinish.getTime()-new Date().getTime())/MILLISSECOND_PER_DAY);
 			if(daycount<0) {
 				at.type = 3;
-				at.message = "Срок истек "+daycount+" дн. назад"; 
+				at.message = "Срок истек "+(-daycount)+" дн. назад"; 
 			} else 
 			if(daycount<status.getStatusDayLimit()) {
 				at.type = 2;

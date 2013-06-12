@@ -3,6 +3,7 @@ package com.cantor.ipplan.client;
 import java.util.Date;
 import java.util.List;
 
+import com.cantor.ipplan.client.Slider.ChangeEvent;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
@@ -15,41 +16,32 @@ import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.NumberLabel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.cantor.ipplan.client.Slider;
-import com.cantor.ipplan.client.CellTable.SelectionEventManager;
-import com.cantor.ipplan.client.Slider.ChangeEvent;
-import com.google.gwt.user.client.ui.TextBoxBase;
-import com.google.gwt.user.client.ui.ValueBoxBase.TextAlignment;
-import com.google.gwt.view.client.NoSelectionModel;
 
 public class FormMain extends Form {
-	
 	public static FormMain currentForm = null;
 
 	private PUserWrapper user;
@@ -297,6 +289,54 @@ public class FormMain extends Form {
 		FlexTable tab3 = new FlexTable();
 		tabPanel.add(tab3, "Клиенты", false);
 		tab3.setSize("100%", "3cm");
+
+		final Button btn = new Button("Синхронизировать");
+		btn.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				// получение token
+				OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
+						Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
+				auth.login(null);
+				
+				/*
+				final Auth auth = Auth.get();
+				final AuthRequest req = new AuthRequest(GOOGLE_AUTH_URL, GOOGLE_CLIENT_ID).withScopes(IPPLAN_SCOPE);
+				
+				auth.login(req, new Callback<String, Throwable>() {
+					@Override
+					public void onSuccess(String token) {
+						Window.alert("Got an OAuth token:\n" + token + "\n"
+								+ "Token expires in " + auth.expiresIn(req) + " ms\n");
+					}
+
+					@Override
+					public void onFailure(Throwable caught) {
+						Window.alert("Error:\n" + caught.getMessage());
+					}
+				});
+				*/
+				/*
+				dbservice.syncContacts(new AsyncCallback<ImportProcessInfo>() {
+					
+					@Override
+					public void onSuccess(ImportProcessInfo result) {
+						toast(btn, "Синхронизация окончена. Обработано "+result.getAllCountRecord()+
+								   " записей , из них новых - "+result.getSyncCountRecord());
+					}
+					
+					@Override
+					public void onFailure(Throwable e) {
+						Ipplan.showError(e);
+					}
+				});
+				*/
+			}
+		});
+		tab3.setWidget(0, 0, btn);
+		//tab3.getCellFormatter().setHeight(0, 0, "70px");
+		tab3.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		FlexTable tab4 = new FlexTable();
 		tabPanel.add(tab4, "Анализ", false);

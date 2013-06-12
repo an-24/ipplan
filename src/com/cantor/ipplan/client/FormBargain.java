@@ -85,7 +85,10 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	public FormBargain(BargainWrapper b) {
 		super();
 		setCellPadding(4);
-		setSize("460px", "");
+		setSize("530px", "");
+		getCellFormatter().setWidth(1, 0, "150px");
+		getCellFormatter().setWidth(1, 1, "225px");
+		getCellFormatter().setWidth(1, 2, "150px");
 		//getElement().getStyle().setTableLayout(TableLayout.FIXED);
 		setStyleName("FormBargain");
 		addStyleName("tableBorderCollapse");
@@ -123,7 +126,6 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		
 		dbStart = new DateBox();
 		setWidget(2, 0, dbStart);
-		getCellFormatter().setWidth(2, 0, "150px");
 		dbStart.setWidth("113px");
 		dbStart.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
 		dbStart.setValue(bargain.bargainStart);
@@ -131,12 +133,10 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		
 		Button button = new Button("Календарь");
 		setWidget(2, 1, button);
-		getCellFormatter().setWidth(2, 1, "150px");
 		getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		dbFinish = new DateBox();
 		setWidget(2, 2, dbFinish);
-		getCellFormatter().setWidth(2, 2, "150px");
 		dbFinish.setWidth("113px");
 		dbFinish.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
 		dbFinish.setValue(bargain.bargainFinish);

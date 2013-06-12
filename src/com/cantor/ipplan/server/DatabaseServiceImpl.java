@@ -48,15 +48,30 @@ import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
+import com.cantor.ipplan.shared.ImportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
+import com.google.gdata.data.Link;
+import com.google.gdata.data.contacts.ContactEntry;
+import com.google.gdata.data.contacts.GroupMembershipInfo;
+import com.google.gdata.data.extensions.Email;
+import com.google.gdata.data.extensions.ExtendedProperty;
+import com.google.gdata.data.extensions.Im;
+import com.google.gdata.data.extensions.Name;
+import com.google.gdata.data.extensions.Organization;
+import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 @SuppressWarnings("serial")
 public class DatabaseServiceImpl extends RemoteServiceServlet implements DatabaseService {
 
 	private boolean newDBFlag = false;
+	
+	
+	public DatabaseServiceImpl() {
+		super();
+	}
 	
 	//TODO при смене email нужно синхронизировать данные по id пользователя
 	/**
@@ -547,6 +562,216 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		HttpSession sess = this.getThreadLocalRequest().getSession();
 		return (Integer) sess.getAttribute("userId");
 	}
+	
+	public PUserIdent getUser() throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		int usrid = getUserId();
+			PUserIdent user = (PUserIdent) session.load(PUserIdent.class,usrid);
+			return user;
+    	} finally {
+    		session.close();
+    	}
+	}
+	public void updateGoogleLastSync() throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				PUserIdent user = getUser();
+				user.setPuserContactLastsync(new Date());
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    		
+    	} finally {
+    		session.close();
+    	}
+	}	
+
+	public void saveToken(OAuthToken token) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		int usrid = getUserId();
+			Transaction tx = session.beginTransaction();
+			try {
+				PUserIdent user = (PUserIdent) session.load(PUserIdent.class,usrid);
+				user.setPuserGoogleToken(token.getValue());
+				user.setPuserGoogleExpiresIn(token.getExpiresIn());
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    		
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	public OAuthToken getToken() throws Exception {
+		PUserIdent user = getUser();
+		return new OAuthToken(user.getPuserGoogleToken(),user.getPuserGoogleExpiresIn());
+	}
+	
+	@Override
+	public ImportProcessInfo syncContacts() throws Exception {
+		ContactsImport importer = new ContactsImport("kav@gelicon.biz", "327-894-234-789");
+		List<ContactEntry> entrys = importer.getAllEntrys();
+		for (ContactEntry entry :entrys) {
+			if (entry.hasName()) {
+			      Name name = entry.getName();
+			      if (name.hasFullName()) {
+			        String fullNameToDisplay = name.getFullName().getValue();
+			        if (name.getFullName().hasYomi()) {
+			          fullNameToDisplay += " (" + name.getFullName().getYomi() + ")";
+			        }
+			      System.out.println("\\\t\\\t" + fullNameToDisplay);
+			      } else {
+			        System.out.println("\\\t\\\t (no full name found)");
+			      }
+			      if (name.hasNamePrefix()) {
+			        System.out.println("\\\t\\\t" + name.getNamePrefix().getValue());
+			      } else {
+			        System.out.println("\\\t\\\t (no name prefix found)");
+			      }
+			      if (name.hasGivenName()) {
+			        String givenNameToDisplay = name.getGivenName().getValue();
+			        if (name.getGivenName().hasYomi()) {
+			          givenNameToDisplay += " (" + name.getGivenName().getYomi() + ")";
+			        }
+			        System.out.println("\\\t\\\t" + givenNameToDisplay);
+			      } else {
+			        System.out.println("\\\t\\\t (no given name found)");
+			      }
+			      if (name.hasAdditionalName()) {
+			        String additionalNameToDisplay = name.getAdditionalName().getValue();
+			        if (name.getAdditionalName().hasYomi()) {
+			          additionalNameToDisplay += " (" + name.getAdditionalName().getYomi() + ")";
+			        }
+			        System.out.println("\\\t\\\t" + additionalNameToDisplay);
+			      } else {
+			        System.out.println("\\\t\\\t (no additional name found)");
+			      }
+			      if (name.hasFamilyName()) {
+			        String familyNameToDisplay = name.getFamilyName().getValue();
+			        if (name.getFamilyName().hasYomi()) {
+			          familyNameToDisplay += " (" + name.getFamilyName().getYomi() + ")";
+			        }
+			        System.out.println("\\\t\\\t" + familyNameToDisplay);
+			      } else {
+			        System.out.println("\\\t\\\t (no family name found)");
+			      }
+			      if (name.hasNameSuffix()) {
+			        System.out.println("\\\t\\\t" + name.getNameSuffix().getValue());
+			      } else {
+			        System.out.println("\\\t\\\t (no name suffix found)");
+			      }
+			} else {
+			      System.out.println("\t (no name found)");
+			}
+			if(entry.hasOccupation()) {
+			    System.out.println("Occupation: "+entry.getOccupation().getValue());
+			} else  {
+			      System.out.println("(no occupation)");
+			}
+			System.out.println("Organizations:");
+			if(entry.hasOrganizations()) {
+				for (Organization o : entry.getOrganizations()) {
+				    System.out.println("\t"+o);
+				    System.out.println("\t name: "+o.getOrgName());
+				    System.out.println("\t departament: "+o.getOrgDepartment());
+				    System.out.println("\t position: "+o.getOrgTitle());
+				    if(o.hasWhere()) {
+					    System.out.println("\t place: "+o.getWhere().getValueString());
+				    }
+					
+				}
+			} else  {
+			      System.out.println("\t (no organization)");
+			}
+			
+			System.out.println("Email addresses:");
+			for (Email email : entry.getEmailAddresses()) {
+			    System.out.print(" " + email.getAddress());
+			    if (email.getRel() != null) {
+			        System.out.print(" rel:" + email.getRel());
+			    }
+			    if (email.getLabel() != null) {
+			        System.out.print(" label:" + email.getLabel());
+			    }
+			    if (email.getPrimary()) {
+			        System.out.print(" (primary) ");
+			    }
+			    System.out.print("\n");
+			};
+			System.out.println("IM addresses:");
+		    for (Im im : entry.getImAddresses()) {
+		    	System.out.print(" " + im.getAddress());
+		    	if (im.getLabel() != null) {
+		    		System.out.print(" label:" + im.getLabel());
+		    	}
+		    	if (im.getRel() != null) {
+		    		System.out.print(" rel:" + im.getRel());
+		    	}
+		    	if (im.getProtocol() != null) {
+		    		System.out.print(" protocol:" + im.getProtocol());
+		    	}
+		    	if (im.getPrimary()) {
+		    		System.out.print(" (primary) ");
+		    	}
+		    	System.out.print("\n");
+		    }
+			System.out.println("Phones:");
+			for (PhoneNumber phone : entry.getPhoneNumbers()) {
+			    System.out.print("  phone: " + phone.getPhoneNumber());
+			    if (phone.getRel() != null) {
+			        System.out.print(" rel:" + phone.getRel());
+			    }
+			    if (phone.getLabel() != null) {
+			        System.out.print(" label:" + phone.getLabel());
+			    }
+			    if (phone.getPrimary()) {
+			        System.out.print(" (primary) ");
+			    }
+			    System.out.print("\n");
+			};
+		    
+		    		    
+			System.out.println("Groups:");
+			for (GroupMembershipInfo group : entry.getGroupMembershipInfos()) {
+				String groupHref = group.getHref();
+			    System.out.println("  Id: " + groupHref);
+			};
+			System.out.println("Extended Properties:");
+			for (ExtendedProperty property : entry.getExtendedProperties()) {
+				if (property.getValue() != null) {
+			        System.out.println("  " + property.getName() + "(value) = " +
+			            property.getValue());
+			    } else if (property.getXmlBlob() != null) {
+			        System.out.println("  " + property.getName() + "(xmlBlob)= " +
+			            property.getXmlBlob().getBlob());
+			    }
+			}
+			Link photoLink = entry.getContactPhotoLink();
+			String photoLinkHref = photoLink.getHref();
+			System.out.println("Photo Link: " + photoLinkHref);
+			if (photoLink.getEtag() != null) {
+			      System.out.println("Contact Photo's ETag: " + photoLink.getEtag());
+			}
+			System.out.println("Contact's ETag: " + entry.getEtag());
+		}
+		return new ImportProcessInfo(entrys.size(),0);
+	}
+
 
 
 

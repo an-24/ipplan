@@ -7,10 +7,14 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.DialogBox.Caption;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.FormPanel;
@@ -28,7 +32,6 @@ public class Dialog extends DialogBox {
 
 	private FocusWidget firstFocusedWidget = null;
 	private FlexTable table;
-	private int rowError = -1;
 	private Button buttonCancel;
 	private Button buttonOk;
 	private ClickHandler okHandler;
@@ -41,6 +44,19 @@ public class Dialog extends DialogBox {
 		setText(caption);
 		setAnimationEnabled(true);
 		setGlassEnabled(true);
+		
+		Element ecapt = getCaption().asWidget().getElement();
+		Element div = DOM.createDiv();
+		Event.setEventListener(div, new EventListener() {
+			@Override
+			public void onBrowserEvent(Event event) {
+				buttonCancel.click();
+			}
+		});
+		DOM.sinkEvents((com.google.gwt.user.client.Element) div, Event.ONMOUSEDOWN);
+		
+		div.setClassName("gwt-Close-Dialog");
+		ecapt.appendChild(div);
 		
 		table = new FlexTable();
 		table.setCellSpacing(4);
@@ -210,4 +226,5 @@ public class Dialog extends DialogBox {
 	private void submit() {
 		((FormPanel)getWidget()).submit();
 	}	
+
 }

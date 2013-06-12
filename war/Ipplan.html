@@ -23,7 +23,7 @@
     <!-- If you add any GWT meta tags, they must   -->
     <!-- be added before this line.                -->
     <!--                                           -->
-    <!--<script type="text/javascript" language="javascript" src="ipplan/ipplan.nocache.js"></script>-->
+<!--    <script defer type="text/javascript" language="javascript" src="ipplan/ipplan.nocache.js"></script> -->
   </head>
 
   <!--                                           -->
@@ -31,7 +31,7 @@
   <!-- you can leave the body empty if you want  -->
   <!-- to create a completely dynamic UI.        -->
   <!--                                           -->
-  <body onload="alert('load ok');">
+  <body onload="ipplan.onInjectionDone('ipplan')">
 
 
     <div id="formContainer">
@@ -51,13 +51,11 @@
         для того, чтобы это приложение отображалось и работало корректно.
       </div>
     </noscript>
-<!--
+
     <script>
         var script = document.createElement("script");
         script.src = "ipplan/ipplan.nocache.js";
         document.head.appendChild(script);
     </script>
--->
-    <script type="text/javascript" language="javascript" src="ipplan/ipplan.nocache.js"></script>
   </body>
 </html>

@@ -126,10 +126,10 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 		BargainWrapper wrap = new BargainWrapper();
 		wrap.bargainId = bargainId;
 		wrap.bargainName = bargainName;
-		wrap.contract = contract!=null?contract.copy():null; 
-		wrap.customer = customer!=null?customer.copy():null;
+		wrap.contract = contract!=null?contract.clone():null; 
+		wrap.customer = customer!=null?customer.clone():null;
 		wrap.puser = puser;  //no copy
-		wrap.status = status.copy();
+		wrap.status = status.clone();
 		wrap.bargainVer =  bargainVer;
 		wrap.bargain = bargain;
 		wrap.bargainStart = bargainStart;

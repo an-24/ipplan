@@ -19,6 +19,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import com.google.gwt.user.client.ui.TextBox;
 
 public class CustomerBox extends SuggestBox {
 	
@@ -26,7 +27,7 @@ public class CustomerBox extends SuggestBox {
 	private Element btnPlace;
 
 	public CustomerBox(DatabaseServiceAsync dbservice) {
-		super(new CustomerSuggestOracle(dbservice));
+		super(new CustomerSuggestOracle(dbservice),new TextBox(), new HelperSuggestionDisplay());
 		((CustomerSuggestOracle)getSuggestOracle()).box = this;
 		this.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
 			
@@ -180,4 +181,5 @@ public class CustomerBox extends SuggestBox {
 		}
 		
 	}
+
 }
