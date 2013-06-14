@@ -1,7 +1,7 @@
 package com.cantor.ipplan.client;
 
-import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 
 public class OAuth2 {
 
@@ -9,6 +9,8 @@ public class OAuth2 {
 	private String clientId;
 	private String scope;
 	private String redirectURI = null;
+	private Window window = null;
+	private EventOnCloseWindow closeEvent;
 	
 	public OAuth2(String providerURI, String clientId, String scope) {
 		this(providerURI,clientId,scope,null);
@@ -20,10 +22,16 @@ public class OAuth2 {
 		this.clientId = clientId;
 		this.scope = scope;
 		this.redirectURI = redirectURI;
+		register();
 	}
 	
-	public void login(Callback<String, Throwable> callback) {
-		openWindow(toRequestAuthorizationCodeUrl());
+	public void login(EventOnCloseWindow cb) {
+		setCloseEvent(cb);
+		window = openWindow(toRequestAuthorizationCodeUrl());
+	}
+
+	public void setCloseEvent(EventOnCloseWindow cb) {
+    	closeEvent = cb;
 	}
 	
 	private String toRequestAuthorizationCodeUrl() {
@@ -32,6 +40,8 @@ public class OAuth2 {
 		        .append("&").append("response_type").append("=").append("code")
 		        .append("&").append("scope").append("=").append(encode(scope))
 		        .append("&").append("redirect_uri").append("=").append(redirectURI==null?"https://localhost":encode(redirectURI))
+				.append("&").append("approval_prompt=force")
+				.append("&").append("access_type=offline")
 		        .toString();
 		  }
 	
@@ -45,14 +55,35 @@ public class OAuth2 {
       return decodeURIComponent(url.replace(regexp, "%20"));
     }-*/;
 
+    private native void register() /*-{
+    	var self = this;
+    	$wnd.doLogin = $entry(function() {
+      		self.@com.cantor.ipplan.client.OAuth2::finish()();
+    	});
+  	}-*/;
+
     static private native Window openWindow(String url) /*-{
-	    return window.open(url, 'popupWindow', 'width=800,height=600');
+	    return $wnd.open(url, 'popupWindow', 'width=800,height=600');
 	}-*/;
 
-    static final class Window extends JavaScriptObject {
-        protected Window() {
+    void finish() {
+		Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+			public void execute() {
+		    	window = null;
+		    	if(closeEvent!=null) closeEvent.onCloseWindow();
+			}
+		});	
+    }
+    
+    static interface EventOnCloseWindow {
+    	public void onCloseWindow();
+    }
+    
+    static public final class Window extends JavaScriptObject {
+    	
+		protected Window() {
         }
-
+		
         native boolean isOpen() /*-{
           return !this.closed;
         }-*/;

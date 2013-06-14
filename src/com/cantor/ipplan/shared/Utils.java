@@ -6,6 +6,8 @@ public class Utils {
 
 	public static final String GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
 	public static final String GOOGLE_TOKEN_URL = "https://accounts.google.com/o/oauth2/token";
+	public static final String GOOGLE_REVOKE_URL = "https://accounts.google.com/o/oauth2/revoke";
+	public static final String GOOGLE_TOKENINFO_URL = "https://www.googleapis.com/oauth2/v1/tokeninfo";
 	public static final String GOOGLE_CLIENT_ID = "317070202620-jl480ige77srbimqut9l6fmklh05e90s.apps.googleusercontent.com";
 	public static final String GOOGLE_SCOPE = "https://www.google.com/m8/feeds https://www.googleapis.com/auth/calendar";
 	//TODO при инсталяции нужно будет поменять здесь и в Google Apis Console 
@@ -44,7 +46,7 @@ public class Utils {
 	}
 
 	static final long dayTime = 24 * 60 * 60 * 1000; // 24 h * 60 min * 60 s * 1000 millis
-	static final long weekTime = 7 * dayTime; 
+	static final long weekTime = 7 * dayTime;
 	
 	static public String getDuration(Date d1, Date d2) {
 		long duration = d2.getTime()-d1.getTime();

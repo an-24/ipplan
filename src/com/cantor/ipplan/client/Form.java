@@ -102,11 +102,6 @@ public class Form extends Composite {
 			((CellTable<T>)grid).setDataProvider(dataProvider);
 		}
 		return dataProvider;
-		/*
-		display: table-cell;
-		vertical-align: middle;
-		height: 100px;
-		*/
 	}
 
 	public static <T> void setSortingColumns(AbstractCellTable<T> grid, List<T> list) {

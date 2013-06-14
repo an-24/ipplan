@@ -67,12 +67,22 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class DatabaseServiceImpl extends RemoteServiceServlet implements DatabaseService {
 
 	private boolean newDBFlag = false;
-	
+	private HttpSession session =  null;
 	
 	public DatabaseServiceImpl() {
 		super();
 	}
 	
+	public DatabaseServiceImpl(HttpSession session) {
+		this();
+		this.session = session;
+	}
+	
+	public HttpSession getSession() {
+		return session==null?getThreadLocalRequest().getSession():session;
+	}
+	
+
 	//TODO при смене email нужно синхронизировать данные по id пользователя
 	/**
 	 *  После удачного open в сессии два атрибута
@@ -88,7 +98,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			String url = openOrCreateStore(u.puserDbname,u.puserEmail);
 			createSessionFactory(url);
 			int userId = makeUser(u);
-			HttpSession sess = this.getThreadLocalRequest().getSession();
+			HttpSession sess = this.getSession();
 			sess.setAttribute("userId", userId);
 		}
 		return u;
@@ -393,7 +403,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	}
 
 	private HashMap<Integer, Bargain> getTempBargains() {
-		HttpSession sess = this.getThreadLocalRequest().getSession();
+		HttpSession sess = this.getSession();
 		HashMap<Integer, Bargain> bl =  (HashMap) sess.getAttribute("tmp_bargain_list");
 		if(bl==null) {
 			bl = new HashMap<Integer, Bargain>();
@@ -403,7 +413,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	}
 
 	private PUserWrapper checkAccess(String sessId) throws Exception {
-		HttpSession sess = this.getThreadLocalRequest().getSession();
+		HttpSession sess = this.getSession();
 		PUserWrapper u = getLoginUser();
 		if (sess.isNew() || u==null ) {
 			// проводим проверку через сервер UP
@@ -475,22 +485,22 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	    	pool.setPool(url);
 	    	sessionFactory = cfg.buildSessionFactory(serviceRegistry);
 	    	// устанавливаем в сессии
-	    	this.getThreadLocalRequest().getSession().setAttribute("sessionFactory", sessionFactory);
+	    	this.getSession().setAttribute("sessionFactory", sessionFactory);
 		}
 	}
 
 
 	private SessionFactory getSessionFactory() {
-		return (SessionFactory) this.getThreadLocalRequest().getSession().getAttribute("sessionFactory");
+		return (SessionFactory) this.getSession().getAttribute("sessionFactory");
 	}
 	
 	private PUserWrapper getLoginUser() {
-		HttpSession sess = this.getThreadLocalRequest().getSession();
+		HttpSession sess = this.getSession();
 		return (PUserWrapper) sess.getAttribute("loginUser");
 	}
 
 	private void setLoginUser(PUserWrapper u) {
-		HttpSession sess = this.getThreadLocalRequest().getSession();
+		HttpSession sess = this.getSession();
 		sess.setAttribute("loginUser",u);
 	}
 	
@@ -559,7 +569,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	}
 
 	private int getUserId() {
-		HttpSession sess = this.getThreadLocalRequest().getSession();
+		HttpSession sess = this.getSession();
 		return (Integer) sess.getAttribute("userId");
 	}
 	
@@ -570,6 +580,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	try {
     		int usrid = getUserId();
 			PUserIdent user = (PUserIdent) session.load(PUserIdent.class,usrid);
+			user.fetch(true);
 			return user;
     	} finally {
     		session.close();
@@ -604,8 +615,10 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			Transaction tx = session.beginTransaction();
 			try {
 				PUserIdent user = (PUserIdent) session.load(PUserIdent.class,usrid);
-				user.setPuserGoogleToken(token.getValue());
-				user.setPuserGoogleExpiresIn(token.getExpiresIn());
+				user.setPuserGoogleToken(token==null?null:token.getValue());
+				user.setPuserGoogleRefreshToken(token==null?null:token.getRefreshToken());
+				user.setPuserGoogleExpiresIn(token==null?null:token.getExpiresIn());
+				user.setPuserGoogleGranted(token==null?null:token.getGranted());
 				tx.commit();
 			} catch (Exception e) {
 				tx.rollback();
@@ -617,15 +630,39 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	}
 	}
 
+	
 	public OAuthToken getToken() throws Exception {
 		PUserIdent user = getUser();
-		return new OAuthToken(user.getPuserGoogleToken(),user.getPuserGoogleExpiresIn());
+		return new OAuthToken(user.getPuserGoogleToken(),user.getPuserGoogleRefreshToken(), 
+							  user.getPuserGoogleExpiresIn(), user.getPuserGoogleGranted());
+	}
+
+	@Override
+	public void refreshGoogleToken() throws Exception {
+		checkAccess();
+		OAuthToken token = new OAuthService().refreshToken(getToken());
+		saveToken(token);
 	}
 	
 	@Override
 	public ImportProcessInfo syncContacts() throws Exception {
-		ContactsImport importer = new ContactsImport("kav@gelicon.biz", "327-894-234-789");
+		checkAccess();
+		
+		OAuthToken token = getToken();
+		if(!token.exists())
+			return new ImportProcessInfo(ImportProcessInfo.TOKEN_NOTFOUND);
+		
+		if(token.isExpired())
+			return new ImportProcessInfo(ImportProcessInfo.TOKEN_EXPIRED);
+		
+		
+		ContactsImport importer = new ContactsImport(token);
 		List<ContactEntry> entrys = importer.getAllEntrys();
+		if(importer.getLastError()==ContactsImport.NO_AUTH_TOKEN) {
+			saveToken(null);
+			return new ImportProcessInfo(ImportProcessInfo.TOKEN_NOTFOUND);
+		}	
+		
 		for (ContactEntry entry :entrys) {
 			if (entry.hasName()) {
 			      Name name = entry.getName();
@@ -771,12 +808,6 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		}
 		return new ImportProcessInfo(entrys.size(),0);
 	}
-
-
-
-
-
-
 
 
 

@@ -34,4 +34,5 @@ public interface DatabaseServiceAsync {
 	void getAllStatuses(AsyncCallback<List<StatusWrapper>> callback);
 	void findCost(String newtext,AsyncCallback<List<CostsWrapper>> asyncCallback);
 	void syncContacts(AsyncCallback<ImportProcessInfo> callback);
+	void refreshGoogleToken(AsyncCallback<Void> callback);
 }

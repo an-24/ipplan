@@ -44,5 +44,6 @@ public interface DatabaseService extends RemoteService {
 	public List<CustomerWrapper> findCustomer(String query);
 	public List<StatusWrapper> getAllStatuses();
 	public List<CostsWrapper> findCost(String newtext);
+	public void refreshGoogleToken() throws Exception;
 	public ImportProcessInfo syncContacts() throws Exception;
 }

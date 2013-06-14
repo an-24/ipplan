@@ -3,10 +3,12 @@ package com.cantor.ipplan.client;
 import java.util.Date;
 import java.util.List;
 
+import com.cantor.ipplan.client.OAuth2.EventOnCloseWindow;
 import com.cantor.ipplan.client.Slider.ChangeEvent;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.ImportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.Utils;
@@ -290,51 +292,55 @@ public class FormMain extends Form {
 		tabPanel.add(tab3, "Клиенты", false);
 		tab3.setSize("100%", "3cm");
 
-		final Button btn = new Button("Синхронизировать");
-		btn.addClickHandler(new ClickHandler() {
+		final Button btnSync = new Button("Синхронизировать");
+		btnSync.addClickHandler(new ClickHandler() {
 			
 			@Override
-			public void onClick(ClickEvent event) {
-				// получение token
-				OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
-						Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
-				auth.login(null);
+			public void onClick(final ClickEvent event) {
 				
-				/*
-				final Auth auth = Auth.get();
-				final AuthRequest req = new AuthRequest(GOOGLE_AUTH_URL, GOOGLE_CLIENT_ID).withScopes(IPPLAN_SCOPE);
-				
-				auth.login(req, new Callback<String, Throwable>() {
-					@Override
-					public void onSuccess(String token) {
-						Window.alert("Got an OAuth token:\n" + token + "\n"
-								+ "Token expires in " + auth.expiresIn(req) + " ms\n");
-					}
-
-					@Override
-					public void onFailure(Throwable caught) {
-						Window.alert("Error:\n" + caught.getMessage());
-					}
-				});
-				*/
-				/*
 				dbservice.syncContacts(new AsyncCallback<ImportProcessInfo>() {
 					
 					@Override
 					public void onSuccess(ImportProcessInfo result) {
-						toast(btn, "Синхронизация окончена. Обработано "+result.getAllCountRecord()+
-								   " записей , из них новых - "+result.getSyncCountRecord());
+						// получение token
+						if(result.getError()==ImportProcessInfo.TOKEN_NOTFOUND) {
+							OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
+									Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
+							auth.login(new EventOnCloseWindow() {
+								@Override
+								public void onCloseWindow() {
+									btnSync.click();
+								}
+							});
+						} else
+						// обовление token
+						if(result.getError()==ImportProcessInfo.TOKEN_EXPIRED) {
+							dbservice.refreshGoogleToken(new AsyncCallback<Void>() {
+								
+								@Override
+								public void onSuccess(Void result) {
+									btnSync.click(); //!attention, its's recursion
+								}
+								
+								@Override
+								public void onFailure(Throwable e) {
+									Ipplan.showError(e);
+								}
+							});
+						} else {
+							refreshContacts();	
+							toast(btnSync, "Синхронизация окончена. Обработано "+result.getAllCountRecord()+
+									   " записей , из них новых - "+result.getSyncCountRecord());
+						}
 					}
-					
 					@Override
 					public void onFailure(Throwable e) {
 						Ipplan.showError(e);
 					}
 				});
-				*/
 			}
 		});
-		tab3.setWidget(0, 0, btn);
+		tab3.setWidget(0, 0, btnSync);
 		//tab3.getCellFormatter().setHeight(0, 0, "70px");
 		tab3.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		
@@ -636,5 +642,8 @@ public class FormMain extends Form {
 		});
 	}
 
+	private void refreshContacts() {
+		// TODO Auto-generated method stub
+	}
 		
 }

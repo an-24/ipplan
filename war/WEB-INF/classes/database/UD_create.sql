@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     12.06.2013 17:35:31                          */
+/* Created on:     14.06.2013 9:59:32                           */
 /*==============================================================*/
 
 
@@ -130,8 +130,11 @@ owner_puser_id       INTEGER,
 puser_login          VARCHAR(320)                   not null,
 puser_taxtype        INTEGER                        not null,
 puser_google_token   VARCHAR(100),
+puser_google_refresh_token VARCHAR(100),
 puser_google_expires_in INTEGER,
+puser_google_granted TIMESTAMP,
 puser_contact_lastsync TIMESTAMP,
+puser_calendar_lastsync TIMESTAMP,
 constraint PK_PUSER primary key (puser_id)
 );
 

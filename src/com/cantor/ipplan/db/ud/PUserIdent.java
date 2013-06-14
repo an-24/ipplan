@@ -14,6 +14,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -36,8 +37,11 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	private String puserLogin;
 	private int puserTaxtype;
 	private String puserGoogleToken;
+	private String puserGoogleRefreshToken;
 	private Integer puserGoogleExpiresIn;
+	private Date puserGoogleGranted;
 	private Date puserContactLastsync;
+	private Date puserCalendarLastsync;
 
 	public PUserIdent() {
 		super();
@@ -105,13 +109,32 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		this.puserGoogleToken = puserGoogleToken;
 	}
 
+	@Column(name = "PUSER_GOOGLE_REFRESH_TOKEN", length = 100)
+	public String getPuserGoogleRefreshToken() {
+		return this.puserGoogleRefreshToken;
+	}
+
+	public void setPuserGoogleRefreshToken(String puserGoogleToken) {
+		this.puserGoogleRefreshToken = puserGoogleToken;
+	}
+	
 	@Column(name = "PUSER_GOOGLE_EXPIRES_IN")
 	public Integer getPuserGoogleExpiresIn() {
-		return this.puserGoogleExpiresIn;
+		return (puserGoogleExpiresIn==null)?0:this.puserGoogleExpiresIn;
 	}
 
 	public void setPuserGoogleExpiresIn(Integer puserGoogleExpiresIn) {
 		this.puserGoogleExpiresIn = puserGoogleExpiresIn;
+	}
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "PUSER_GOOGLE_GRANTED", length = 19)
+	public Date getPuserGoogleGranted() {
+		return this.puserGoogleGranted;
+	}
+
+	public void setPuserGoogleGranted(Date puserGoogleGranted) {
+		this.puserGoogleGranted = puserGoogleGranted;
 	}
 
 	@Temporal(TemporalType.TIMESTAMP)
@@ -122,6 +145,16 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 
 	public void setPuserContactLastsync(Date puserContactLastsync) {
 		this.puserContactLastsync = puserContactLastsync;
+	}
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "PUSER_CALENDAR_LASTSYNC", length = 19)
+	public Date getPuserCalendarLastsync() {
+		return this.puserCalendarLastsync;
+	}
+
+	public void setPuserCalendarLastsync(Date puserCalendarLastsync) {
+		this.puserCalendarLastsync = puserCalendarLastsync;
 	}
 	
 	@Transient
@@ -153,7 +186,6 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 
 	@Override
 	public void fetch(boolean deep) {
-		// TODO Auto-generated method stub
-		
+		Hibernate.initialize(owner);
 	}
 }

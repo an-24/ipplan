@@ -20,7 +20,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gdata-contacts-3.0.jar" sourcepath="D:/Java/google/gdata/java/src"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gdata-contacts-meta-3.0.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gdata-core-1.0.jar" sourcepath="D:/Java/google/gdata/java/src"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-oauth2-0.2-alpha.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gdata-client-1.0.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gdata-client-meta-1.0.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/guava-14.0.1.jar"/>

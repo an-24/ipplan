@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,8 +26,7 @@ public class OAuthService extends HttpServlet {
 	         throws IOException,ServletException {
 		String code = request.getParameter("code");
 		PrintWriter writer = response.getWriter();
-		writer.append("<html><body><script>window.close();</script></body></html>");
-		writer.flush();
+		writer.append("<html><head><script type=\"text/javascript\">");
 		// exchange code on token
 		if(code!=null) {
 			try {
@@ -48,17 +48,90 @@ public class OAuthService extends HttpServlet {
 					//Get Response	
 					String resp = readResponse(conn);
 					Gson gson = new Gson();
-					OAuthToken token = gson.fromJson(resp,OAuthToken.class); 
-					
-					new DatabaseServiceImpl().saveToken(token);
-					//Ipplan.info(resp);
+					OAuthToken token = gson.fromJson(resp,OAuthToken.class);
+					if(token!=null && token.exists()) {
+						token.setGranted(new Date());
+						new DatabaseServiceImpl(request.getSession()).saveToken(token);
+						writer.append("window.opener.doLogin();");
+					}
 				} finally {
 					conn.disconnect();
 				}
 			} catch (Exception e) {
 				Ipplan.error(e);
 			}
+		}
+		writer.append("window.close();</script></head><body></body></html>");
+		writer.flush();
+	}
+	
+	public OAuthToken refreshToken(OAuthToken token) throws Exception {
+		HttpURLConnection conn = newConnection(Utils.GOOGLE_TOKEN_URL);
+		try {
+			conn.setConnectTimeout(10000);
+			String message =new StringBuilder("refresh_token").append('=').append(URLEncoder.encode(token.getRefreshToken(), "utf-8"))
+					.append("&").append("client_id").append('=').append(URLEncoder.encode(Utils.GOOGLE_CLIENT_ID, "utf-8"))
+					.append("&").append("client_secret").append('=').append(URLEncoder.encode(GOOGLE_CLIENT_SECRET, "utf-8"))
+					.append("&").append("grant_type=refresh_token")
+					.toString();
 			
+			PrintWriter pw = new PrintWriter(conn.getOutputStream());
+			pw.append(message);
+			pw.flush();
+			pw.close(); //sending
+			
+			//Get Response	
+			String resp = readResponse(conn);
+			Gson gson = new Gson();
+			OAuthToken newtoken = gson.fromJson(resp,OAuthToken.class);
+			newtoken.setRefreshToken(token.getRefreshToken());
+			newtoken.setGranted(new Date());
+			return newtoken;
+		} finally {
+			conn.disconnect();
+		}
+	}
+
+	public boolean validateToken(OAuthToken token) throws Exception {
+		
+		@SuppressWarnings("unused")
+		class TokenInfoResponse {
+			String issued_to;
+			String audience;
+			String scope;
+			Integer expires_in;
+			String access_type;
+		}
+		
+		HttpURLConnection conn = newConnection(Utils.GOOGLE_TOKENINFO_URL+"?access_token="+token.getValue());
+		try {
+		    conn.setRequestMethod("GET");
+			conn.setConnectTimeout(10000);
+			conn.connect();
+			
+			//Get Response	
+			String resp = readResponse(conn);
+			Gson gson = new Gson();
+			TokenInfoResponse info = gson.fromJson(resp,TokenInfoResponse.class);
+			if(info.expires_in!=null && info.expires_in>0) 
+				return true;
+			
+		} finally {
+			conn.disconnect();
+		}
+		
+		return false;
+	}
+	
+	public void revokeToken(OAuthToken token) throws Exception {
+		URL url = new URL(Utils.GOOGLE_REVOKE_URL+"?token="+token.getValue());
+		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+	    conn.setRequestMethod("GET");
+		try {
+			conn.connect();
+			readResponse(conn);
+		} finally {
+			conn.disconnect();
 		}
 	}
 	
