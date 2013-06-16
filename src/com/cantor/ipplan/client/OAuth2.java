@@ -27,23 +27,28 @@ public class OAuth2 {
 	
 	public void login(EventOnCloseWindow cb) {
 		setCloseEvent(cb);
-		window = openWindow(toRequestAuthorizationCodeUrl());
+		window = openWindow(toRequestAuthorizationCodeUrl(false));
+	}
+
+	public void loginOffline(EventOnCloseWindow cb) {
+		setCloseEvent(cb);
+		window = openWindow(toRequestAuthorizationCodeUrl(true));
 	}
 
 	public void setCloseEvent(EventOnCloseWindow cb) {
     	closeEvent = cb;
 	}
 	
-	private String toRequestAuthorizationCodeUrl() {
-		    return new StringBuilder(providerURI)
-		    	.append("?").append("client_id").append("=").append(encode(clientId))
-		        .append("&").append("response_type").append("=").append("code")
-		        .append("&").append("scope").append("=").append(encode(scope))
-		        .append("&").append("redirect_uri").append("=").append(redirectURI==null?"https://localhost":encode(redirectURI))
-				.append("&").append("approval_prompt=force")
-				.append("&").append("access_type=offline")
-		        .toString();
-		  }
+	private String toRequestAuthorizationCodeUrl(boolean offline) {
+		StringBuilder sb = new StringBuilder(providerURI)
+    		.append("?").append("client_id").append("=").append(encode(clientId))
+    		.append("&").append("response_type").append("=").append("code")
+    		.append("&").append("scope").append("=").append(encode(scope))
+    		.append("&").append("redirect_uri").append("=").append(redirectURI==null?"https://localhost":encode(redirectURI))
+    		.append("&").append("approval_prompt=force");
+		if(offline) sb.append("&").append("access_type=offline");
+		return sb.toString();
+	}
 	
     static public native String encode(String url) /*-{
       var regexp = /%20/g;

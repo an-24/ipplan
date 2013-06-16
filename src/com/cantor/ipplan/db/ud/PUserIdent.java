@@ -42,6 +42,8 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	private Date puserGoogleGranted;
 	private Date puserContactLastsync;
 	private Date puserCalendarLastsync;
+	private int puserContactSyncDuration;
+	private int puserCalendarSyncDuration;
 
 	public PUserIdent() {
 		super();
@@ -153,8 +155,28 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		return this.puserCalendarLastsync;
 	}
 
+	@Column(name = "PUSER_CALENDAR_SYNC_DURATION")
+	public int getPuserCalendarSyncDuration() {
+		return puserCalendarSyncDuration;
+	}
+	
 	public void setPuserCalendarLastsync(Date puserCalendarLastsync) {
 		this.puserCalendarLastsync = puserCalendarLastsync;
+	}
+	
+
+	@Column(name = "PUSER_CONTACT_SYNC_DURATION")
+	public int getPuserContactSyncDuration() {
+		return puserContactSyncDuration;
+	}
+
+	public void setPuserContactSyncDuration(int puserContactSyncDuration) {
+		this.puserContactSyncDuration = puserContactSyncDuration;
+	}
+
+
+	public void setPuserCalendarSyncDuration(int puserCalendarSyncDuration) {
+		this.puserCalendarSyncDuration = puserCalendarSyncDuration;
 	}
 	
 	@Transient
@@ -170,6 +192,8 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		wrap.puserEmail = puserLogin;
 		wrap.puserTaxtype = puserTaxtype;
 		wrap.owner = owner==null?null:owner.toClient();
+		wrap.puserContactSyncDuration = puserContactSyncDuration;
+		wrap.puserCalendarSyncDuration = puserCalendarSyncDuration; 
 		return wrap;
 	}
 
@@ -182,6 +206,8 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		}
 		puserLogin = data.puserLogin;
 		puserTaxtype = data.puserTaxtype;
+		puserContactSyncDuration = data.puserContactSyncDuration;
+		puserCalendarSyncDuration = data.puserCalendarSyncDuration; 
 	}
 
 	@Override

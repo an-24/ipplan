@@ -35,4 +35,7 @@ public interface DatabaseServiceAsync {
 	void findCost(String newtext,AsyncCallback<List<CostsWrapper>> asyncCallback);
 	void syncContacts(AsyncCallback<ImportProcessInfo> callback);
 	void refreshGoogleToken(AsyncCallback<Void> callback);
+	void setContactsAutoSync(int duration, AsyncCallback<Void> callback);
+	void setCalendarAutoSync(int duration, AsyncCallback<Void> callback);
+	void syncCalendar(AsyncCallback<ImportProcessInfo> callback);
 }

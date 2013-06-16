@@ -6,7 +6,6 @@ import javax.servlet.ServletContextListener;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 
 import com.cantor.ipplan.client.Ipplan;
@@ -29,6 +28,8 @@ public class ContextEventHandler implements ServletContextListener {
 			pool.setPool("jdbc:firebirdsql:localhost:D:\\Database\\IPPLAN_UP.FDB");
 	    	SessionFactory sessionFactory = cfg.buildSessionFactory(serviceRegistry);
 	    	event.getServletContext().setAttribute("sessionFactory", sessionFactory);
+	    	// старт задач по расписанию
+	    	UserTask.startAll(event.getServletContext());
 		} catch (Exception e) {
 			Ipplan.error(e);
 		}

@@ -1,6 +1,7 @@
 package com.cantor.ipplan.client;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import com.cantor.ipplan.client.OAuth2.EventOnCloseWindow;
@@ -12,11 +13,13 @@ import com.cantor.ipplan.shared.ImportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.Utils;
+import com.gargoylesoftware.htmlunit.html.HtmlAttributeChangeEvent;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -31,6 +34,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -66,6 +70,9 @@ public class FormMain extends Form {
 	private NumberLabel<Double> lProfitDelta;
 	private FlexTable tableStats;
 	private Label lCaption;
+	private HTML linkAutoSync;
+
+	private Button btnSync;
 
 	public FormMain(Ipplan main, RootPanel root, PUserWrapper usr, int numTab) {
 		super(main, root);
@@ -292,57 +299,34 @@ public class FormMain extends Form {
 		tabPanel.add(tab3, "Клиенты", false);
 		tab3.setSize("100%", "3cm");
 
-		final Button btnSync = new Button("Синхронизировать");
+		
+		HorizontalPanel p = new HorizontalPanel();
+		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		p.setSpacing(10);
+		btnSync = new Button("Синхронизировать прямо сейчас");
+		p.add(btnSync);
 		btnSync.addClickHandler(new ClickHandler() {
-			
 			@Override
 			public void onClick(final ClickEvent event) {
-				
-				dbservice.syncContacts(new AsyncCallback<ImportProcessInfo>() {
-					
-					@Override
-					public void onSuccess(ImportProcessInfo result) {
-						// получение token
-						if(result.getError()==ImportProcessInfo.TOKEN_NOTFOUND) {
-							OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
-									Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
-							auth.login(new EventOnCloseWindow() {
-								@Override
-								public void onCloseWindow() {
-									btnSync.click();
-								}
-							});
-						} else
-						// обовление token
-						if(result.getError()==ImportProcessInfo.TOKEN_EXPIRED) {
-							dbservice.refreshGoogleToken(new AsyncCallback<Void>() {
-								
-								@Override
-								public void onSuccess(Void result) {
-									btnSync.click(); //!attention, its's recursion
-								}
-								
-								@Override
-								public void onFailure(Throwable e) {
-									Ipplan.showError(e);
-								}
-							});
-						} else {
-							refreshContacts();	
-							toast(btnSync, "Синхронизация окончена. Обработано "+result.getAllCountRecord()+
-									   " записей , из них новых - "+result.getSyncCountRecord());
-						}
-					}
-					@Override
-					public void onFailure(Throwable e) {
-						Ipplan.showError(e);
-					}
-				});
+				syncContactsdDrectly();
 			}
 		});
-		tab3.setWidget(0, 0, btnSync);
+		linkAutoSync = new HTML(getContactAutoSyncCaption());
+		linkAutoSync.setStyleName("link");
+		linkAutoSync.getElement().getStyle().setTextAlign(TextAlign.CENTER);
+		linkAutoSync.getElement().getStyle().setBorderWidth(0, Unit.PX);
+		p.add(linkAutoSync);
+		linkAutoSync.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				syncContactsdAuto();
+			}
+		});
+		
+		tab3.setWidget(0, 0, p);
 		//tab3.getCellFormatter().setHeight(0, 0, "70px");
 		tab3.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+
 		
 		FlexTable tab4 = new FlexTable();
 		tabPanel.add(tab4, "Анализ", false);
@@ -354,6 +338,28 @@ public class FormMain extends Form {
 		
 		currentTabId = numTab;
 		prepare();
+	}
+
+	private String getContactAutoSyncCaption() {
+		String s;
+		switch (user.puserContactSyncDuration) {
+			case 0:
+				s = "[нет]"; 
+				break;
+			case 30*60:
+				s = "[раз в полчаса]"; 
+				break;
+			case 60*60:
+				s = "[раз в час]"; 
+				break;
+			case 24*60*60:
+				s = "[раз в сутки]"; 
+				break;
+			default:
+				s = "[раз в "+user.puserContactSyncDuration/60+" минут]";
+				break;
+		}
+		return "Автоматическая<br>синхронизация<br>"+s;
 	}
 
 	protected void edit(BargainWrapper b) {
@@ -638,6 +644,135 @@ public class FormMain extends Form {
 			@Override
 			public void onFailure(Throwable caught) {
 				Ipplan.showError(caught);
+			}
+		});
+	}
+
+	private void syncContactsdAuto() {
+		final Dialog dialog = new Dialog("Выберите вариант синхронизации");
+		final FlexTable table = dialog.getContent();
+		
+		int duration = user.puserContactSyncDuration;
+		
+		RadioButton rb;
+		rb = new RadioButton("gr", "Не синхронизировать");
+		rb.setValue(duration==0);
+		final RadioButton rb0 = rb;
+		table.setWidget(0, 0, rb);
+		rb = new RadioButton("gr", "Раз в полчаса");
+		rb.setValue(duration==30*60);
+		table.setWidget(1, 0, rb);
+		rb = new RadioButton("gr", "Раз в час");
+		rb.setValue(duration==60*60);
+		table.setWidget(2, 0, rb);
+		rb = new RadioButton("gr", "Раз в сутки");
+		rb.setValue(duration==24*60*60);
+		table.setWidget(3, 0, rb);
+		
+		dialog.getButtonOk().setText("Установить");
+		dialog.setButtonOkClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				dialog.cancel();
+				
+				// запрос разрешения
+				if(!rb0.getValue()) {
+					OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
+							Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
+					auth.loginOffline(new EventOnCloseWindow() {
+						@Override
+						public void onCloseWindow() {
+							for (int i = 1, len = table.getRowCount(); i < len; i++) {
+								RadioButton rb = (RadioButton) table.getWidget(i,0);
+								if(rb.getValue()) {
+									final int durationClass = i;
+									dbservice.setCalendarAutoSync(i, new AsyncCallback<Void>() {
+										
+										@Override
+										public void onSuccess(Void result) {
+											user.puserContactSyncDuration = 0;
+											switch (durationClass) {
+												case 1: //полчаса 
+													user.puserContactSyncDuration = 30*60;
+												break;
+												case 2: //час 
+													user.puserContactSyncDuration = 60*60;
+												break;
+												case 3: //сутки 
+													user.puserContactSyncDuration = 24*60*60;
+												break;
+											}
+											linkAutoSync.setHTML(getContactAutoSyncCaption());
+										}
+										
+										@Override
+										public void onFailure(Throwable e) {
+											Ipplan.showError(e);
+										}
+									});
+									dialog.hide();
+									break;
+								}
+							}
+						}
+					});
+				} else
+				dbservice.setCalendarAutoSync(0, new AsyncCallback<Void>() {
+					@Override
+					public void onSuccess(Void result) {
+						user.puserContactSyncDuration = 0;
+						linkAutoSync.setHTML(getContactAutoSyncCaption());
+						dialog.hide();
+					}
+					@Override
+					public void onFailure(Throwable e) {
+						Ipplan.showError(e);
+					}
+				});
+			}
+		});
+		dialog.center();
+	}
+
+	private void syncContactsdDrectly() {
+		dbservice.syncContacts(new AsyncCallback<ImportProcessInfo>() {
+			
+			@Override
+			public void onSuccess(ImportProcessInfo result) {
+				// получение token
+				if(result.getError()==ImportProcessInfo.TOKEN_NOTFOUND) {
+					OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
+							Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
+					auth.login(new EventOnCloseWindow() {
+						@Override
+						public void onCloseWindow() {
+							btnSync.click();
+						}
+					});
+				} else
+				// обовление token
+				if(result.getError()==ImportProcessInfo.TOKEN_EXPIRED) {
+					dbservice.refreshGoogleToken(new AsyncCallback<Void>() {
+						
+						@Override
+						public void onSuccess(Void result) {
+							btnSync.click(); //!attention, its's recursion
+						}
+						
+						@Override
+						public void onFailure(Throwable e) {
+							Ipplan.showError(e);
+						}
+					});
+				} else {
+					refreshContacts();	
+					toast(btnSync, "Синхронизация окончена. Обработано "+result.getAllCountRecord()+
+							   " записей , из них новых - "+result.getSyncCountRecord());
+				}
+			}
+			@Override
+			public void onFailure(Throwable e) {
+				Ipplan.showError(e);
 			}
 		});
 	}

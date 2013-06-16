@@ -50,6 +50,10 @@ public class OAuthToken {
 		return access_token!=null; 
 	}
 
+	public boolean canRefresh() {
+		return refresh_token!=null;
+	}
+
 	public boolean isExpired() {
 		return new Date().getTime()>(granted.getTime()+expires_in*1000);
 	}

@@ -63,6 +63,7 @@ public class Dialog extends DialogBox {
 		table.setCellPadding(10);
 		
 		VerticalPanel pm = new VerticalPanel();
+		pm.setWidth("100%");
 		pm.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		pm.add(table);
 		
@@ -81,6 +82,7 @@ public class Dialog extends DialogBox {
 		
 		HorizontalPanel p = new HorizontalPanel();
 		p.setSpacing(10);
+		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		pm.add(p);
 		
 		if(noPanelButton) {

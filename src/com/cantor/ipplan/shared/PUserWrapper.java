@@ -25,6 +25,8 @@ public class PUserWrapper implements java.io.Serializable,com.google.gwt.user.cl
 	public MessageWrapper lastSystemMessage;
 	public boolean tempflag;
 	public int puserTaxtype;
+	public int puserContactSyncDuration;
+	public int puserCalendarSyncDuration;
 	
 	public PUserWrapper() {
 	}

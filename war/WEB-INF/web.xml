@@ -5,6 +5,12 @@
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
 
+  <context-param>
+    <!-- Месторасположение хранилища -->
+    <param-name>storeLocation</param-name>
+    <param-value>d:\database\store</param-value>
+  </context-param>
+
   <!-- Servlets -->
   <servlet>
     <servlet-name>loginServlet</servlet-name>
@@ -26,11 +32,6 @@
     <init-param>
     	<param-name>loginCallBack</param-name>
     	<param-value>http://127.0.0.1:8888/ipplan/</param-value>
-    </init-param>
-    <!-- Месторасположение хранилища -->
-    <init-param>
-    	<param-name>storeLocation</param-name>
-    	<param-value>d:\database\store</param-value>
     </init-param>
   </servlet>
   <servlet>

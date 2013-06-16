@@ -78,7 +78,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		this.session = session;
 	}
 	
-	public HttpSession getSession() {
+	private HttpSession getSession() {
 		return session==null?getThreadLocalRequest().getSession():session;
 	}
 	
@@ -434,7 +434,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 
 
 	private synchronized String openOrCreateStore(String name, String userEmail) throws Exception {
-		String dir = getServletConfig().getInitParameter("storeLocation");
+		String dir = getServletContext().getInitParameter("storeLocation");
 		if(dir==null)
 			throw new Exception("Неверная кофигурация сервера. storeLocation not found. ");
 		File root = new File(dir);
@@ -573,7 +573,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		return (Integer) sess.getAttribute("userId");
 	}
 	
-	public PUserIdent getUser() throws Exception {
+	private PUserIdent getUser() throws Exception {
 		checkAccess();
 		SessionFactory sessionFactory = getSessionFactory();
     	Session session = sessionFactory.openSession();
@@ -586,7 +586,8 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		session.close();
     	}
 	}
-	public void updateGoogleLastSync() throws Exception {
+	
+	private void updateGoogleLastSync() throws Exception {
 		checkAccess();
 		SessionFactory sessionFactory = getSessionFactory();
     	Session session = sessionFactory.openSession();
@@ -652,8 +653,10 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		if(!token.exists())
 			return new ImportProcessInfo(ImportProcessInfo.TOKEN_NOTFOUND);
 		
-		if(token.isExpired())
-			return new ImportProcessInfo(ImportProcessInfo.TOKEN_EXPIRED);
+		if(token.isExpired()) 
+			if(token.canRefresh())
+				return new ImportProcessInfo(ImportProcessInfo.TOKEN_EXPIRED); else
+				return new ImportProcessInfo(ImportProcessInfo.TOKEN_NOTFOUND);
 		
 		
 		ContactsImport importer = new ContactsImport(token);
@@ -807,6 +810,82 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			System.out.println("Contact's ETag: " + entry.getEtag());
 		}
 		return new ImportProcessInfo(entrys.size(),0);
+	}
+
+	@Override
+	public void setContactsAutoSync(int durationClass) throws Exception {
+		checkAccess();
+		// именно класс, чтобы никто не смог установить некорректное значение
+		int duration = 0;
+		switch (durationClass) {
+			case 1: //полчаса 
+				duration = 30*60;
+			break;
+			case 2: //час 
+				duration = 60*60;
+			break;
+			case 3: //сутки 
+				duration = 24*60*60;
+			break;
+		}
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				PUserIdent user = getUser();
+				user.setPuserContactSyncDuration(duration);
+				tx.commit();
+				UserTask.startNewTask(user,sessionFactory);
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    		
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public void setCalendarAutoSync(int durationClass) throws Exception {
+		checkAccess();
+		// именно класс, чтобы никто не смог установить некорректное значение
+		int duration = 0;
+		switch (durationClass) {
+			case 1: //полчаса 
+				duration = 30*60;
+			break;
+			case 2: //час 
+				duration = 60*60;
+			break;
+			case 3: //сутки 
+				duration = 24*60*60;
+			break;
+		}
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				PUserIdent user = getUser();
+				user.setPuserCalendarSyncDuration(duration);
+				tx.commit();
+				UserTask.startNewTask(user,sessionFactory);
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    		
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public  ImportProcessInfo syncCalendar() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 
