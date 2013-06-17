@@ -5,11 +5,17 @@
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
 
+  <!-- Месторасположение хранилища -->
   <context-param>
-    <!-- Месторасположение хранилища -->
     <param-name>storeLocation</param-name>
     <param-value>d:\database\store</param-value>
   </context-param>
+  <!-- БД для профиля -->
+  <context-param>
+    <param-name>profileDBUrl</param-name>
+    <param-value>jdbc:firebirdsql:localhost:D:\Database\IPPLAN_UP.FDB</param-value>
+  </context-param>
+
 
   <!-- Servlets -->
   <servlet>
@@ -66,9 +72,6 @@
     <welcome-file>Main.html</welcome-file>
   </welcome-file-list>
 
-  <listener>
-    <listener-class>com.cantor.ipplan.server.ContextEventHandler</listener-class>
-  </listener>
   <listener>
     <listener-class>com.cantor.ipplan.server.IpplanSessionListener</listener-class>
   </listener>

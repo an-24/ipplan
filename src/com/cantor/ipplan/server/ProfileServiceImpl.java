@@ -17,6 +17,8 @@ package com.cantor.ipplan.server;
 import java.util.Date;
 import java.util.Set;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
 import org.hibernate.Query;
@@ -26,13 +28,25 @@ import org.hibernate.Transaction;
 
 import com.cantor.ipplan.client.Ipplan;
 import com.cantor.ipplan.client.ProfileService;
+import com.cantor.ipplan.core.DatabaseUtils;
 import com.cantor.ipplan.db.up.Messages;
 import com.cantor.ipplan.db.up.PUser;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+@SuppressWarnings("serial")
 public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileService {
 
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+    	try {
+    		DatabaseUtils.startHibernateSessionForProfile(config.getServletContext());
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+	}
+	
 	@Override
 	public void setUserData(PUserWrapper data,int joinAction) throws Exception {
 		PUser user = checkLogin();

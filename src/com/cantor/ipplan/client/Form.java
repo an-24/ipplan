@@ -139,7 +139,9 @@ public class Form extends Composite {
 				            if (o1 != null) {
 				            	String s1 = (String)c.getValue(o1);
 				            	String s2 = (String)c.getValue(o2);
-				            	return (o2 != null) ? s1.compareToIgnoreCase(s2) : 1;
+				            	if(s1==s2) return 0;
+				            	if(s1!=null && s2!=null) return s1.compareToIgnoreCase(s2); 
+				            	return (s2 == null)?1:-1;
 				            }
 				            return -1;
 					}

@@ -155,7 +155,7 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		return this.puserCalendarLastsync;
 	}
 
-	@Column(name = "PUSER_CALENDAR_SYNC_DURATION")
+	@Column(name = "PUSER_CALENDAR_SYNC_DURATION", nullable = false)
 	public int getPuserCalendarSyncDuration() {
 		return puserCalendarSyncDuration;
 	}
@@ -165,7 +165,7 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	}
 	
 
-	@Column(name = "PUSER_CONTACT_SYNC_DURATION")
+	@Column(name = "PUSER_CONTACT_SYNC_DURATION", nullable = false)
 	public int getPuserContactSyncDuration() {
 		return puserContactSyncDuration;
 	}

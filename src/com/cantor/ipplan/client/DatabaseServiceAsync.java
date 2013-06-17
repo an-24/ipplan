@@ -7,7 +7,7 @@ import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
-import com.cantor.ipplan.shared.ImportProcessInfo;
+import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -33,9 +33,9 @@ public interface DatabaseServiceAsync {
 			AsyncCallback<List<CustomerWrapper>> callback);
 	void getAllStatuses(AsyncCallback<List<StatusWrapper>> callback);
 	void findCost(String newtext,AsyncCallback<List<CostsWrapper>> asyncCallback);
-	void syncContacts(AsyncCallback<ImportProcessInfo> callback);
+	void syncContacts(AsyncCallback<ImportExportProcessInfo> callback);
 	void refreshGoogleToken(AsyncCallback<Void> callback);
 	void setContactsAutoSync(int duration, AsyncCallback<Void> callback);
 	void setCalendarAutoSync(int duration, AsyncCallback<Void> callback);
-	void syncCalendar(AsyncCallback<ImportProcessInfo> callback);
+	void syncCalendar(AsyncCallback<ImportExportProcessInfo> callback);
 }

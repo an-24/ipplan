@@ -7,6 +7,8 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
 import org.hibernate.Query;
@@ -17,6 +19,7 @@ import org.hibernate.Transaction;
 
 import com.cantor.ipplan.client.Ipplan;
 import com.cantor.ipplan.client.LoginService;
+import com.cantor.ipplan.core.DatabaseUtils;
 import com.cantor.ipplan.db.up.Messages;
 import com.cantor.ipplan.db.up.PUser;
 import com.cantor.ipplan.shared.PUserWrapper;
@@ -25,6 +28,16 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 @SuppressWarnings("serial")
 public class LoginServiceImpl extends RemoteServiceServlet  implements LoginService {
 
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+    	try {
+    		DatabaseUtils.startHibernateSessionForProfile(config.getServletContext());
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+	}
+	
 	@Override
 	public PUserWrapper login(String nameOrEmail, String pswd, String device) {
 		if(nameOrEmail==null || nameOrEmail.isEmpty()) {

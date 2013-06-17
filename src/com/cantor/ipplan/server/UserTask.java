@@ -42,13 +42,18 @@ public class UserTask extends TimerTask {
 		this.sessionFactory = sessionFactory;
 	}
 	
-	static public void startAll(ServletContext ctx) throws Exception {
+	static public void startAll(ServletContext ctx) {
 		String storedir = ctx.getInitParameter("storeLocation");
-		if(storedir==null) return;
+		if(storedir==null) {
+			Ipplan.error("Parameter 'storeLocation' not found. Change web.xml needed");
+			return;
+		}
 
 		File root = new File(storedir);
-		if(!root.exists() || !root.isDirectory())
-			throw new Exception(MessageFormat.format("Неверная кофигурация сервера. Directory {0} not found.",new Object[]{storedir}));
+		if(!root.exists() || !root.isDirectory()) {
+			Ipplan.error(MessageFormat.format("Directory {0} not found.",new Object[]{storedir}));
+			return;
+		}			
 		// сканирум каталог
 		File[] children = root.listFiles();
 		for (int i = 0; i < children.length; i++) {
@@ -62,29 +67,33 @@ public class UserTask extends TimerTask {
 					Ipplan.info("start UserTask for "+url);
 					Connection conn= DriverManager.getConnection(url,"sysdba","masterkey");
 					try {
-						Statement sql = conn.createStatement();
-						ResultSet rs = sql.executeQuery("select * from PUSER");
-						while(rs.next()) {
-							int id = rs.getInt("PUSER_ID");
-							int cntdur = rs.getInt("PUSER_CONTACT_SYNC_DURATION");
-							int caldur = rs.getInt("PUSER_CALENDAR_SYNC_DURATION");
-							if(cntdur>0 || caldur>0) {
-								// создаем session hibernate
-						    	Configuration cfg = new Configuration().configure();
-						    	ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build(); 
-						    	PoolConnection pool = (PoolConnection) serviceRegistry.getService(org.hibernate.engine.jdbc.connections.spi.ConnectionProvider.class);
-								pool.setPool(url);
-						    	SessionFactory sessionFactory = cfg.buildSessionFactory(serviceRegistry);
-						    	// узнаем пользователя
-						    	Session session = sessionFactory.openSession();
-						    	try {
+						SessionFactory sessionFactory = null;
+						Session session = null;
+				    	try {
+							Statement sql = conn.createStatement();
+							ResultSet rs = sql.executeQuery("select * from PUSER");
+							while(rs.next()) {
+								int id = rs.getInt("PUSER_ID");
+								int cntdur = rs.getInt("PUSER_CONTACT_SYNC_DURATION");
+								int caldur = rs.getInt("PUSER_CALENDAR_SYNC_DURATION");
+								if(cntdur>0 || caldur>0) {
+									if(session==null) {
+										// создаем session hibernate
+								    	Configuration cfg = new Configuration().configure();
+								    	ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build(); 
+								    	PoolConnection pool = (PoolConnection) serviceRegistry.getService(org.hibernate.engine.jdbc.connections.spi.ConnectionProvider.class);
+										pool.setPool(url);
+								    	sessionFactory = cfg.buildSessionFactory(serviceRegistry);
+								    	session = sessionFactory.openSession();
+									}
+								    // узнаем пользователя
 									PUserIdent user = (PUserIdent) session.load(PUserIdent.class, id);
 									UserTask.startNewTask(user,sessionFactory);
-						    	} finally {
-						    		session.close();
-						    	}
-							}
-						};
+								}
+							};
+				    	} finally {
+				    		session.close();
+				    	}
 					} finally {
 						conn.close();
 						conn = null;
@@ -98,18 +107,20 @@ public class UserTask extends TimerTask {
 	}
 	
 	static public void startNewTask(PUserIdent user,SessionFactory sessionFactory) {
-		UserTask oldut = allTasks.get(user.getPuserLogin());
-		if(oldut!=null) {
-			oldut.cancel();
-			allTasks.remove(oldut);
-			oldut = null;
-		};
-		if(user.getPuserContactSyncDuration()!=0 || user.getPuserCalendarSyncDuration()!=0) {
-			int ONCE_PER_HALFHOUR = 5*60*1000; // один раз в 5 минут
-			UserTask ut = new UserTask(user, sessionFactory);
-			Timer timer = new Timer();
-			timer.scheduleAtFixedRate(ut, new Date().getTime()+ONCE_PER_HALFHOUR, ONCE_PER_HALFHOUR);
-			allTasks.put(user.getPuserLogin(), ut);
+		synchronized (allTasks) {
+			UserTask oldut = allTasks.get(user.getPuserLogin());
+			if(oldut!=null) {
+				oldut.cancel();
+				allTasks.remove(oldut);
+				oldut = null;
+			};
+			if(user.getPuserContactSyncDuration()!=0 || user.getPuserCalendarSyncDuration()!=0) {
+				int ONCE_PER_HALFHOUR = 5*60*1000; // один раз в 5 минут
+				UserTask ut = new UserTask(user, sessionFactory);
+				Timer timer = new Timer();
+				timer.scheduleAtFixedRate(ut, new Date().getTime()+ONCE_PER_HALFHOUR, ONCE_PER_HALFHOUR);
+				allTasks.put(user.getPuserLogin(), ut);
+			}
 		}
 	} 
 	

@@ -1,5 +1,4 @@
 /*******************************************************************************
- * Copyright 2011 Google Inc. All Rights Reserved.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,12 +14,17 @@
 package com.cantor.ipplan.server;
 
 import java.io.File;
+import java.net.URL;
 import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
 import org.firebirdsql.gds.impl.GDSType;
@@ -37,6 +41,7 @@ import org.hibernate.service.ServiceRegistry;
 import org.hibernate.transform.Transformers;
 
 import com.cantor.ipplan.client.DatabaseService;
+import com.cantor.ipplan.client.Ipplan;
 import com.cantor.ipplan.client.LoginService;
 import com.cantor.ipplan.core.IdGenerator;
 import com.cantor.ipplan.db.ud.Bargain;
@@ -48,17 +53,20 @@ import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
-import com.cantor.ipplan.shared.ImportProcessInfo;
+import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
-import com.google.gdata.data.Link;
+import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
-import com.google.gdata.data.contacts.GroupMembershipInfo;
+import com.google.gdata.data.extensions.AdditionalName;
 import com.google.gdata.data.extensions.Email;
-import com.google.gdata.data.extensions.ExtendedProperty;
-import com.google.gdata.data.extensions.Im;
+import com.google.gdata.data.extensions.FamilyName;
+import com.google.gdata.data.extensions.FullName;
+import com.google.gdata.data.extensions.GivenName;
 import com.google.gdata.data.extensions.Name;
+import com.google.gdata.data.extensions.OrgName;
+import com.google.gdata.data.extensions.OrgTitle;
 import com.google.gdata.data.extensions.Organization;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -78,6 +86,23 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		this.session = session;
 	}
 	
+	@Override
+	public void init(final ServletConfig config) throws ServletException {
+		super.init(config);
+    	// старт задач по расписанию
+		// в потоке, чтобы не мешало сервлету
+    	try {
+    		new Thread() {
+    			public void run() {
+    				UserTask.startAll(config.getServletContext());
+    			}
+    		}.start();
+    		
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+	}
+	
 	private HttpSession getSession() {
 		return session==null?getThreadLocalRequest().getSession():session;
 	}
@@ -92,16 +117,29 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	 */
 	@Override
 	public PUserWrapper open(String sessId) throws Exception {
-		PUserWrapper u = checkAccess(sessId);
+		PUserWrapper uw = checkAccess(sessId);
+		setLoginUser(uw);
+		
 		SessionFactory sessionFactory = getSessionFactory();
 		if(sessionFactory==null) {
-			String url = openOrCreateStore(u.puserDbname,u.puserEmail);
+			String url = openOrCreateStore(uw.puserDbname,uw.puserEmail);
 			createSessionFactory(url);
-			int userId = makeUser(u);
+			PUserIdent user = makeUser(uw);
 			HttpSession sess = this.getSession();
-			sess.setAttribute("userId", userId);
+			sess.setAttribute("userId", user.getId());
+			// с сервера авторизации приходит
+			// не полностью заполненный профиль пользователя
+			// нужно слить
+			mergeUserData(uw,user);
 		}
-		return u;
+		
+		return uw;
+	}
+
+	private void mergeUserData(PUserWrapper target, PUserIdent source) {
+		target.puserContactSyncDuration = source.getPuserContactSyncDuration();
+		target.puserCalendarSyncDuration = source.getPuserCalendarSyncDuration();
+		//.. и т.д.
 	}
 
 	@Override
@@ -323,8 +361,24 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	Session session = sessionFactory.openSession();
     	try {
       		String sql = "select C.customer_id \"CustomerId\", C.customer_name \"CustomerName\"," +
-      				     "       C.customer_lookup_key \"CustomerLookupKey\" from customer C where ";
-      		sql+="UPPER(C.customer_name) like :q";
+      				     "       C.customer_lookup_key \"CustomerLookupKey\","+
+      				     "       C.CUSTOMER_PRIMARY_EMAIL \"CustomerPrimaryEmail\","+
+      				     "       C.CUSTOMER_EMAILS \"CustomerEmails\","+
+      				     "       C.CUSTOMER_PRIMARY_PHONE \"CustomerPrimaryPhone\","+
+      				     "       C.CUSTOMER_PHONES \"CustomerPhones\","+
+      				     "       C.CUSTOMER_COMPANY \"CustomerCompany\","+
+      				     "       C.CUSTOMER_POSITION \"CustomerPosition\","+
+      				     "       C.CUSTOMER_BIRTHDAY \"CustomerBirthday\","+
+      				     "       C.CUSTOMER_LASTUPDATE \"CustomerLastupdate\""+
+      				     " from customer C where ";
+      		sql+="UPPER(C.customer_name) like :q or ";
+      		sql+="C.CUSTOMER_PRIMARY_EMAIL like :q or ";
+      		sql+="C.CUSTOMER_EMAILS like :q or ";
+      		sql+="C.CUSTOMER_PRIMARY_PHONE like :q or ";
+      		sql+="C.CUSTOMER_PHONES like :q or ";
+      		sql+="C.CUSTOMER_COMPANY like :q or ";
+      		sql+="C.CUSTOMER_POSITION like :q or ";
+      		sql+="C.CUSTOMER_BIRTHDAY like :q";
 			Query q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(Customer.class));
 			q.setParameter("q", "%"+query.toUpperCase()+"%");
 			List<Customer> lc = q.list();
@@ -422,7 +476,6 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			u = login.isAccessDatabase(sessId);
 			if(u==null)
 				throw new Exception("Доступ к базе данных запрещен");
-			setLoginUser(u);
 		};
 		return u;
 	}
@@ -504,7 +557,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		sess.setAttribute("loginUser",u);
 	}
 	
-	private int makeUser(PUserWrapper u) throws Exception {
+	private PUserIdent makeUser(PUserWrapper u) throws Exception {
 		SessionFactory sessionFactory = getSessionFactory();
 		// проверка наличия пользователя
     	Session session = sessionFactory.openSession();
@@ -535,7 +588,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     				throw e;
 				}
     		}
-    		return user.getId();
+    		return user;
     	} finally {
     		session.close();
     	}
@@ -646,172 +699,385 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	}
 	
 	@Override
-	public ImportProcessInfo syncContacts() throws Exception {
+	public ImportExportProcessInfo syncContacts() throws Exception {
 		checkAccess();
 		
 		OAuthToken token = getToken();
 		if(!token.exists())
-			return new ImportProcessInfo(ImportProcessInfo.TOKEN_NOTFOUND);
+			return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
 		
 		if(token.isExpired()) 
 			if(token.canRefresh())
-				return new ImportProcessInfo(ImportProcessInfo.TOKEN_EXPIRED); else
-				return new ImportProcessInfo(ImportProcessInfo.TOKEN_NOTFOUND);
-		
+				return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_EXPIRED); else
+				return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
 		
 		ContactsImport importer = new ContactsImport(token);
-		List<ContactEntry> entrys = importer.getAllEntrys();
+		List<ContactEntry> entrys = importer.getAllEntrys(getUser().getPuserContactLastsync());
 		if(importer.getLastError()==ContactsImport.NO_AUTH_TOKEN) {
 			saveToken(null);
-			return new ImportProcessInfo(ImportProcessInfo.TOKEN_NOTFOUND);
+			return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
 		}	
-		
-		for (ContactEntry entry :entrys) {
-			if (entry.hasName()) {
-			      Name name = entry.getName();
-			      if (name.hasFullName()) {
-			        String fullNameToDisplay = name.getFullName().getValue();
-			        if (name.getFullName().hasYomi()) {
-			          fullNameToDisplay += " (" + name.getFullName().getYomi() + ")";
-			        }
-			      System.out.println("\\\t\\\t" + fullNameToDisplay);
-			      } else {
-			        System.out.println("\\\t\\\t (no full name found)");
-			      }
-			      if (name.hasNamePrefix()) {
-			        System.out.println("\\\t\\\t" + name.getNamePrefix().getValue());
-			      } else {
-			        System.out.println("\\\t\\\t (no name prefix found)");
-			      }
-			      if (name.hasGivenName()) {
-			        String givenNameToDisplay = name.getGivenName().getValue();
-			        if (name.getGivenName().hasYomi()) {
-			          givenNameToDisplay += " (" + name.getGivenName().getYomi() + ")";
-			        }
-			        System.out.println("\\\t\\\t" + givenNameToDisplay);
-			      } else {
-			        System.out.println("\\\t\\\t (no given name found)");
-			      }
-			      if (name.hasAdditionalName()) {
-			        String additionalNameToDisplay = name.getAdditionalName().getValue();
-			        if (name.getAdditionalName().hasYomi()) {
-			          additionalNameToDisplay += " (" + name.getAdditionalName().getYomi() + ")";
-			        }
-			        System.out.println("\\\t\\\t" + additionalNameToDisplay);
-			      } else {
-			        System.out.println("\\\t\\\t (no additional name found)");
-			      }
-			      if (name.hasFamilyName()) {
-			        String familyNameToDisplay = name.getFamilyName().getValue();
-			        if (name.getFamilyName().hasYomi()) {
-			          familyNameToDisplay += " (" + name.getFamilyName().getYomi() + ")";
-			        }
-			        System.out.println("\\\t\\\t" + familyNameToDisplay);
-			      } else {
-			        System.out.println("\\\t\\\t (no family name found)");
-			      }
-			      if (name.hasNameSuffix()) {
-			        System.out.println("\\\t\\\t" + name.getNameSuffix().getValue());
-			      } else {
-			        System.out.println("\\\t\\\t (no name suffix found)");
-			      }
-			} else {
-			      System.out.println("\t (no name found)");
-			}
-			if(entry.hasOccupation()) {
-			    System.out.println("Occupation: "+entry.getOccupation().getValue());
-			} else  {
-			      System.out.println("(no occupation)");
-			}
-			System.out.println("Organizations:");
-			if(entry.hasOrganizations()) {
-				for (Organization o : entry.getOrganizations()) {
-				    System.out.println("\t"+o);
-				    System.out.println("\t name: "+o.getOrgName());
-				    System.out.println("\t departament: "+o.getOrgDepartment());
-				    System.out.println("\t position: "+o.getOrgTitle());
-				    if(o.hasWhere()) {
-					    System.out.println("\t place: "+o.getWhere().getValueString());
+		HashMap<String,Customer> customers = getCustomersFromGoogle();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	Date currdt = new Date();
+    	
+    	ImportExportProcessInfo pi = new ImportExportProcessInfo();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+	    		//------------------------
+	    		// Google-> Ipplan
+	    		//------------------------
+				int insertСount = 0;
+				int updateCount = 0;
+				int count = 0;
+				for (ContactEntry entry :entrys) {
+					// без имени не записываем
+					if(!entry.hasName()) continue;
+					Customer c = customers.get(entry.getId());
+					if(c==null) {
+						c = new Customer();
+						c.setCustomerLookupKey(entry.getId());
+						contactEntryToCustomer(importer,entry,c);
+						session.save(c);
+						insertСount++;
+					} else {
+						contactEntryToCustomer(importer,entry,c);
+						updateCount++;
+					};	
+				    if ( count % 20 == 0 ) {
+				        session.flush();
+				        session.clear();
 				    }
-					
+					count++;
 				}
-			} else  {
-			      System.out.println("\t (no organization)");
+				pi.setImportAllCount(count);
+				pi.setImportUpdate(updateCount);
+				pi.setImportInsert(insertСount);
+				Ipplan.info("Google->Ipplan update="+updateCount+" insert="+insertСount);
+	    		//------------------------
+	    		// Ipplan->Google 
+	    		//------------------------
+				insertСount = 0;
+				updateCount = 0;
+				count = 0;
+				// делаем hash для поиска
+				List<ContactEntry> allentrys = importer.getAllEntrys();
+				HashMap<String, ContactEntry> map = new HashMap<String, ContactEntry>();
+				for (ContactEntry entry : allentrys) 
+					map.put(entry.getId(), entry);
+				// -
+				List<Customer> outcustomers = getCustomersToGoogle();
+				for (Customer c : outcustomers) {
+					if (c.getCustomerLookupKey()==null) {
+						ContactEntry entry = new ContactEntry();
+						customerToContactEntry(importer,c,entry);
+						ContactEntry createdContact = importer.getService().insert(new URL("https://www.google.com/m8/feeds/contacts/default/full"), entry);
+						c.setCustomerLookupKey(createdContact.getId());
+						insertСount++;
+					} else {
+						ContactEntry entry = map.get(c.getCustomerLookupKey());
+						if(entry!= null) {
+							customerToContactEntry(importer,c,entry);
+							URL editUrl = new URL(entry.getEditLink().getHref());
+							importer.getService().update(editUrl, entry);
+							updateCount++;
+						}
+					}
+					c.setCustomerLastupdate(null);
+					count++;
+				}
+				pi.setExportAllCount(count);
+				pi.setExportUpdate(updateCount);
+				pi.setExportInsert(insertСount);
+				Ipplan.info("Ipplan->Google update="+updateCount+" insert="+insertСount);
+				// фиксируем дату синхронизации
+				PUserIdent user = getUser();
+				session.update(user);
+				user.setPuserContactLastsync(currdt);
+				
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
 			}
 			
-			System.out.println("Email addresses:");
-			for (Email email : entry.getEmailAddresses()) {
-			    System.out.print(" " + email.getAddress());
-			    if (email.getRel() != null) {
-			        System.out.print(" rel:" + email.getRel());
-			    }
-			    if (email.getLabel() != null) {
-			        System.out.print(" label:" + email.getLabel());
-			    }
-			    if (email.getPrimary()) {
-			        System.out.print(" (primary) ");
-			    }
-			    System.out.print("\n");
-			};
-			System.out.println("IM addresses:");
-		    for (Im im : entry.getImAddresses()) {
-		    	System.out.print(" " + im.getAddress());
-		    	if (im.getLabel() != null) {
-		    		System.out.print(" label:" + im.getLabel());
-		    	}
-		    	if (im.getRel() != null) {
-		    		System.out.print(" rel:" + im.getRel());
-		    	}
-		    	if (im.getProtocol() != null) {
-		    		System.out.print(" protocol:" + im.getProtocol());
-		    	}
-		    	if (im.getPrimary()) {
-		    		System.out.print(" (primary) ");
-		    	}
-		    	System.out.print("\n");
-		    }
-			System.out.println("Phones:");
-			for (PhoneNumber phone : entry.getPhoneNumbers()) {
-			    System.out.print("  phone: " + phone.getPhoneNumber());
-			    if (phone.getRel() != null) {
-			        System.out.print(" rel:" + phone.getRel());
-			    }
-			    if (phone.getLabel() != null) {
-			        System.out.print(" label:" + phone.getLabel());
-			    }
-			    if (phone.getPrimary()) {
-			        System.out.print(" (primary) ");
-			    }
-			    System.out.print("\n");
-			};
-		    
-		    		    
-			System.out.println("Groups:");
-			for (GroupMembershipInfo group : entry.getGroupMembershipInfos()) {
-				String groupHref = group.getHref();
-			    System.out.println("  Id: " + groupHref);
-			};
-			System.out.println("Extended Properties:");
-			for (ExtendedProperty property : entry.getExtendedProperties()) {
-				if (property.getValue() != null) {
-			        System.out.println("  " + property.getName() + "(value) = " +
-			            property.getValue());
-			    } else if (property.getXmlBlob() != null) {
-			        System.out.println("  " + property.getName() + "(xmlBlob)= " +
-			            property.getXmlBlob().getBlob());
-			    }
-			}
-			Link photoLink = entry.getContactPhotoLink();
-			String photoLinkHref = photoLink.getHref();
-			System.out.println("Photo Link: " + photoLinkHref);
-			if (photoLink.getEtag() != null) {
-			      System.out.println("Contact Photo's ETag: " + photoLink.getEtag());
-			}
-			System.out.println("Contact's ETag: " + entry.getEtag());
-		}
-		return new ImportProcessInfo(entrys.size(),0);
+    	} finally {
+    		session.close();
+    	}
+		return pi;
 	}
 
+	private void customerToContactEntry(ContactsImport importer, Customer c, ContactEntry entry) {
+		String cn = c.getCustomerName();
+		Name name = new Name();
+		name.setFullName(new FullName(cn, null));
+		String[] cnames = cn.split(" ");
+		// предполагаем, что пользователь вводил Ф И О
+		name.setFamilyName(new FamilyName(cnames[0],null));
+		if(cnames.length>1) {
+			name.setGivenName(new GivenName(cnames[1],null));
+			if(cnames.length>2) 
+				name.setAdditionalName(new AdditionalName(cnames[2], null));
+		}
+		entry.setName(name);
+		//ДР
+		Date dt = c.getCustomerBirthday();
+		if(dt!=null) {
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			entry.setBirthday(new Birthday(df.format(dt)));
+		}
+		// company
+		if(c.getCustomerCompany()!=null) {
+			Organization o = new Organization();
+			o.setOrgName(new OrgName(c.getCustomerCompany(),null));
+			if(c.getCustomerPosition()!=null)
+				o.setOrgTitle(new OrgTitle(c.getCustomerPosition()));
+			o.setPrimary(true);
+			entry.addOrganization(o);
+		}
+		//e-mail
+		entry.getEmailAddresses().clear();
+		if(c.getCustomerPrimaryEmail()!=null) {
+			Email e = new Email();
+			e.setAddress(c.getCustomerPrimaryEmail());
+			e.setRel("http://schemas.google.com/g/2005#work");
+			e.setPrimary(true);
+			entry.addEmailAddress(e);
+		}
+		if(c.getCustomerEmails()!=null) {
+			String[] ems = c.getCustomerEmails().split(",");
+			for (int i = 0; i < ems.length; i++) {
+				Email e = new Email();
+				e.setAddress(ems[i]);
+				e.setRel("http://schemas.google.com/g/2005#other");
+				entry.addEmailAddress(e);
+			}
+		}
+		// phones
+		entry.getPhoneNumbers().clear();
+		if(c.getCustomerPrimaryPhone()!=null) {
+			PhoneNumber p = new PhoneNumber();
+			p.setPhoneNumber(c.getCustomerPrimaryPhone());
+			p.setRel("http://schemas.google.com/g/2005#work");
+			p.setPrimary(true);
+			entry.addPhoneNumber(p);
+		}
+		if(c.getCustomerPhones()!=null) {
+			String[] ems = c.getCustomerPhones().split(",");
+			for (int i = 0; i < ems.length; i++) {
+				PhoneNumber p = new PhoneNumber();
+				p.setPhoneNumber(ems[i]);
+				p.setRel("http://schemas.google.com/g/2005#other");
+				entry.addPhoneNumber(p);
+			}
+		}
+		
+	}
+
+	private void contactEntryToCustomer(ContactsImport importer, ContactEntry entry, Customer c) {
+		// name
+		String fullNameToDisplay = "";
+		Name name = entry.getName();
+	    // пробуем по полям
+		if (name.hasNamePrefix()) 
+	    	fullNameToDisplay = name.getNamePrefix().getValue();
+	    
+	    if (name.hasFamilyName()) {
+	    	if (fullNameToDisplay.length()>0) fullNameToDisplay += " ";
+	    	fullNameToDisplay += name.getFamilyName().getValue();
+	        if (name.getFamilyName().hasYomi()) 
+	        	fullNameToDisplay += " (" + name.getFamilyName().getYomi() + ")";
+	    };
+	    if (name.hasGivenName()) {
+	    	if (fullNameToDisplay.length()>0) fullNameToDisplay += " ";
+	    	fullNameToDisplay += name.getGivenName().getValue();
+		    if (name.getGivenName().hasYomi()) 
+		    	fullNameToDisplay += " (" + name.getGivenName().getYomi() + ")";
+		}		    
+	    if (name.hasAdditionalName()) {
+	    	if (fullNameToDisplay.length()>0) fullNameToDisplay += " ";
+	    	fullNameToDisplay += name.getAdditionalName().getValue();
+	        if (name.getAdditionalName().hasYomi()) 
+	        	fullNameToDisplay += " (" + name.getAdditionalName().getYomi() + ")";
+	    }
+	    if (name.hasNameSuffix()) {
+	    	if (fullNameToDisplay.length()>0) fullNameToDisplay += " ";
+	    	fullNameToDisplay += name.getNameSuffix().getValue();
+	    }
+		// перекроес если не структурно записано
+	    if (fullNameToDisplay.isEmpty() && name.hasFullName()) {
+	        fullNameToDisplay = name.getFullName().getValue();
+	        if (name.getFullName().hasYomi()) 
+	          fullNameToDisplay += " (" + name.getFullName().getYomi() + ")";
+	    };
+		c.setCustomerName(fullNameToDisplay);
+		// ДР
+		if(entry.hasBirthday()) {
+			String v = entry.getBirthday().getValue();
+			Date dt = null;
+			try {
+				dt = new SimpleDateFormat("yyyy-MM-dd").parse(v);
+			} catch (Exception e) {
+				try {
+					dt = new SimpleDateFormat("--MM-dd").parse(v);
+				} catch (ParseException e1) {
+				}
+			}
+			if(dt!=null) c.setCustomerBirthday(dt);
+		}
+		// company
+		Organization o = null;      
+		if(entry.hasOrganizations()) {
+			for (Organization o1 : entry.getOrganizations()) {
+				if(o1.getPrimary()){
+					o = o1;
+					break;
+				};
+				if(o==null) o = o1;
+			}	
+		};
+		if(o!=null) {
+			c.setCustomerCompany(o.getOrgName()!=null?o.getOrgName().getValue():null);
+			c.setCustomerPosition(o.getOrgTitle()!=null?o.getOrgTitle().getValue():null);
+		};	    
+
+		// email
+		Email primaryemail = null;
+		if(entry.hasEmailAddresses()) {
+			for (Email email : entry.getEmailAddresses()) {
+				if(email.getPrimary()){
+					primaryemail = email;
+					break;
+				};
+				if(primaryemail==null) primaryemail = email;
+			}	
+		};
+		if(primaryemail!=null)
+			c.setCustomerPrimaryEmail(primaryemail.getAddress());
+		String allmail = "";
+		for (Email email : entry.getEmailAddresses()) {
+			if(email!=primaryemail) {
+				if(allmail.length()>0) allmail += ",";
+				allmail += email.getAddress();
+			}	
+		}
+		if(allmail.length()>0)
+			c.setCustomerEmails(allmail);
+
+		// phones
+		PhoneNumber primaryphone = null;
+		if(entry.hasPhoneNumbers()) {
+			for (PhoneNumber p : entry.getPhoneNumbers()) {
+				if(p.getPrimary()){
+					primaryphone = p;
+					break;
+				};
+				if(primaryphone==null) primaryphone = p;
+			}	
+		};
+		if(primaryphone!=null) {
+			String s ="";
+			if(primaryphone.getLabel()!=null) s+=primaryphone.getLabel()+":";
+			s+=primaryphone.getPhoneNumber();
+			c.setCustomerPrimaryPhone(s);
+		}	
+		
+		String allphones = "";
+		for (PhoneNumber p : entry.getPhoneNumbers()) {
+			if(p!=primaryphone) {
+				if(allphones.length()>0) allphones += ",";
+				String s ="";
+				if(p.getLabel()!=null) s+=p.getLabel()+":";
+				allphones += p.getPhoneNumber();
+			}	
+		}
+		if(allphones.length()>0)
+			c.setCustomerPhones(allphones);
+		
+		//TODO
+		// photo не работает пока, error 401
+/*		
+		Link photoLink = entry.getContactPhotoLink();
+		if (photoLink.getEtag() != null) {
+			try {
+				GDataRequest r = importer.getService().createLinkQueryRequest(photoLink);
+				r.setEtag(photoLink.getEtag());
+				InputStream in = r.getResponseStream();
+				System.out.println("Photo link "+in.available());
+			} catch (Exception e) {
+				Ipplan.warning("Photo link error "+photoLink.getHref());
+			};
+		};
+*/		
+		
+/*		
+		System.out.println("IM addresses:");
+		for (Im im : entry.getImAddresses()) {
+			System.out.print(" " + im.getAddress());
+			if (im.getLabel() != null) {
+				System.out.print(" label:" + im.getLabel());
+			}
+			if (im.getRel() != null) {
+				System.out.print(" rel:" + im.getRel());
+			}
+			if (im.getProtocol() != null) {
+				System.out.print(" protocol:" + im.getProtocol());
+			}
+			if (im.getPrimary()) {
+				System.out.print(" (primary) ");
+			}
+			System.out.print("\n");
+		}
+		System.out.println("Groups:");
+		for (GroupMembershipInfo group : entry.getGroupMembershipInfos()) {
+			String groupHref = group.getHref();
+		    System.out.println("  Id: " + groupHref);
+		};
+		System.out.println("Extended Properties:");
+		for (ExtendedProperty property : entry.getExtendedProperties()) {
+			if (property.getValue() != null) {
+		        System.out.println("  " + property.getName() + "(value) = " +
+		            property.getValue());
+		    } else if (property.getXmlBlob() != null) {
+		        System.out.println("  " + property.getName() + "(xmlBlob)= " +
+		            property.getXmlBlob().getBlob());
+		    }
+		}
+*/		
+		
+	    
+	}
+
+	private HashMap<String, Customer> getCustomersFromGoogle() {
+		HashMap<String, Customer> map = new HashMap<String, Customer>();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		String hsq = "select c from Customer c where c.customerLookupKey is not null";
+    		Query q = session.createQuery(hsq);
+    		List<Customer> l = q.list();
+    		for (Customer customer : l) 
+				map.put(customer.getCustomerLookupKey(), customer);
+    		return map;
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	private List<Customer> getCustomersToGoogle() {
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		String hsq = "select c from Customer c where c.customerLookupKey is null or c.customerLastupdate is not null";
+    		Query q = session.createQuery(hsq);
+    		return q.list();
+    	} finally {
+    		session.close();
+    	}
+	}
+	
 	@Override
 	public void setContactsAutoSync(int durationClass) throws Exception {
 		checkAccess();
@@ -834,7 +1100,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			Transaction tx = session.beginTransaction();
 			try {
 				PUserIdent user = getUser();
+				session.update(user);
+				// login user и реальный из БД разсинхронизированы
 				user.setPuserContactSyncDuration(duration);
+				getLoginUser().puserContactSyncDuration = duration;
+				
 				tx.commit();
 				UserTask.startNewTask(user,sessionFactory);
 			} catch (Exception e) {
@@ -869,7 +1139,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			Transaction tx = session.beginTransaction();
 			try {
 				PUserIdent user = getUser();
+				
+				// login user и реальный из БД разсинхронизированы
 				user.setPuserCalendarSyncDuration(duration);
+				getLoginUser().puserCalendarSyncDuration = duration;
+				
 				tx.commit();
 				UserTask.startNewTask(user,sessionFactory);
 			} catch (Exception e) {
@@ -883,11 +1157,10 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	}
 
 	@Override
-	public  ImportProcessInfo syncCalendar() {
+	public  ImportExportProcessInfo syncCalendar() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 
 

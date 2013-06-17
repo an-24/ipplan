@@ -21,7 +21,7 @@ import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
-import com.cantor.ipplan.shared.ImportProcessInfo;
+import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -45,8 +45,8 @@ public interface DatabaseService extends RemoteService {
 	public List<StatusWrapper> getAllStatuses();
 	public List<CostsWrapper> findCost(String newtext);
 	public void refreshGoogleToken() throws Exception;
-	public ImportProcessInfo syncContacts() throws Exception;
+	public ImportExportProcessInfo syncContacts() throws Exception;
 	public void setContactsAutoSync(int duration) throws Exception;
 	public void setCalendarAutoSync(int duration) throws Exception;
-	public ImportProcessInfo syncCalendar() throws Exception;
+	public ImportExportProcessInfo syncCalendar() throws Exception;
 }

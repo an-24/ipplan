@@ -4,12 +4,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import com.cantor.ipplan.client.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.client.OAuth2.EventOnCloseWindow;
 import com.cantor.ipplan.client.Slider.ChangeEvent;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
-import com.cantor.ipplan.shared.ImportProcessInfo;
+import com.cantor.ipplan.shared.BargaincostsWrapper;
+import com.cantor.ipplan.shared.CostsWrapper;
+import com.cantor.ipplan.shared.CustomerWrapper;
+import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.Utils;
@@ -28,6 +32,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -73,6 +78,14 @@ public class FormMain extends Form {
 	private HTML linkAutoSync;
 
 	private Button btnSync;
+
+	private Button btnCustomerAdd;
+
+	private Button btnCustomerDelete;
+
+	private CellTable<CustomerWrapper> tableCustomer;
+
+	private TextBox tbFindCustomer;
 
 	public FormMain(Ipplan main, RootPanel root, PUserWrapper usr, int numTab) {
 		super(main, root);
@@ -300,7 +313,8 @@ public class FormMain extends Form {
 		tab3.setSize("100%", "3cm");
 
 		
-		HorizontalPanel p = new HorizontalPanel();
+		HorizontalPanel p;
+		p = new HorizontalPanel();
 		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		p.setSpacing(10);
 		btnSync = new Button("Синхронизировать прямо сейчас");
@@ -323,10 +337,44 @@ public class FormMain extends Form {
 			}
 		});
 		
-		tab3.setWidget(0, 0, p);
-		//tab3.getCellFormatter().setHeight(0, 0, "70px");
-		tab3.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		tab3.setWidget(0, 1, p);
 
+		p = new HorizontalPanel();
+		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		p.setSpacing(10);
+		btnCustomerAdd = new Button("Новый");
+		p.add(btnCustomerAdd);
+		btnCustomerDelete = new Button("Удалить");
+		btnCustomerDelete.setEnabled(false);
+		p.add(btnCustomerDelete);
+		tab3.setWidget(0, 0, p);
+		tab3.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT);
+		tab3.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		
+		p = new HorizontalPanel();
+		tbFindCustomer = new TextBox();
+		tbFindCustomer.setWidth("300px");
+		p.add(tbFindCustomer);
+		Button btn = new Button("Найти");
+		p.add(btn);
+		p.setSpacing(2);
+		tab3.setWidget(1, 0, p);
+		
+		tableCustomer = new CellTable<CustomerWrapper>(10);
+		tableCustomer.setWidth("100%");
+		
+		setColumnCustomerTable(tableCustomer);
+
+		SimplePager pager = new GridPager();
+		pager.setDisplay(tableCustomer);
+		tab3.setWidget(1,1, pager);
+		tab3.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		
+		tab3.getFlexCellFormatter().setColSpan(2, 0, 2);
+		tab3.setWidget(2,0, tableCustomer);
+		tab3.getFlexCellFormatter().setVerticalAlignment(2, 0, HasVerticalAlignment.ALIGN_TOP);
+		
+		
 		
 		FlexTable tab4 = new FlexTable();
 		tabPanel.add(tab4, "Анализ", false);
@@ -338,6 +386,48 @@ public class FormMain extends Form {
 		
 		currentTabId = numTab;
 		prepare();
+	}
+
+	private void setColumnCustomerTable(final CellTable<CustomerWrapper> customerTable) {
+		TextColumn<CustomerWrapper> c1 = new TextColumn<CustomerWrapper>() {
+			@Override
+			public String getValue(CustomerWrapper object) {
+				return object==null?"":object.customerName;
+			}
+			
+		};
+		TextColumn<CustomerWrapper> c2 = new TextColumn<CustomerWrapper>() {
+			@Override
+			public String getValue(CustomerWrapper object) {
+				return object==null?"":object.customerPrimaryEmail;
+			}
+			
+		};
+		TextColumn<CustomerWrapper> c3 = new TextColumn<CustomerWrapper>() {
+			@Override
+			public String getValue(CustomerWrapper object) {
+				return object==null?"":object.customerEmails;
+			}
+			
+		};
+				
+		
+		customerTable.createCheckedColumn(new ChangeCheckListEvent() {
+			@Override
+			public void onChange() {
+				btnCustomerDelete.setEnabled(customerTable.getCheckedList().size()>0);
+			}
+		});
+		customerTable.addColumn(c1,"Имя");
+		customerTable.addColumn(c2,"Основной e-mail");
+		customerTable.addColumn(c3,"Дополнительные");
+		
+		
+		customerTable.setColumnWidth(c1, "200px");
+		
+		
+		//prepareGrid(customerTable,,true);
+		// TODO Auto-generated method stub
 	}
 
 	private String getContactAutoSyncCaption() {
@@ -539,7 +629,17 @@ public class FormMain extends Form {
 				currentTab = (FlexTable) tabPanel.getWidget(currentTabId);
 				FocusWidget w = getFirstFocusedWidget(currentTab);
 				if(w!=null) w.setFocus(true);
-				//if(tabId==1) bargainGrid.redraw();
+
+				
+				// Сделки
+				//if(currentTabId==1) bargainGrid.redraw();
+				
+				// Клиенты
+				if(currentTabId==2) {
+					if(tableCustomer.getProvider()==null) startCustomers(tbFindCustomer.getText());
+							else tableCustomer.redraw();
+				}
+				
 				History.newItem("main."+currentTabId, false);
 			}
 		});
@@ -582,6 +682,25 @@ public class FormMain extends Form {
 			}
 		});
 	}
+	
+	private void startCustomers(String query) {
+		DatabaseServiceAsync db = getDataBaseService();
+		db.findCustomer(query, new AsyncCallback<List<CustomerWrapper>>() {
+			
+			@Override
+			public void onSuccess(List<CustomerWrapper> result) {
+				prepareGrid(tableCustomer, result,true);
+				tableCustomer.setRowCount(result.size());
+			}
+			
+			@Override
+			public void onFailure(Throwable e) {
+				Ipplan.showError(e);
+				
+			}
+		});
+	}
+	
 
 	private void startRecoveryEditBargain() {
 		DatabaseServiceAsync db = getDataBaseService();
@@ -686,7 +805,7 @@ public class FormMain extends Form {
 								RadioButton rb = (RadioButton) table.getWidget(i,0);
 								if(rb.getValue()) {
 									final int durationClass = i;
-									dbservice.setCalendarAutoSync(i, new AsyncCallback<Void>() {
+									dbservice.setContactsAutoSync(i, new AsyncCallback<Void>() {
 										
 										@Override
 										public void onSuccess(Void result) {
@@ -717,7 +836,7 @@ public class FormMain extends Form {
 						}
 					});
 				} else
-				dbservice.setCalendarAutoSync(0, new AsyncCallback<Void>() {
+				dbservice.setContactsAutoSync(0, new AsyncCallback<Void>() {
 					@Override
 					public void onSuccess(Void result) {
 						user.puserContactSyncDuration = 0;
@@ -735,12 +854,12 @@ public class FormMain extends Form {
 	}
 
 	private void syncContactsdDrectly() {
-		dbservice.syncContacts(new AsyncCallback<ImportProcessInfo>() {
+		dbservice.syncContacts(new AsyncCallback<ImportExportProcessInfo>() {
 			
 			@Override
-			public void onSuccess(ImportProcessInfo result) {
+			public void onSuccess(ImportExportProcessInfo result) {
 				// получение token
-				if(result.getError()==ImportProcessInfo.TOKEN_NOTFOUND) {
+				if(result.getError()==ImportExportProcessInfo.TOKEN_NOTFOUND) {
 					OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
 							Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
 					auth.login(new EventOnCloseWindow() {
@@ -751,7 +870,7 @@ public class FormMain extends Form {
 					});
 				} else
 				// обовление token
-				if(result.getError()==ImportProcessInfo.TOKEN_EXPIRED) {
+				if(result.getError()==ImportExportProcessInfo.TOKEN_EXPIRED) {
 					dbservice.refreshGoogleToken(new AsyncCallback<Void>() {
 						
 						@Override
@@ -766,8 +885,10 @@ public class FormMain extends Form {
 					});
 				} else {
 					refreshContacts();	
-					toast(btnSync, "Синхронизация окончена. Обработано "+result.getAllCountRecord()+
-							   " записей , из них новых - "+result.getSyncCountRecord());
+					toast(btnSync, "Синхронизация окончена. При импорте обработано "+result.getImportAllCount()+
+							   " записей , из них новых - "+result.getImportInsert()+". При экспорте обработано "+result.getExportAllCount()+
+							   " записей , из них новых - "+result.getExportInsert()+"."
+					      );
 				}
 			}
 			@Override

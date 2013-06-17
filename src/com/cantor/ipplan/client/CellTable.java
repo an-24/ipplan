@@ -127,8 +127,10 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	    
 	    Header<Boolean> c0Header = new Header<Boolean>(new CheckboxCell(true,false)) { 
 	        @Override 
-	        public Boolean getValue() { 
-	        	int len = provider.getList().size();
+	        public Boolean getValue() {
+	        	int len = 0;
+	        	if(provider!=null)
+	        		len = provider.getList().size();
 	            return len>0 && checkedList.size()==len; 
 	        } 
 	    }; 
