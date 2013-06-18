@@ -41,7 +41,13 @@ public interface DatabaseService extends RemoteService {
 	public void dropTemporalyBargain(int id);
 	public void saveTemporalyBargain(BargainWrapper bargain) throws Exception;
 	public BargainWrapper saveBargain(BargainWrapper bargain, boolean drop) throws Exception;
+	
 	public List<CustomerWrapper> findCustomer(String query);
+	public CustomerWrapper addCustomer(CustomerWrapper value) throws Exception; 
+	public void updateCustomer(CustomerWrapper value)  throws Exception; 
+	public boolean deleteCustomer(int id) throws Exception; 
+	public void deleteCustomer(List<CustomerWrapper> list) throws Exception; 
+	
 	public List<StatusWrapper> getAllStatuses();
 	public List<CostsWrapper> findCost(String newtext);
 	public void refreshGoogleToken() throws Exception;

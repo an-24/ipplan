@@ -136,6 +136,7 @@ h1 {
 	border-bottom: 1px dashed #004276;
 	text-decoration: none;	
 	display: inline-block;
+	cursor:pointer;
 }
 
 .linkcell:hover  div {

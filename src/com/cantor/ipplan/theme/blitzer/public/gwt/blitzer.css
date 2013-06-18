@@ -1379,6 +1379,7 @@ a:hover {
   background: #ffcccc;
 }
 .dateBoxPopup {
+  z-index: 999;
 }
 
 .gwt-DatePicker {

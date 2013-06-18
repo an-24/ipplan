@@ -377,7 +377,8 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		if(e==null || (!Form.isHasChild(getElement(),e) && !isMenubar) || always) {
 			if(post()) {
 				setEditorMode(false);
-				((RecordSelectionModel)getSelectionModel()).clear();
+				if(getSelectionModel()!=null)
+					((RecordSelectionModel)getSelectionModel()).clear();
 				return true;
 			}
 		}

@@ -92,7 +92,7 @@ public class UserTask extends TimerTask {
 								}
 							};
 				    	} finally {
-				    		session.close();
+				    		if(session!=null) session.close();
 				    	}
 					} finally {
 						conn.close();

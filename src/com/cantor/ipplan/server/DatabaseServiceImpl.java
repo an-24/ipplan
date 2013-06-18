@@ -370,15 +370,16 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
       				     "       C.CUSTOMER_POSITION \"CustomerPosition\","+
       				     "       C.CUSTOMER_BIRTHDAY \"CustomerBirthday\","+
       				     "       C.CUSTOMER_LASTUPDATE \"CustomerLastupdate\""+
-      				     " from customer C where ";
+      				     " from customer C where C.CUSTOMER_VISIBLE=1 and (";
       		sql+="UPPER(C.customer_name) like :q or ";
-      		sql+="C.CUSTOMER_PRIMARY_EMAIL like :q or ";
-      		sql+="C.CUSTOMER_EMAILS like :q or ";
+      		sql+="UPPER(C.CUSTOMER_PRIMARY_EMAIL) like :q or ";
+      		sql+="UPPER(C.CUSTOMER_EMAILS) like :q or ";
       		sql+="C.CUSTOMER_PRIMARY_PHONE like :q or ";
       		sql+="C.CUSTOMER_PHONES like :q or ";
-      		sql+="C.CUSTOMER_COMPANY like :q or ";
-      		sql+="C.CUSTOMER_POSITION like :q or ";
+      		sql+="UPPER(C.CUSTOMER_COMPANY) like :q or ";
+      		sql+="UPPER(C.CUSTOMER_POSITION) like :q or ";
       		sql+="C.CUSTOMER_BIRTHDAY like :q";
+      		sql+=")";
 			Query q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(Customer.class));
 			q.setParameter("q", "%"+query.toUpperCase()+"%");
 			List<Customer> lc = q.list();
@@ -717,9 +718,10 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			saveToken(null);
 			return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
 		}	
-		HashMap<String,Customer> customers = getCustomersFromGoogle();
 		SessionFactory sessionFactory = getSessionFactory();
     	Session session = sessionFactory.openSession();
+
+    	HashMap<String,Customer> customers = getCustomersFromGoogle(session);
     	Date currdt = new Date();
     	
     	ImportExportProcessInfo pi = new ImportExportProcessInfo();
@@ -768,7 +770,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 				for (ContactEntry entry : allentrys) 
 					map.put(entry.getId(), entry);
 				// -
-				List<Customer> outcustomers = getCustomersToGoogle();
+				List<Customer> outcustomers = getCustomersToGoogle(session);
 				for (Customer c : outcustomers) {
 					if (c.getCustomerLookupKey()==null) {
 						ContactEntry entry = new ContactEntry();
@@ -1050,32 +1052,20 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	    
 	}
 
-	private HashMap<String, Customer> getCustomersFromGoogle() {
+	private HashMap<String, Customer> getCustomersFromGoogle(Session session) {
 		HashMap<String, Customer> map = new HashMap<String, Customer>();
-		SessionFactory sessionFactory = getSessionFactory();
-    	Session session = sessionFactory.openSession();
-    	try {
-    		String hsq = "select c from Customer c where c.customerLookupKey is not null";
-    		Query q = session.createQuery(hsq);
-    		List<Customer> l = q.list();
-    		for (Customer customer : l) 
-				map.put(customer.getCustomerLookupKey(), customer);
-    		return map;
-    	} finally {
-    		session.close();
-    	}
+		String hsq = "select c from Customer c where c.customerLookupKey is not null";
+		Query q = session.createQuery(hsq);
+		List<Customer> l = q.list();
+		for (Customer customer : l) 
+			map.put(customer.getCustomerLookupKey(), customer);
+		return map;
 	}
 
-	private List<Customer> getCustomersToGoogle() {
-		SessionFactory sessionFactory = getSessionFactory();
-    	Session session = sessionFactory.openSession();
-    	try {
-    		String hsq = "select c from Customer c where c.customerLookupKey is null or c.customerLastupdate is not null";
-    		Query q = session.createQuery(hsq);
-    		return q.list();
-    	} finally {
-    		session.close();
-    	}
+	private List<Customer> getCustomersToGoogle(Session session) {
+   		String hsq = "select c from Customer c where c.customerVisible=1 and (c.customerLookupKey is null or c.customerLastupdate is not null)";
+   		Query q = session.createQuery(hsq);
+   		return q.list();
 	}
 	
 	@Override
@@ -1160,6 +1150,99 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	public  ImportExportProcessInfo syncCalendar() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public CustomerWrapper addCustomer(CustomerWrapper cw) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				Customer c = new Customer();
+				c.fromClient(cw);
+				session.save(c);
+				tx.commit();
+		    	return c.toClient();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    		
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public void updateCustomer(CustomerWrapper cw) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				Customer c = (Customer) session.load(Customer.class, cw.customerId);
+				c.fromClient(cw);
+				// дл того, чтобы попала в синхронизацию
+				c.setCustomerLastupdate(new Date());
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	private boolean deleteCustomerInner(int id, Session session) {
+		Customer c = (Customer) session.get(Customer.class, id);
+		if(c==null || c.getCustomerVisible()==0) return false;
+		c.setCustomerVisible(0);
+		return true;
+	}
+	
+	@Override
+	public boolean deleteCustomer(int id) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				boolean res = deleteCustomerInner(id, session);
+				tx.commit();
+				return res;
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
+
+
+	@Override
+	public void deleteCustomer(List<CustomerWrapper> list) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				for (CustomerWrapper cw : list)
+					deleteCustomerInner(cw.customerId, session);
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
 	}
 
 

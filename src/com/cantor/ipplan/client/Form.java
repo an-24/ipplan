@@ -10,12 +10,15 @@ import java.util.Map;
 
 import com.cantor.ipplan.shared.SortedColumn;
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.DateCell;
+import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent;
@@ -108,6 +111,8 @@ public class Form extends Composite {
 	    ListHandler<T> columnSortHandler = new ListHandler<T>(list);
 		for (int i = 0; i < grid.getColumnCount(); i++) {
 			final Column<T, ?> c = grid.getColumn(i);
+			if(i==0 && c.getCell() instanceof CheckboxCell) continue;
+			
 			c.setSortable(true);
 			Cell<?> cell = c.getCell();
 			Comparator<T> cmpr = null;
@@ -147,7 +152,24 @@ public class Form extends Composite {
 					}
 				};
 			} else
-			cmpr = new Comparator<T>(){
+			if(cell instanceof SafeHtmlCell) {
+				cmpr = new Comparator<T>(){
+					@Override
+					public int compare(T o1, T o2) {
+			            if (o1 == o2) return 0;
+			            // Compare the columns.
+			            if (o1 != null) {
+			            	SafeHtml s1 = (SafeHtml)c.getValue(o1);
+			            	SafeHtml s2 = (SafeHtml)c.getValue(o2);
+			            	if(s1==s2) return 0;
+			            	if(s1!=null && s2!=null) return s1.asString().compareToIgnoreCase(s2.asString()); 
+			            	return (s2 == null)?1:-1;
+			            }
+			            return -1;
+					}
+				};
+			} else
+				cmpr = new Comparator<T>(){
 					@Override
 					public int compare(T o1, T o2) {
 			            if (o1 == o2) {
@@ -248,5 +270,9 @@ public class Form extends Composite {
 		}	
 		errorList.clear();
 	}
+
+	public static native String getUserAgent() /*-{
+	return navigator.userAgent.toLowerCase();
+	}-*/;	
 
 }

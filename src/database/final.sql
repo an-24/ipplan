@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     14.06.2013 18:46:05                          */
+/* Created on:     18.06.2013 15:21:35                          */
 /*==============================================================*/
 
 
@@ -131,6 +131,7 @@ customer_position    VARCHAR(120),
 customer_birthday    TIMESTAMP,
 customer_photo       BLOB,
 customer_lastupdate  TIMESTAMP,
+customer_visible     INTEGER                        default 1 not null,
 constraint PK_CUSTOMER primary key (customer_id)
 );
 

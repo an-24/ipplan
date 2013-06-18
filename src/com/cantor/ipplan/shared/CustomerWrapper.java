@@ -6,7 +6,7 @@ import com.cantor.ipplan.client.ClonableObject;
 
 
 @SuppressWarnings("serial")
-public class CustomerWrapper extends ClonableObject  implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable, Cloneable {
+public class CustomerWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable, Cloneable {
 	public int customerId;
 	public String customerName;
 	public String customerLookupKey;
@@ -18,9 +18,23 @@ public class CustomerWrapper extends ClonableObject  implements java.io.Serializ
 	public Date customerBirthday;
 	public String customerPosition;
 	public Date customerLastupdate;
+	public int customerVisible;
 
-    public CustomerWrapper clone() {
-    	return (CustomerWrapper) super.clone(new CustomerWrapper());    	
+    public CustomerWrapper copy() {
+    	CustomerWrapper wrap = new CustomerWrapper();
+    	wrap.customerId = customerId;
+    	wrap.customerName = customerName;
+    	wrap.customerLookupKey = customerLookupKey;
+    	wrap.customerPrimaryEmail = customerPrimaryEmail;
+    	wrap.customerEmails = customerEmails;
+    	wrap.customerPrimaryPhone = customerPrimaryPhone;
+    	wrap.customerPhones = customerPhones;
+    	wrap.customerCompany = customerCompany;
+    	wrap.customerBirthday = customerBirthday;
+    	wrap.customerPosition = customerPosition;
+    	wrap.customerLastupdate = customerLastupdate;
+    	wrap.customerVisible = customerVisible; 
+    	return wrap;
     }
 	
 }

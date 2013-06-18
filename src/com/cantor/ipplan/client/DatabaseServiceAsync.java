@@ -38,4 +38,9 @@ public interface DatabaseServiceAsync {
 	void setContactsAutoSync(int duration, AsyncCallback<Void> callback);
 	void setCalendarAutoSync(int duration, AsyncCallback<Void> callback);
 	void syncCalendar(AsyncCallback<ImportExportProcessInfo> callback);
+	void addCustomer(CustomerWrapper value,
+			AsyncCallback<CustomerWrapper> callback);
+	void deleteCustomer(int id, AsyncCallback<Boolean> callback);
+	void updateCustomer(CustomerWrapper value, AsyncCallback<Void> callback);
+	void deleteCustomer(List<CustomerWrapper> list, AsyncCallback<Void> callback);
 }
