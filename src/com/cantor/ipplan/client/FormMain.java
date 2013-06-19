@@ -63,9 +63,6 @@ import com.google.gwt.user.datepicker.client.DateBox;
 
 public class FormMain extends Form {
 	
-	private final static String USER_AGENT = getUserAgent();
-	private final static boolean USER_AGENT_IPHONE = USER_AGENT.indexOf("iPhone")>=0;
-	
 	public static FormMain currentForm = null;
 
 	private PUserWrapper user;
@@ -421,7 +418,7 @@ public class FormMain extends Form {
 		
 		setColumnCustomerTable(tableCustomer);
 
-		SimplePager pager = new GridPager();
+		GridPager pager = new GridPager();
 		pager.setDisplay(tableCustomer);
 		tab3.setWidget(1,1, pager);
 		tab3.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -442,20 +439,6 @@ public class FormMain extends Form {
 		
 		currentTabId = numTab;
 		prepare();
-	}
-	
-	private String getPhoneLink(String phstr) {
-		String phone,phonedisplay;
-		String tolink = "callto:";
-		if(USER_AGENT_IPHONE) tolink = "tel:";
-		phonedisplay = phstr;
-		String[] phonecomp = phstr.split(":");
-		if(phonecomp.length>1) {
-			phone = phonecomp[1].replaceAll("\\s|[()-]","");
-		} else {
-			phone = phonecomp[0].replaceAll("\\s|[()-]","");
-		}
-		return "<a href=\""+tolink+phone+"\">"+phonedisplay+"</a>";
 	}
 	
 	class ClickableSafeHtmlCell extends AbstractCell<SafeHtml> {
@@ -552,7 +535,7 @@ public class FormMain extends Form {
 			public SafeHtml getValue(CustomerWrapper object) {
 				SafeHtmlBuilder sb = new SafeHtmlBuilder();
 				if(object!=null && object.customerPrimaryPhone!=null) {
-					sb.appendHtmlConstant(getPhoneLink(object.customerPrimaryPhone));
+					sb.appendHtmlConstant(Ipplan.getPhoneLink(object.customerPrimaryPhone));
 				}
 				return sb.toSafeHtml();
 			}
@@ -568,7 +551,7 @@ public class FormMain extends Form {
 					String[] phones = object.customerPhones.split(",");
 					for (int i = 0; i < phones.length; i++) {
 						if(i>0) sb.append(',');
-						sb.appendHtmlConstant(getPhoneLink(phones[i]));
+						sb.appendHtmlConstant(Ipplan.getPhoneLink(phones[i]));
 					}
 				}
 				return sb.toSafeHtml();

@@ -30,6 +30,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 
+	private final static String USER_AGENT = Form.getUserAgent();
+	private final static boolean USER_AGENT_IPHONE = USER_AGENT.indexOf("iPhone")>=0;
+
 	private static Logger rootLogger = Logger.getLogger("iPPlan");
 	static String INIT_TOKEN = "";
     protected static Map<String, Class> tokenForms = new HashMap<String, Class>();
@@ -201,6 +204,19 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	}
 
 
+	public static String getPhoneLink(String phstr) {
+		String phone,phonedisplay;
+		String tolink = "callto:";
+		if(USER_AGENT_IPHONE) tolink = "tel:";
+		phonedisplay = phstr;
+		String[] phonecomp = phstr.split(":");
+		if(phonecomp.length>1) {
+			phone = phonecomp[1].replaceAll("\\s|[()-]","");
+		} else {
+			phone = phonecomp[0].replaceAll("\\s|[()-]","");
+		}
+		return "<a href=\""+tolink+phone+"\">"+phonedisplay+"</a>";
+	}
 
 	
 }

@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.cantor.ipplan.client.StatusBox.StatusChangeEventListiner;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.core.client.GWT;
@@ -21,6 +22,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -33,12 +36,15 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
+import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 @SuppressWarnings("rawtypes")
@@ -70,7 +76,6 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private NumberLabel<Double> lMargin;
 	private NumberLabel<Double> lProfit;
 	private NumberLabel<Double> lDeltaProfit;
-	private ContractBox eContract;
 	private MainTabPanel tabPanel;
 	private int index;
 	private Label lTitle;
@@ -81,6 +86,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private Button btnCosts;
 
 	private Label lAttentionPrePayment;
+
+	private VerticalPanel pCustomer;
 
 	public FormBargain(BargainWrapper b) {
 		super();
@@ -189,22 +196,31 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getCellFormatter().setVerticalAlignment(4, 0, HasVerticalAlignment.ALIGN_TOP);
 		getCellFormatter().setHeight(4,0,"36px");
 
-		p = new VerticalPanel();
-		p.addStyleName("bpad10");
-		p.addStyleName("tpad10");
+		pCustomer = new VerticalPanel();
+		pCustomer.addStyleName("bpad10");
+		pCustomer.addStyleName("tpad10");
 		//p.getElement().getStyle().setMargin(-10., Unit.PX);
 		
 		eCustomer = new CustomerBox(getDataBaseService());
-		p.add(eCustomer);		
+		eCustomer.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
+			@Override
+			public void onSelection(SelectionEvent<SuggestOracle.Suggestion> event) {
+				showInfoCustomer();
+			}
+		});		
+		pCustomer.add(eCustomer);		
 		eCustomer.setCustomer(bargain.customer);
+		showInfoCustomer();
 		eCustomer.getElement().setAttribute("placeholder", "введите имя клиента");
 		eCustomer.setWidth("100%");
 		
+/*		
 		eContract = new ContractBox(bargain.contract);
 		p.add(eContract);
-		p.setWidth("100%");
-
-		setWidget(4, 1, p);
+*/
+		pCustomer.setWidth("100%");
+		setWidget(4, 1, pCustomer);
+		
 		getFlexCellFormatter().setColSpan(4, 1, 2);
 		getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_RIGHT);
 		getCellFormatter().setVerticalAlignment(4, 1, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -469,7 +485,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		dbFinish.setValue(bw.bargainFinish);
 		eStatus.setStatus(bw.status);
 		eCustomer.setCustomer(bw.customer);
-		eContract.setContract(bw.contract);
+		// TODO ссылки на документы
+		//eContract.setContract(bw.contract);
 		eRevenue.setValue(bw.bargainRevenue);
 		ePrePayment.setValue(bw.bargainPrepayment);
 		eFine.setValue(bw.bargainFine);
@@ -477,7 +494,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 	private void formFieldToBargain(BargainWrapper bw) {
 		bw.customer = eCustomer.getCustomer();
-		bw.contract = eContract.getContract();
+		// TODO ссылки на документы
+		bw.contract = null; 
 		bw.status = eStatus.getStatus();
 		bw.bargainStart = dbStart.getValue();
 		bw.bargainFinish=dbFinish.getValue();
@@ -639,7 +657,55 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			lProfit.setValue(bargain.getProfit()/100.0);
 			setAttention();
 		};
+/*		
+		if(event.getSource()==eCustomer) 
+			replaceInfoCustomer();
+*/		
 		refreshTitle();
+	}
+
+	private void showInfoCustomer() {
+		CustomerWrapper customer = eCustomer.getCustomer();
+		if(pCustomer.getWidgetCount()>1) {
+			pCustomer.remove(pCustomer.getWidgetCount()-1);
+		}
+		
+		if(customer!=null) {
+			StringBuilder sb = new StringBuilder("<div class=\"customer-info\">");
+			
+			sb.append("<img src=\"");
+			if(customer.customerPhoto==null) sb.append("resources/images/noname.png");
+										else sb.append(customer.customerPhoto);
+			sb.append("\">");
+			
+			sb.append("<div>");
+			if(customer.customerCompany!=null) {
+				sb.append("<div>").append(customer.customerCompany);
+				if(customer.customerPosition!=null) 
+					sb.append(',').append(customer.customerPosition);
+			    sb.append("</div>");
+			}
+			
+			String email = customer.getPrimaryEmail(true);
+			if(email!=null) {
+				sb.append("<div class=\"email\">").append(email);
+				String s = customer.getEmails(true);
+				if(s!=null) sb.append(" ("+s+")");
+			    sb.append("</div>");
+			}
+			String phone = customer.getPrimaryPhone(true);  
+			if(phone!=null) {
+				sb.append("<div class=\"phone\">").append(phone);
+				String s = customer.getPhones(true);
+				if(s!=null) sb.append(" ("+s+")");
+			    sb.append("</div>");
+			}
+			
+			sb.append("</div>");
+			sb.append("</div>");
+			
+			pCustomer.add(new HTML(sb.toString()));
+		}
 	}
 
 	private void refreshTitle() {

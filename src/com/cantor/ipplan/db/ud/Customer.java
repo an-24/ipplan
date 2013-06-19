@@ -39,6 +39,7 @@ public class Customer implements java.io.Serializable, DataBridge<CustomerWrappe
 	private Date customerBirthday;
 	private Date customerLastupdate;
 	private int customerVisible = 1;
+	private String customerPhoto;
 	
 	private Set<Contract> contracts = new HashSet<Contract>(0);
 	private Set<Bargain> bargains = new HashSet<Bargain>(0);
@@ -174,6 +175,14 @@ public class Customer implements java.io.Serializable, DataBridge<CustomerWrappe
 		this.customerVisible = v;
 	}
 	
+	@Column(name = "CUSTOMER_PHOTO", length = 8190)
+	public String getCustomerPhoto() {
+		return customerPhoto;
+	}
+
+	public void setCustomerPhoto(String customerPhoto) {
+		this.customerPhoto = customerPhoto;
+	}
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
 	public Set<Contract> getContracts() {
@@ -233,5 +242,6 @@ public class Customer implements java.io.Serializable, DataBridge<CustomerWrappe
 		// TODO Auto-generated method stub
 		
 	}
+
 
 }

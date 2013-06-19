@@ -596,6 +596,7 @@ a:hover {
 }
 
 .gwt-Image {
+  border-radius: 6px;
 }
 
 .gwt-MenuBar {
@@ -1543,4 +1544,146 @@ td.datePickerMonth {
 .gwt-CellTable-Error {
   background-color: #cc0000 !important;
   border-color: #cc0000 !important;
+}
+
+.gwt-StatusBox {
+  padding: 5px 4px;
+  border: 1px solid #D8DCDF;
+  border-radius: 6px;
+  background-color: white;
+  outline: none; 
+  display:inline-block;
+}
+
+.gwt-StatusBox:focus {
+  border: 1px solid #939393;
+  background-color: #f6f6f6;
+}
+
+.gwt-StatusBox-pause {
+  min-width:20px;
+  min-height:16px;
+  background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -224px -192px transparent;
+  margin-right:10px;
+}
+
+.gwt-StatusBox-pause:hover {
+  background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -224px -192px transparent;
+}
+
+.gwt-StatusBox div {
+  float:left;
+}
+
+.gwt-StatusBox-next {
+  min-width:20px;
+  min-height:16px;
+  background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -46px -192px transparent;
+  margin-left:10px;
+}
+
+.gwt-StatusBox-next:hover {
+  background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -46px -192px transparent;
+}
+
+.gwt-StatusBox-lock div.gwt-StatusBox-next {
+  display:none;
+}
+
+.gwt-StatusBox-lock {
+  padding-right:10px;
+}
+
+.gwt-StatusBox-lock div.gwt-StatusBox-pause {
+  background: url("images/ui-icons_004276_256x240.png") no-repeat scroll 4px -64px transparent;
+}
+
+.gwt-StatusBox-lock div.gwt-StatusBox-pause:hover {
+  background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll 4px -64px transparent;
+ }
+
+.gwt-StatusBox-finish {
+  padding-left:10px;
+  padding-right:10px;
+}
+
+.gwt-StatusBox-finish div.gwt-StatusBox-next {
+  display:none;
+}
+
+.gwt-StatusBox-finish div.gwt-StatusBox-pause {
+  display:none;
+}
+
+.gwt-StatusBox-suspend {
+  padding-left:10px;
+}
+
+.gwt-StatusBox-suspend div.gwt-StatusBox-pause {
+  display:none;
+}
+
+.gwt-CustomerBox {
+    border:0px none;
+}
+
+
+.gwt-SuggestBox div {
+    width:20px;
+    height:20px;
+    float: right;
+}
+
+.Customer-bind {
+    font-weight: bold;
+}
+
+.Customer-bind+div {
+    background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -30px -191px transparent;
+}
+
+.Customer-add+div {
+    background: url("images/ui-icons_004276_256x240.png") no-repeat scroll 5px -191px transparent;
+}
+
+.Customer-bind+div:hover {
+    background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -30px -191px transparent;
+}
+
+.Customer-add+div:hover {
+    background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll 5px -191px transparent;
+}
+
+.gwt-InnerBox {
+    border:0px none;
+    width: 100%;
+    padding-right: 20px;
+    -moz-box-sizing: border-box; /* Äëÿ Firefox */
+    -webkit-box-sizing: border-box; /* Äëÿ Safari è Chrome */
+    box-sizing: border-box; /* Äëÿ IE è Opera */
+}
+
+.gwt-InnerBox-Button {
+    position: relative;
+    margin-top: -20px;
+}
+
+.gwt-CustomerBox-Suggestion {
+    width:300px;
+    padding: 2px 2px 2px 0px;
+    height: 61px;
+    font-size: 0.9em;
+}
+
+.gwt-CustomerBox-Suggestion img {
+    width: 60px;
+    height: 60px;
+    float: left;
+    margin-right: 5px;
+    border: 1px solid silver;
+}
+
+.gwt-CustomerBox-Suggestion div.name {
+    border-bottom: 1px solid silver;
+    font-size: 1em;
 }

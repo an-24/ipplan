@@ -1162,6 +1162,8 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			try {
 				Customer c = new Customer();
 				c.fromClient(cw);
+				// вновь добавляемы всегда виден
+				c.setCustomerVisible(1);
 				session.save(c);
 				tx.commit();
 		    	return c.toClient();

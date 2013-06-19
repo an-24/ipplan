@@ -9,6 +9,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.datepicker.client.DateBox;
 
@@ -25,28 +26,37 @@ public class FormCustomer extends Dialog  implements ValueChangeHandler {
 	private TextBox tbPhones;
 	private DateBox tbBirthday;
 	private ClickHandler okExternalHandler;
+	private Image photo;
 
 	public FormCustomer(CustomerWrapper customer) {
 		super(customer==null?"Новый клиент":"Изменение данных о клиенте \""+customer.customerName+"\"");
 		this.getButtonOk().setText("Сохранить");
 		FlexTable table = getContent();
-		HorizontalPanel ph; 
-				
-		table.setWidget(0, 0, new Label("Имя"));
+		HorizontalPanel ph;
+		int startCol = 1;
+
+		photo = new Image();
+		photo.setSize("120px", "120px");
+		table.getFlexCellFormatter().setRowSpan(0, 0, 10);
+		table.getFlexCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_TOP);
+		table.setWidget(0, 0, photo);
+		
+		table.setWidget(0, startCol, new Label("Имя"));
 		tbName = new TextBox();
 		tbName.setWidth("400px");
 		tbName.getElement().setAttribute("placeholder", "Рекомендуем вводить в порядке <Фамилия> <Имя> [Отчество]");
 		tbName.addValueChangeHandler(this);
-		table.setWidget(0, 1, tbName);
-
-		table.setWidget(1, 0, new Label("Дата рождения"));
+		table.setWidget(0, startCol+1, tbName);
+		
+		startCol=0;
+		table.setWidget(1, startCol, new Label("Дата рождения"));
 		tbBirthday = new DateBox();
 		tbBirthday.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
-		table.setWidget(1, 1, tbBirthday);
+		table.setWidget(1, startCol+1, tbBirthday);
 
-		table.setWidget(2, 0, new Label("Представляет юридическое лицо"));
+		table.setWidget(2, startCol, new Label("Представляет юридическое лицо"));
 		ph = new HorizontalPanel();
-		ph.setSpacing(3);
+		ph.setSpacing(4);
 		ph.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		tbCompany = new TextBox();
 		tbCompany.setWidth("158px");
@@ -54,36 +64,38 @@ public class FormCustomer extends Dialog  implements ValueChangeHandler {
 		ph.add(new Label(" в должности"));
 		tbPosition = new TextBox();
 		ph.add(tbPosition);
-		table.setWidget(2, 1, ph);
+		table.setWidget(2, startCol+1, ph);
 		
-		table.setWidget(3, 0, new Label("Основной e-mail"));
+		table.setWidget(3, startCol, new Label("Основной e-mail"));
 		tbPrimaryEmail = new TextBox();
 		tbPrimaryEmail.setWidth("240px");
 		tbPrimaryEmail.addValueChangeHandler(this);
-		table.setWidget(3, 1, tbPrimaryEmail);
+		table.setWidget(3, startCol+1, tbPrimaryEmail);
 		
-		table.setWidget(4, 0, new Label("Дополнительные e-mail"));
+		table.setWidget(4, startCol, new Label("Дополнительные e-mail"));
 		tbEmails = new TextBox();
 		tbEmails.setWidth("400px");
 		tbEmails.getElement().setAttribute("placeholder", "Можно ввести несколько адресов с разделителем <,> или <пробел>");
-		table.setWidget(4, 1, tbEmails);
+		table.setWidget(4, startCol+1, tbEmails);
 		
-		table.setWidget(5, 0, new Label("Основной телефон"));
+		table.setWidget(5, startCol, new Label("Основной телефон"));
 		tbPrimaryPhone = new TextBox();
 		tbPrimaryPhone.setWidth("240px");
-		table.setWidget(5, 1, tbPrimaryPhone);
+		table.setWidget(5, startCol+1, tbPrimaryPhone);
 		
-		table.setWidget(6, 0, new Label("Дополнительные номера телефонов"));
+		table.setWidget(6, startCol, new Label("Дополнительные номера телефонов"));
 		tbPhones = new TextBox();
 		tbPhones.setWidth("400px");
 		tbPhones.getElement().setAttribute("placeholder", "Можно ввести несколько номеров с разделителем <,> или <пробел>");
-		table.setWidget(6, 1, tbPhones);
+		table.setWidget(6, startCol+1, tbPhones);
+		
 
 		if(customer!=null) {
 			this.customer = customer.copy();
 			toEditFields();
 		} else {
 			this.customer = new CustomerWrapper();
+			photo.setUrl("resources/images/noname.png");
 		}
 
 		this.setButtonOkClickHandler(new ClickHandler() {
@@ -101,6 +113,10 @@ public class FormCustomer extends Dialog  implements ValueChangeHandler {
 		});
 		
 		setFirstFocusedWidget(tbName);
+	}
+	
+	public void setName(String n) {
+		tbName.setText(n);
 	}
 
 	protected boolean validate() {
@@ -131,6 +147,8 @@ public class FormCustomer extends Dialog  implements ValueChangeHandler {
 		tbEmails.setText(customer.customerEmails);
 		tbPrimaryPhone.setText(customer.customerPrimaryPhone);
 		tbPhones.setText(customer.customerPhones);
+		if(customer.customerPhoto==null) 
+			photo.setUrl("resources/images/noname.png");
 	}
 	
 	private String nulleable(String t){
