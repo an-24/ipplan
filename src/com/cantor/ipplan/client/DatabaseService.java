@@ -31,12 +31,15 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface DatabaseService extends RemoteService {
 	public PUserWrapper open(String sessId) throws Exception;
 	public PUserWrapper isLogged();
-	public List<BargainWrapper> attention() throws Exception;
 	public BargainTotals[] getTotals() throws Exception;
+	
+	public List<BargainWrapper> findBargain(String text, Date date, boolean allUser, boolean[] stats)  throws Exception;
+	public List<BargainWrapper> attention() throws Exception;
 	public BargainWrapper newBargain(String name, int startStatus) throws Exception;
 	public BargainWrapper newBargain(String name, int startStatus, Date start, Date finish) throws Exception;
 	public BargainWrapper editBargain(int id) throws Exception;
 	public boolean deleteBargain(int id) throws Exception;
+	public void deleteBargain(List<BargainWrapper> list) throws Exception;
 	public List<BargainWrapper> getTemporalyBargains() throws Exception;
 	public void dropTemporalyBargain(int id);
 	public void saveTemporalyBargain(BargainWrapper bargain) throws Exception;

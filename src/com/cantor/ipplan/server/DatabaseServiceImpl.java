@@ -152,8 +152,8 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	public List<BargainWrapper> attention() throws Exception {
 		checkAccess();
 		SessionFactory sessionFactory = getSessionFactory();
-		List<BargainWrapper> list = new ArrayList<BargainWrapper>();
     	Session session = sessionFactory.openSession();
+		List<BargainWrapper> list = new ArrayList<BargainWrapper>();
     	try {
     		String hsq = "select b from Bargain b where b.bargainHead=1";
     		int usrid = getUserId();
@@ -1245,6 +1245,108 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	} finally {
     		session.close();
     	}
+	}
+
+	@Override
+	public List<BargainWrapper> findBargain(String text, Date finish,
+			boolean allUser, boolean[] stats) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+		List<BargainWrapper> list = new ArrayList<BargainWrapper>();
+    	try {
+    		String hsq = "select b from Bargain b where b.bargainHead=1";
+    		int usrid = getUserId();
+    		if(usrid != PUserIdent.USER_ROOT_ID)
+    			hsq+=" and b.puser.puserId="+usrid;
+    		// фильтры -------------------
+    		// по пользователю
+    		if(usrid == PUserIdent.USER_ROOT_ID && !allUser)
+    			hsq+=" and b.puser.puserId="+PUserIdent.USER_ROOT_ID;
+    		// по перескчению дат
+			hsq+=" and b.bargainFinish>=:start";
+			hsq+=" and b.bargainStart<=:finish";
+    		// по тексту
+			if(text!=null && !text.isEmpty())
+			hsq+=" and ("+"UPPER(b.bargainName) like :txt"+
+			     " or  UPPER(b.customer.customerName) like :txt"+
+			     " or UPPER(b.customer.customerPrimaryEmail) like :txt"+
+		     	 " or UPPER(b.customer.customerEmails) like :txt"+
+		     	 " or b.customer.customerPrimaryPhone like :txt"+
+		     	 " or b.customer.customerPhones like :txt"+
+		     	 " or UPPER(b.customer.customerCompany) like :txt"+
+		     	 " or UPPER(b.customer.customerPosition) like :txt"+
+		     	 " or b.bargainRevenue like :txt"+
+		     	 ")";
+		     // по состоянию
+			if(stats!=null) {
+				String s="";
+					//в работе
+				if(stats[0]) 
+		    		s+=" not(b.status.statusId in ("+StatusWrapper.CLOSE_FAIL+","+
+		    					StatusWrapper.CLOSE_OK+","+StatusWrapper.SUSPENDED+"))";
+					//выполненные
+				if(stats[1]) { 
+					if(!s.isEmpty()) s+=" or "; 
+					s+="b.status.statusId="+StatusWrapper.CLOSE_OK;
+				};	
+					//просроченные
+				if(stats[2]) { 
+					if(!s.isEmpty()) s+=" or "; 
+					s+="b.bargainFinish-current_timestamp<0";
+				}	
+					//несогласованные
+				if(stats[3]) { 
+					if(!s.isEmpty()) s+=" or "; 
+					s+="b.status.statusId="+StatusWrapper.SUSPENDED;
+				}	
+				if(!s.isEmpty()) hsq+=" and("+s+")";
+			};
+    		// самые близкие по плану
+    		hsq+=" order by b.bargainFinish";
+    		
+    		Query q = session.createQuery(hsq);
+    		q.setParameter("start", new Date(finish.getYear(),0,1));
+    		q.setParameter("finish", finish);
+			if(text!=null && !text.isEmpty())
+				q.setParameter("txt", "%"+text.toUpperCase()+"%");
+    		
+    		List<Bargain> bargains = q.list();
+    		for (Bargain b : bargains) {
+    			BargainWrapper wrap = b.toClient();
+    			wrap.attention =  b.makeAttention();
+    			list.add(wrap);
+    		}
+    		return list;
+    		
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public void deleteBargain(List<BargainWrapper> list) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				for (BargainWrapper cw : list)
+					deleteBargainInner(cw.bargainId, session);
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	private void deleteBargainInner(int id, Session session) {
+		Bargain c = (Bargain) session.get(Bargain.class, id);
+		session.delete(c);
 	}
 
 

@@ -136,7 +136,8 @@ a:hover {
 .gwt-TextArea,
 .gwt-DoubleBox,
 .gwt-CurrencyBox,
-.gwt-SuggestBox {
+.gwt-SuggestBox,
+.gwt-MonthPicker {
   padding: 5px 4px;
   border: 1px solid #D8DCDF;
   border-radius: 6px;
@@ -149,7 +150,8 @@ a:hover {
 .gwt-TextArea:focus,
 .gwt-DoubleBox:focus,
 .gwt-CurrencyBox:focus,
-.gwt-SuggestBox:focus {
+.gwt-SuggestBox:focus,
+.gwt-MonthPicker:focus {
   padding: 5px 4px;
   border: 1px solid #939393;
   border-radius: 6px;
@@ -173,7 +175,8 @@ a:hover {
 .gwt-TextArea-readonly,
 .gwt-DoubleBox-readonly,
 .gwt-CurrencyBox-readonly,
-.gwt-SuggestBox-readonly {
+.gwt-SuggestBox-readonly,
+.gwt-MonthPicker-readonly {
   color: #888;
 }
 
@@ -640,10 +643,11 @@ a:hover {
   border-collapse: collapse;
 }
 .gwt-MenuBar-vertical .gwt-MenuItem {
-  padding: 2px 40px 2px 1px;
+  padding: 6px 10px;
 }
+
 .gwt-MenuBar-vertical .gwt-MenuItemSeparator {
-  padding: 2px 0px;
+  padding: 6px 0px;
 }
 .gwt-MenuBar-vertical .gwt-MenuItemSeparator .menuSeparatorInner {
   height: 1px;
@@ -734,9 +738,12 @@ a:hover {
 }
 
 .gwt-PopupPanel {
-  border: 3px solid #e7e7e7;
-  padding: 3px;
-  background: white;
+  padding: 2px 0;
+  border: 1px solid #939393;
+  background-color: white;
+  overflow: hidden;
+  border-radius: 6px;
+  cursor:default;
 }
 
 .gwt-DecoratedPopupPanel .popupContent {
@@ -1302,26 +1309,37 @@ a:hover {
 .gwt-ToggleButton-down-disabled {
   margin: 0;
   text-decoration: none;
-  background: url("images/hborder.png") repeat-x 0px -27px;
+  border:1px solid #D8DCDF;
+  background: url("images/ui-bg_highlight-hard_100_eeeeee_1x100.png") repeat-x scroll 50% 50% #EEEEEE;
   -moz-border-radius: 2px;
   border-radius: 2px;
-}
-.gwt-ToggleButton-up,
-.gwt-ToggleButton-up-hovering,
-.gwt-ToggleButton-up-disabled {
+  outline:none;
   padding: 3px 5px 3px 5px;
+  cursor: pointer;
+  cursor: hand;
 }
+
+.gwt-ToggleButton-up:focus,
+.gwt-ToggleButton-up-hovering:focus,
+.gwt-ToggleButton-up-disabled:focus {
+  border: 1px solid #939393;
+  background: #f6f6f6 url(images/ui-bg_highlight-hard_100_f6f6f6_1x100.png) 50% 50% repeat-x;
+}
+
+.gwt-ToggleButton-down:focus,
+.gwt-ToggleButton-down-hovering:focus,
+.gwt-ToggleButton-down-disabled:focus {
+  border: 1px solid #939393;
+  background: none repeat scroll 0 0 #006699;
+}
+
+
 .gwt-ToggleButton-up {
-  border:1px solid #bbb;
-  border-bottom: 1px solid #a0a0a0;  
-  cursor: pointer;
-  cursor: hand;
+  color: #004276;
 }
+
 .gwt-ToggleButton-up-hovering {
-  border: 1px solid;
-  border-color: #939393;
-  cursor: pointer;
-  cursor: hand;
+  color: #cc0000;
 }
 .gwt-ToggleButton-up-disabled {
   border: 1px solid #bbb;
@@ -1330,23 +1348,15 @@ a:hover {
   zoom: 1;
   filter: alpha(opacity=45);
 }
-.gwt-ToggleButton-down,
-.gwt-ToggleButton-down-hovering,
-.gwt-ToggleButton-down-disabled {
-  padding: 4px 4px 2px 6px;
-}
+
 .gwt-ToggleButton-down {
-  background-position: 0 -513px;
-  border: 1px inset #666;
-  cursor: pointer;
-  cursor: hand;
+  background: none repeat scroll 0 0 #006699;
+  color: #004276;
+  color: white;
 }
+
 .gwt-ToggleButton-down-hovering {
-  background-position: 0 -513px;
-  border: 1px inset;
-  border-color: #9cf #69e #69e #7af;
-  cursor: pointer;
-  cursor: hand;
+  color: #cc0000;
 }
 .gwt-ToggleButton-down-disabled {
   background-position: 0 -513px;
@@ -1450,9 +1460,12 @@ a:hover {
 
 .datePickerMonthSelector {
   width: 100%;
-  padding: 1px 0 5px 0;
-  background: #fff;
 }
+
+.gwt-MonthPicker .datePickerMonthSelector {
+  border-collapse:collapse;
+}
+
 td.datePickerMonth {
   text-align: center;
   vertical-align: middle;
@@ -1686,4 +1699,37 @@ td.datePickerMonth {
 .gwt-CustomerBox-Suggestion div.name {
     border-bottom: 1px solid silver;
     font-size: 1em;
+}
+
+.gwt-MonthPicker {
+  outline: none;
+  cursor: default;
+}
+
+.gwt-MonthPicker:focus td{
+  background-color: #f6f6f6;
+  border-color:#f6f6f6;
+}
+
+.gwt-MonthPicker:focus div{
+  background-color: #f6f6f6;
+  border-color:#f6f6f6;
+}
+
+.gwt-MonthPicker td{
+  background-color: white;
+  border-color:white;
+  outline: none;
+}
+
+.gwt-MonthPicker div{
+  background-color: white;
+  border-color:white;
+  outline: none;
+}
+
+.gwt-DropdownButton-dropbtn {
+    padding-left: 16px;
+    margin-left: 5px;
+    background: url(images/ui-icons_004276_256x240.png) no-repeat -64px -16px;
 }

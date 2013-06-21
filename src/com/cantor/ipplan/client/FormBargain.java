@@ -14,6 +14,7 @@ import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
@@ -188,7 +189,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getCellFormatter().setVerticalAlignment(3, 2, HasVerticalAlignment.ALIGN_MIDDLE);
 		getCellFormatter().setHorizontalAlignment(3, 2, HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		l = new Label("Заказчик:");
+		l = new Label("Клиент:");
 		//l.addStyleName("tpad10");
 		l.getElement().getStyle().setPaddingTop(20, Unit.PX);
 		setWidget(4, 0, l);
@@ -666,9 +667,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 	private void showInfoCustomer() {
 		CustomerWrapper customer = eCustomer.getCustomer();
-		if(pCustomer.getWidgetCount()>1) {
+		while(pCustomer.getWidgetCount()>1) 
 			pCustomer.remove(pCustomer.getWidgetCount()-1);
-		}
 		
 		if(customer!=null) {
 			StringBuilder sb = new StringBuilder("<div class=\"customer-info\">");
@@ -705,6 +705,23 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			sb.append("</div>");
 			
 			pCustomer.add(new HTML(sb.toString()));
+			Label ledit = new Label("Изменить");
+			ledit.addStyleName("link");
+			ledit.getElement().getStyle().setFloat(Style.Float.RIGHT);
+			ledit.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					FormCustomer.edit(dbservice, eCustomer.getCustomer(), new NotifyHandler<CustomerWrapper>() {
+						@Override
+						public void onNotify(CustomerWrapper c) {
+							eCustomer.setCustomer(c);
+							showInfoCustomer();
+						}
+					});
+				}
+			});
+			pCustomer.add(ledit);
+			
 		}
 	}
 

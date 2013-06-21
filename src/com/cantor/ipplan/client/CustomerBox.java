@@ -124,29 +124,12 @@ public class CustomerBox extends SuggestBox {
 	}
 	
 	private void addCustomer() {
-		final FormCustomer form = new FormCustomer(null);
-		form.setName(getText());
-
-		form.setExternalHandler(
-			new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					dbservice.addCustomer(form.getCustomer(), new AsyncCallback<CustomerWrapper>() {
-						@Override
-						public void onSuccess(CustomerWrapper result) {
-							setCustomer(result,true);
-						};
-						@Override
-						public void onFailure(Throwable e) {
-							Ipplan.showError(e);
-							
-						}
-					});
-					
-				}
-			});		
-		
-		form.center();
+		FormCustomer.add(dbservice, new NotifyHandler<CustomerWrapper>() {
+			@Override
+			public void onNotify(CustomerWrapper c) {
+				setCustomer(c,true);
+			}
+		});
 	}
 
 	public static class CustomerSuggestOracle extends SuggestOracle {

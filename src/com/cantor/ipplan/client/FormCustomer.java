@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -50,8 +51,7 @@ public class FormCustomer extends Dialog  implements ValueChangeHandler {
 		
 		startCol=0;
 		table.setWidget(1, startCol, new Label("Дата рождения"));
-		tbBirthday = new DateBox();
-		tbBirthday.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		tbBirthday = new DateBox(new DatePicker(),null,new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
 		table.setWidget(1, startCol+1, tbBirthday);
 
 		table.setWidget(2, startCol, new Label("Представляет юридическое лицо"));
@@ -168,7 +168,48 @@ public class FormCustomer extends Dialog  implements ValueChangeHandler {
 		this.okExternalHandler = okExternalHandler;
 	}
 	
-	
+	public static void edit(final DatabaseServiceAsync dbservice, final CustomerWrapper c, final NotifyHandler<CustomerWrapper> competed) {
+		final FormCustomer form = new FormCustomer(c);
+		form.setExternalHandler(
+				new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					dbservice.updateCustomer(form.getCustomer(), new AsyncCallback<Void>() {
+						@Override
+						public void onSuccess(Void result) {
+							if(competed!=null) competed.onNotify(form.getCustomer());
+						}
+						@Override
+						public void onFailure(Throwable e) {
+							Ipplan.showError(e);
+						}
+					});
+					
+				}
+			});		
+		form.center();
+	}
 
+	public static void add(final DatabaseServiceAsync dbservice, final NotifyHandler<CustomerWrapper> competed) {
+		final FormCustomer form = new FormCustomer(null);
+		form.setExternalHandler(
+				new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					dbservice.addCustomer(form.getCustomer(), new AsyncCallback<CustomerWrapper>() {
+						@Override
+						public void onSuccess(CustomerWrapper result) {
+							if(competed!=null) competed.onNotify(result);
+						}
+						@Override
+						public void onFailure(Throwable e) {
+							Ipplan.showError(e);
+						}
+					});
+					
+				}
+			});		
+		form.center();
+	}
 
 }

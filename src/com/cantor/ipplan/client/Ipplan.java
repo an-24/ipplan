@@ -30,8 +30,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 
-	private final static String USER_AGENT = Form.getUserAgent();
-	private final static boolean USER_AGENT_IPHONE = USER_AGENT.indexOf("iPhone")>=0;
+	private static String USER_AGENT;
+	private static boolean USER_AGENT_IPHONE;
 
 	private static Logger rootLogger = Logger.getLogger("iPPlan");
 	static String INIT_TOKEN = "";
@@ -40,6 +40,8 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	
     public Ipplan() {
     	super();
+    	USER_AGENT = Form.getUserAgent();
+    	USER_AGENT_IPHONE = USER_AGENT.indexOf("iPhone")>=0;
 		init();
     }
     

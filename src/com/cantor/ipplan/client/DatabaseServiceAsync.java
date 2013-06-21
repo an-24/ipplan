@@ -24,6 +24,7 @@ public interface DatabaseServiceAsync {
 	void getTemporalyBargains(AsyncCallback<List<BargainWrapper>> callback);
 	void editBargain(int id, AsyncCallback<BargainWrapper> callback);
 	void deleteBargain(int id, AsyncCallback<Boolean> callback);
+	void deleteBargain(List<BargainWrapper> list, AsyncCallback<Void> asyncCallback);
 	void dropTemporalyBargain(int id, AsyncCallback<Void> callback);
 	void saveBargain(BargainWrapper bargain, boolean drop,
 			AsyncCallback<BargainWrapper> callback);
@@ -43,4 +44,6 @@ public interface DatabaseServiceAsync {
 	void deleteCustomer(int id, AsyncCallback<Boolean> callback);
 	void updateCustomer(CustomerWrapper value, AsyncCallback<Void> callback);
 	void deleteCustomer(List<CustomerWrapper> list, AsyncCallback<Void> callback);
+	void findBargain(String text, Date date, boolean allUser, boolean[] stats,
+			AsyncCallback<List<BargainWrapper>> callback);
 }

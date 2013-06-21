@@ -3,6 +3,7 @@ package com.cantor.ipplan.client;
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -41,25 +42,27 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
+import com.google.gwt.core.client.Scheduler;
 
 public class FormMain extends Form {
 	
@@ -85,9 +88,6 @@ public class FormMain extends Form {
 	private NumberLabel<Double> lProfitDelta;
 	private FlexTable tableStats;
 	private Label lCaption;
-	private HTML linkAutoSync;
-
-	private Button btnSync;
 
 	private Button btnCustomerAdd;
 
@@ -96,6 +96,30 @@ public class FormMain extends Form {
 	private CellTable<CustomerWrapper> tableCustomer;
 
 	private TextBox tbFindCustomer;
+
+	private CellTable<BargainWrapper> tableBargain;
+
+	private TextBox tbFindBargain;
+
+	private MonthPicker filterBargainDate;
+
+	private ToggleButton[] filterBargainStatus;
+
+	private CheckBox filterBargainAllUsers;
+
+	private MenuItem syncMenuItem;
+
+	private MenuItem syncAutoMenuItem;
+
+	private Button btnBargainAdd;
+
+	private Button btnBargainDelete;
+
+	private Button btnBargainRefresh;
+
+	private Button btnCustomerRefresh;
+
+	private Label lBargainTotal;
 
 	public FormMain(Ipplan main, RootPanel root, PUserWrapper usr, int numTab) {
 		super(main, root);
@@ -128,7 +152,32 @@ public class FormMain extends Form {
 		FlexTable tab1 = new FlexTable();
 		tabPanel.add(tab1, "Главное", false);
 		tab1.setSize("100%", "3cm");
+		initTab1(tab1);
 		
+		FlexTable tab2 = new FlexTable();
+		tabPanel.add(tab2, "Сделки", false);
+		tab2.setSize("100%", "3cm");
+		initTab2(tab2);
+		
+		FlexTable tab3 = new FlexTable();
+		tabPanel.add(tab3, "Клиенты", false);
+		tab3.setSize("100%", "3cm");
+		initTab3(tab3);
+		
+		FlexTable tab4 = new FlexTable();
+		tabPanel.add(tab4, "Анализ", false);
+		tab4.setSize("100%", "3cm");
+		initTab4(tab4);
+		
+		Label l0 = new Label(" ");
+		tabPanel.add(l0, "...", false);
+		l0.setSize("5cm", "3cm");
+		
+		currentTabId = numTab;
+		prepare();
+	}
+
+	private void initTab1(FlexTable tab1) {
 		Button btnNew = new Button("Создать новую сделку");
 		btnNew.addStyleName("mainCommand");
 		btnNew.addClickHandler(new ClickHandler() {
@@ -252,6 +301,14 @@ public class FormMain extends Form {
 		simplePanel.setWidget(tableAttention);
 		tableAttention.setSize("100%", "");
 		
+		makeBargainColumns(tableAttention);
+		
+		tab1.getFlexCellFormatter().setColSpan(4, 0, 3);
+		tab1.getCellFormatter().setVerticalAlignment(1, 0, HasVerticalAlignment.ALIGN_BOTTOM);
+		tab1.getCellFormatter().setVerticalAlignment(3, 0, HasVerticalAlignment.ALIGN_BOTTOM);
+	}
+
+	private void makeBargainColumns(CellTable<BargainWrapper> table) {
 		Column<BargainWrapper, String> c1 = new Column<BargainWrapper, String>(new ClickableTextCell()) {
 
 			@Override
@@ -266,22 +323,50 @@ public class FormMain extends Form {
 			}
 		});
 		c1.setCellStyleNames("linkcell");
-		TextColumn<BargainWrapper> c2 = new TextColumn<BargainWrapper>() {
+		
+		Column<BargainWrapper,SafeHtml> c2 = new Column<BargainWrapper, SafeHtml>(new ClickableSafeHtmlCell()) {
+
+			@Override
+			public SafeHtml getValue(BargainWrapper object) {
+				SafeHtmlBuilder sb = new SafeHtmlBuilder();
+				if(object!=null) {
+					sb.appendHtmlConstant("<b class=\"linkcell\"><div>"+object.customer.customerName+"</div></b>");
+					if(object.customer.customerCompany!=null) {
+						sb.appendHtmlConstant("<div>"+object.customer.customerCompany);
+						if(object.customer.customerPosition!=null)
+							sb.appendHtmlConstant(","+object.customer.customerPosition);
+						sb.appendHtmlConstant("</div>");
+					}
+				}
+				return sb.toSafeHtml();
+			}
+			
+		};
+		c2.setFieldUpdater(new FieldUpdater<BargainWrapper, SafeHtml>() {
+			@Override
+			public void update(int index, BargainWrapper object, SafeHtml value) {
+				editCustomer(object.customer);
+			}
+		});
+		
+		
+		
+		TextColumn<BargainWrapper> c3 = new TextColumn<BargainWrapper>() {
 			@Override
 			public String getValue(BargainWrapper object) {
 				return (object==null)?"":object.puser.puserId==PUserIdent.USER_ROOT_ID?"":object.puser.getFullName();
 			}
 		};
 		
-		Column<BargainWrapper, Number> с3 = new Column<BargainWrapper, Number>(new NumberCell(NumberFormat.getFormat("#,##0.00"))) {
+		Column<BargainWrapper, Number> с4 = new Column<BargainWrapper, Number>(new NumberCell(NumberFormat.getFormat("#,##0.00"))) {
 			@Override
 			public Number getValue(BargainWrapper object) {
 				return (object==null)?null:object.bargainRevenue/100.0;
 			}
 		};
-		с3.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		с4.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		TextColumn<BargainWrapper> c4 = new TextColumn<BargainWrapper>() {
+		TextColumn<BargainWrapper> c5 = new TextColumn<BargainWrapper>() {
 			
 			@Override
             public String getCellStyleNames(Context context, BargainWrapper  object) {
@@ -301,51 +386,215 @@ public class FormMain extends Form {
 			}
 		};
 		
-		tableAttention.addColumn(c1,"Сделка");
-		tableAttention.addColumn(c2,"Сотрудник");
-		tableAttention.addColumn(с3,"Выручка");
-		tableAttention.addColumn(c4,"");
+		table.addColumn(c1,"Сделка");
+		table.addColumn(c2,"Клиент");
+		table.addColumn(c3,"Сотрудник");
+		table.addColumn(с4,"Выручка");
+		table.addColumn(c5,"");
 		
-		tableAttention.setColumnWidth(c1, "300px");
-		tableAttention.setColumnWidth(c2, "150px");
-		tableAttention.setColumnWidth(с3, "80px");
-		
-		tab1.getFlexCellFormatter().setColSpan(4, 0, 3);
-		tab1.getCellFormatter().setVerticalAlignment(1, 0, HasVerticalAlignment.ALIGN_BOTTOM);
-		tab1.getCellFormatter().setVerticalAlignment(3, 0, HasVerticalAlignment.ALIGN_BOTTOM);
-		
-		FlexTable tab2 = new FlexTable();
-		tabPanel.add(tab2, "Сделки", false);
-		tab2.setSize("100%", "3cm");
-		
-		FlexTable tab3 = new FlexTable();
-		tabPanel.add(tab3, "Клиенты", false);
-		tab3.setSize("100%", "3cm");
+		table.setColumnWidth(c1, "300px");
+		table.setColumnWidth(c2, "150px");
+		table.setColumnWidth(c3, "80px");
+		table.setColumnWidth(с4, "80px");
+	}
 
+	private void initTab2(FlexTable tab2) {
+		int row = 0;
+		filterBargainStatus = new ToggleButton[]{new ToggleButton("в работе"),new ToggleButton("выполненные"),
+				 new ToggleButton("просроченные"),new ToggleButton("несогласованные"),new ToggleButton("все")};
+		final ToggleButton allBtn =  filterBargainStatus[filterBargainStatus.length-1];
 		
+		HorizontalPanel p = new HorizontalPanel();
+		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		p.setSpacing(10);
+		btnBargainAdd = new Button("Новая");
+		btnBargainAdd.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				try {
+					addNew();
+				} catch (Exception e) {
+					Ipplan.error(e);
+				}
+			}
+		});
+		p.add(btnBargainAdd);
+		
+		btnBargainRefresh = new Button("Обновить");
+		btnBargainRefresh.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				startBargain(tbFindBargain.getText(),filterBargainDate.getFinishDate(),
+						filterBargainAllUsers.getValue(), (allBtn.isDown()?null:getFilterBargainStatuses()));
+			}
+		});
+		p.add(btnBargainRefresh);
+		
+		btnBargainDelete = new Button("Удалить");
+		btnBargainDelete.setEnabled(false);
+		btnBargainDelete.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				final List<BargainWrapper> list = tableBargain.getCheckedList();
+				dbservice.deleteBargain(list, new AsyncCallback<Void>() {
+					
+					@Override
+					public void onSuccess(Void result) {
+						List<BargainWrapper> all = tableBargain.getProvider().getList();
+						for (BargainWrapper cw : list) all.remove(cw);
+						list.clear();
+						tableBargain.redraw();
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+						
+					}
+				});
+			}
+		});
+		p.add(btnBargainDelete);
+
+		tab2.setWidget(row, 0, p);
+		
+		row++;
+		
+		HorizontalPanel th = new HorizontalPanel();
+		th.setSpacing(5);
+		th.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		th.add(new Label("C начала года до конца месяца "));
+		
+		filterBargainDate = new MonthPicker();
+		filterBargainDate.setTabIndex(0);
+		th.add(filterBargainDate);
+		filterBargainAllUsers = new CheckBox("Сделки подчиненных");
+		th.add(filterBargainAllUsers);
+		tab2.setWidget(row, 0, th);
+		tab2.getFlexCellFormatter().setColSpan(row, 0, 2);
+		row++;
+		
+		th = new HorizontalPanel();
+		ClickHandler groupclick = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				ToggleButton btn = (ToggleButton) event.getSource();
+				if(btn==allBtn) {
+					for (int i = 0; i < filterBargainStatus.length; i++) 
+						filterBargainStatus[i].setDown(false);
+					allBtn.setDown(true);
+				} else
+					allBtn.setDown(false);
+			}
+		};
+		filterBargainStatus[0].setDown(true);
+		
+		for (int i = 0; i < filterBargainStatus.length; i++) {
+			th.add(filterBargainStatus[i]);
+			filterBargainStatus[i].addClickHandler(groupclick);
+		}
+		tab2.setWidget(row, 1, th);
+		tab2.getFlexCellFormatter().setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+
+		HorizontalPanel ph = new HorizontalPanel();
+		ph.setSpacing(5);
+		ph.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		ph.add(new Label("Встречаются слова"));
+		
+		tbFindBargain = new TextBox();
+		tbFindBargain.setWidth("231px");
+		tbFindBargain.addKeyDownHandler(new KeyDownHandler() {
+			@Override
+			public void onKeyDown(KeyDownEvent event) {
+				if(event.getNativeEvent().getKeyCode()==KeyCodes.KEY_ENTER) 
+					startBargain(tbFindBargain.getText(),filterBargainDate.getFinishDate(),
+							filterBargainAllUsers.getValue(), (allBtn.isDown()?null:getFilterBargainStatuses()));
+			}
+		});
+		ph.add(tbFindBargain);
+		tab2.setWidget(row, 0, ph);
+		
+		tab2.getFlexCellFormatter().setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_LEFT);
+		//tab2.getFlexCellFormatter().setVerticalAlignment(row,0, HasVerticalAlignment.ALIGN_MIDDLE);
+		tab2.getFlexCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		
+		row++;
+		
+		
+		tableBargain = new CellTable<BargainWrapper>(10);
+		tableBargain.setSelectionModel(null);
+		tableBargain.setWidth("100%");
+
+		GridPager pager = new GridPager();
+		pager.setDisplay(tableBargain);
+		tab2.setWidget(row,1, pager);
+		tab2.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		
+		lBargainTotal = new Label();
+		tab2.setWidget(row,0, lBargainTotal);
+
+		row++;
+		
+		tableBargain.createCheckedColumn(new ChangeCheckListEvent() {
+			@Override
+			public void onChange() {
+				btnBargainDelete.setEnabled(tableBargain.getCheckedList().size()>0);
+			}
+		});
+		
+		makeBargainColumns(tableBargain);
+		
+		tab2.getFlexCellFormatter().setColSpan(row, 0, 2);
+		tab2.setWidget(row, 0, tableBargain);
+		
+		// not open
+		prepareGrid(tableBargain, new ArrayList<BargainWrapper>(),true);
+		tableBargain.setRowCount(0);
+		showBargainTotals();
+	}
+	
+	private void showBargainTotals(){
+		List<BargainWrapper> list = tableBargain.getProvider().getList();
+		int total = 0;
+		for (BargainWrapper bw : list) {
+			total+= bw.bargainRevenue;
+		}
+		lBargainTotal.setText("Всего "+list.size()+" сделок на общую сумму "+NumberFormat.getFormat("#,##0.00").format(total/100.0));
+	}
+	
+	private boolean[] getFilterBargainStatuses() {
+		boolean[] stats = new boolean[4];
+		for (int i = 0; i < filterBargainStatus.length-1; i++) 
+			stats[i] = filterBargainStatus[i].isDown();
+		return stats;
+	}
+
+	protected void startBargain(String text, Date date, boolean allUser, boolean[] stats) {
+		dbservice.findBargain(text, date, allUser, stats, new AsyncCallback<List<BargainWrapper>>() {
+			
+			@Override
+			public void onSuccess(List<BargainWrapper> result) {
+				prepareGrid(tableBargain , result,true);
+				tableBargain.setRowCount(result.size());
+				showBargainTotals();
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Ipplan.showError(caught);
+			}
+		});
+		
+	}
+
+	private void initTab3(FlexTable tab3) {
 		HorizontalPanel p;
 		p = new HorizontalPanel();
 		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		p.setSpacing(10);
-		btnSync = new Button("Синхронизировать прямо сейчас");
-		p.add(btnSync);
-		btnSync.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(final ClickEvent event) {
-				syncContactsdDrectly();
-			}
-		});
-		linkAutoSync = new HTML(getContactAutoSyncCaption());
-		linkAutoSync.setStyleName("link");
-		linkAutoSync.getElement().getStyle().setTextAlign(TextAlign.CENTER);
-		linkAutoSync.getElement().getStyle().setBorderWidth(0, Unit.PX);
-		p.add(linkAutoSync);
-		linkAutoSync.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				syncContactsdAuto();
-			}
-		});
 		
 		tab3.setWidget(0, 1, p);
 
@@ -360,6 +609,16 @@ public class FormMain extends Form {
 			}
 		});
 		p.add(btnCustomerAdd);
+		
+		btnCustomerRefresh = new Button("Обновить");
+		btnCustomerRefresh.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				startCustomers(tbFindCustomer.getText());
+			}
+		});
+		p.add(btnCustomerRefresh);
+		
 		btnCustomerDelete = new Button("Удалить");
 		btnCustomerDelete.setEnabled(false);
 		btnCustomerDelete.addClickHandler(new ClickHandler() {
@@ -386,11 +645,36 @@ public class FormMain extends Form {
 			}
 		});
 		p.add(btnCustomerDelete);
+		
+		final DropdownButton cmd = new DropdownButton("Еще");
+		syncMenuItem = new MenuItem("Синхронизировать прямо сейчас",new Scheduler.ScheduledCommand() {
+			@Override
+			public void execute() {
+				syncContactsdDrectly();
+				cmd.closeup();
+			}
+		});
+		cmd.getMenu().addItem(syncMenuItem);
+		syncAutoMenuItem = new MenuItem(getContactAutoSyncCaption(),new Scheduler.ScheduledCommand() {
+			@Override
+			public void execute() {
+				syncContactsdAuto();
+				cmd.closeup();
+			}
+		});
+		cmd.getMenu().addItem(syncAutoMenuItem);
+		
+		p.add(cmd);
+		
 		tab3.setWidget(0, 0, p);
 		tab3.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT);
 		tab3.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		p = new HorizontalPanel();
+		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		p.setSpacing(5);
+		
+		p.add(new Label("Встречаются слова"));
 		tbFindCustomer = new TextBox();
 		tbFindCustomer.setWidth("300px");
 		tbFindCustomer.addKeyDownHandler(new KeyDownHandler() {
@@ -401,22 +685,14 @@ public class FormMain extends Form {
 			}
 		});
 		p.add(tbFindCustomer);
-		Button btn = new Button("Найти");
-		btn.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				startCustomers(tbFindCustomer.getText());
-			}
-		});
-		p.add(btn);
-		p.setSpacing(2);
+		
 		tab3.setWidget(1, 0, p);
 		
 		tableCustomer = new CellTable<CustomerWrapper>(10);
 		tableCustomer.setSelectionModel(null);
 		tableCustomer.setWidth("100%");
 		
-		setColumnCustomerTable(tableCustomer);
+		makeColumnCustomerTable(tableCustomer);
 
 		GridPager pager = new GridPager();
 		pager.setDisplay(tableCustomer);
@@ -426,52 +702,14 @@ public class FormMain extends Form {
 		tab3.getFlexCellFormatter().setColSpan(2, 0, 2);
 		tab3.setWidget(2,0, tableCustomer);
 		tab3.getFlexCellFormatter().setVerticalAlignment(2, 0, HasVerticalAlignment.ALIGN_TOP);
+	}
+
+	private void initTab4(FlexTable tab4) {
+		// TODO Auto-generated method stub
 		
-		
-		
-		FlexTable tab4 = new FlexTable();
-		tabPanel.add(tab4, "Анализ", false);
-		tab4.setSize("100%", "3cm");
-		
-		Label l0 = new Label(" ");
-		tabPanel.add(l0, "...", false);
-		l0.setSize("5cm", "3cm");
-		
-		currentTabId = numTab;
-		prepare();
 	}
 	
-	class ClickableSafeHtmlCell extends AbstractCell<SafeHtml> {
-		
-		ClickableSafeHtmlCell() {
-			super(CLICK, KEYDOWN);
-		}
-		
-		@Override
-		public void onBrowserEvent(Context context, Element parent, SafeHtml value,
-		      NativeEvent event, ValueUpdater<SafeHtml> valueUpdater) {
-		    super.onBrowserEvent(context, parent, value, event, valueUpdater);
-		    if (CLICK.equals(event.getType())) {
-		      onEnterKeyDown(context, parent, value, event, valueUpdater);
-		    }
-		}
-		@Override
-		protected void onEnterKeyDown(Context context, Element parent, SafeHtml value,
-		      NativeEvent event, ValueUpdater<SafeHtml> valueUpdater) {
-		    if (valueUpdater != null) {
-		      valueUpdater.update(value);
-		    }
-		}
-		@Override
-		public void render(com.google.gwt.cell.client.Cell.Context context,
-				SafeHtml value, SafeHtmlBuilder sb) {
-		    if (value != null) {
-		        sb.append(value);
-		      }
-		}
-	}
-	
-	private void setColumnCustomerTable(final CellTable<CustomerWrapper> customerTable) {
+	private void makeColumnCustomerTable(final CellTable<CustomerWrapper> customerTable) {
 		
 		Column<CustomerWrapper,SafeHtml> c1 = new Column<CustomerWrapper, SafeHtml>(new ClickableSafeHtmlCell()) {
 
@@ -576,53 +814,28 @@ public class FormMain extends Form {
 	}
 
 	protected void editCustomer(final CustomerWrapper c) {
-		final FormCustomer form = new FormCustomer(c);
-		
-		if(c==null) form.setExternalHandler(
-			new ClickHandler() {
+		if(c!=null) 
+			// edit	
+			FormCustomer.edit(dbservice, c, new NotifyHandler<CustomerWrapper>() {
 				@Override
-				public void onClick(ClickEvent event) {
-					dbservice.addCustomer(form.getCustomer(), new AsyncCallback<CustomerWrapper>() {
-						@Override
-						public void onSuccess(CustomerWrapper result) {
-							tableCustomer.getProvider().getList().add(result);
-							// TODO найти страницу и на нее встать
-							
-							toast(tableCustomer, "Клиент "+result.customerName+" был успешно добавлен");
-						};
-						@Override
-						public void onFailure(Throwable e) {
-							Ipplan.showError(e);
-							
-						}
-					});
-					
+				public void onNotify(CustomerWrapper newc) {
+					List<CustomerWrapper> list = tableCustomer.getProvider().getList();
+					list.set(list.indexOf(c),newc);
+					int r = tableCustomer.getVisibleItems().indexOf(newc);
+					if(r>=0) tableCustomer.redrawRow(r);
+					toast(tableCustomer, "Клиент был успешно изменен");
 				}
-			}); else form.setExternalHandler(
-				new ClickHandler() {
+			}); else
+			// add	
+			FormCustomer.add(dbservice, new NotifyHandler<CustomerWrapper>() {
 				@Override
-				public void onClick(ClickEvent event) {
-					dbservice.updateCustomer(form.getCustomer(), new AsyncCallback<Void>() {
-						
-						@Override
-						public void onSuccess(Void result) {
-							List<CustomerWrapper> list = tableCustomer.getProvider().getList();
-							list.set(list.indexOf(c),form.getCustomer());
-							int r = tableCustomer.getVisibleItems().indexOf(form.getCustomer());
-							if(r>=0) tableCustomer.redrawRow(r);
-							toast(tableCustomer, "Клиент был успешно изменен");
-						}
-						
-						@Override
-						public void onFailure(Throwable e) {
-							Ipplan.showError(e);
-						}
-					});
+				public void onNotify(CustomerWrapper newc) {
+					tableCustomer.getProvider().getList().add(newc);
+					// TODO найти страницу и на нее встать
 					
+					toast(tableCustomer, "Клиент "+newc.customerName+" был успешно добавлен");
 				}
 			});
-		
-		form.center();
 	}
 
 	private String getContactAutoSyncCaption() {
@@ -644,7 +857,7 @@ public class FormMain extends Form {
 				s = "[раз в "+user.puserContactSyncDuration/60+" минут]";
 				break;
 		}
-		return "Автоматическая<br>синхронизация<br>"+s;
+		return "Автоматическая синхронизация "+s;
 	}
 
 	protected void edit(BargainWrapper b) {
@@ -1016,7 +1229,7 @@ public class FormMain extends Form {
 													user.puserContactSyncDuration = 24*60*60;
 												break;
 											}
-											linkAutoSync.setHTML(getContactAutoSyncCaption());
+											syncAutoMenuItem.setText(getContactAutoSyncCaption());
 										}
 										
 										@Override
@@ -1035,7 +1248,7 @@ public class FormMain extends Form {
 					@Override
 					public void onSuccess(Void result) {
 						user.puserContactSyncDuration = 0;
-						linkAutoSync.setHTML(getContactAutoSyncCaption());
+						syncAutoMenuItem.setText(getContactAutoSyncCaption());
 						dialog.hide();
 					}
 					@Override
@@ -1060,7 +1273,7 @@ public class FormMain extends Form {
 					auth.login(new EventOnCloseWindow() {
 						@Override
 						public void onCloseWindow() {
-							btnSync.click();
+							syncMenuItem.getScheduledCommand().execute(); 
 						}
 					});
 				} else
@@ -1070,7 +1283,7 @@ public class FormMain extends Form {
 						
 						@Override
 						public void onSuccess(Void result) {
-							btnSync.click(); //!attention, its's recursion
+							syncMenuItem.getScheduledCommand().execute(); //!attention, its's recursion
 						}
 						
 						@Override
@@ -1080,7 +1293,7 @@ public class FormMain extends Form {
 					});
 				} else {
 					refreshCustomers();	
-					toast(btnSync, "Синхронизация окончена. При импорте обработано "+result.getImportAllCount()+
+					toast(tableCustomer, "Синхронизация окончена. При импорте обработано "+result.getImportAllCount()+
 							   " записей , из них новых - "+result.getImportInsert()+". При экспорте обработано "+result.getExportAllCount()+
 							   " записей , из них новых - "+result.getExportInsert()+"."
 					      );
@@ -1097,4 +1310,33 @@ public class FormMain extends Form {
 		startCustomers(tbFindCustomer.getText());
 	}
 		
+	class ClickableSafeHtmlCell extends AbstractCell<SafeHtml> {
+		
+		ClickableSafeHtmlCell() {
+			super(CLICK, KEYDOWN);
+		}
+		
+		@Override
+		public void onBrowserEvent(Context context, Element parent, SafeHtml value,
+		      NativeEvent event, ValueUpdater<SafeHtml> valueUpdater) {
+		    super.onBrowserEvent(context, parent, value, event, valueUpdater);
+		    if (CLICK.equals(event.getType())) {
+		      onEnterKeyDown(context, parent, value, event, valueUpdater);
+		    }
+		}
+		@Override
+		protected void onEnterKeyDown(Context context, Element parent, SafeHtml value,
+		      NativeEvent event, ValueUpdater<SafeHtml> valueUpdater) {
+		    if (valueUpdater != null) {
+		      valueUpdater.update(value);
+		    }
+		}
+		@Override
+		public void render(com.google.gwt.cell.client.Cell.Context context,
+				SafeHtml value, SafeHtmlBuilder sb) {
+		    if (value != null) {
+		        sb.append(value);
+		      }
+		}
+	}
 }
