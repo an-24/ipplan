@@ -90,6 +90,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 	private VerticalPanel pCustomer;
 
+	private int loadCounter = 0;
+
 	public FormBargain(BargainWrapper b) {
 		super();
 		setCellPadding(4);
@@ -113,6 +115,48 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		
 		btnPrev = new Button("<");
 		btnPrev.setText("<");
+		btnPrev.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final BargainWrapper savebargain = bargain; 
+				if(bargain.isDirty()) {
+					Ipplan.showSaveConfirmation("В сделке произошли изменения. Сохранить?", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Ipplan.getActiveDialog().hide();
+							save(false,new NotifyHandler<BargainWrapper>() {
+								@Override
+								public void onNotify(BargainWrapper c) {
+									loadBargain(savebargain);
+									btnPrev.click();
+								}
+							});
+						}
+					}, new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Ipplan.getActiveDialog().hide();
+							bargain.cancel();
+							btnPrev.click();
+						}
+					});
+					return;
+				}
+				dbservice.prevBargainVersion(bargain.bargainId, new AsyncCallback<BargainWrapper>() {
+					
+					@Override
+					public void onSuccess(BargainWrapper result) {
+						if(result!=null) loadBargain(result);
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+						
+					}
+				});
+			}
+		});
 		setWidget(1, 0, btnPrev);
 		
 		p = new VerticalPanel();
@@ -129,6 +173,48 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
 
 		btnNext = new Button(">");
+		btnNext.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final BargainWrapper savebargain = bargain; 
+				if(bargain.isDirty()) {
+					Ipplan.showSaveConfirmation("В сделке произошли изменения. Сохранить?", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Ipplan.getActiveDialog().hide();
+							save(false,new NotifyHandler<BargainWrapper>() {
+								@Override
+								public void onNotify(BargainWrapper c) {
+									loadBargain(savebargain);
+									btnNext.click();
+								}
+							});
+						}
+					}, new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Ipplan.getActiveDialog().hide();
+							bargain.cancel();
+							btnNext.click();
+						}
+					});
+					return;
+				}
+				dbservice.nextBargainVersion(bargain.bargainId, new AsyncCallback<BargainWrapper>() {
+					
+					@Override
+					public void onSuccess(BargainWrapper result) {
+						if(result!=null) loadBargain(result);
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+						
+					}
+				});
+			}
+		});
 		setWidget(1, 2, btnNext);
 		getCellFormatter().setHorizontalAlignment(1, 2, HasHorizontalAlignment.ALIGN_RIGHT);
 		
@@ -441,6 +527,10 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	}
 
 	protected void save(final boolean closed) {
+		save(closed,null);
+	}
+	
+	protected void save(final boolean closed, final NotifyHandler<BargainWrapper> external) {
 		
 		resetErrors();
 		validate();
@@ -452,22 +542,30 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			
 			@Override
 			public void onSuccess(BargainWrapper result) {
-				bargain.saveCompleted();
-				refreshTitle();				
-				String message = "Сделка \""+getTitle()+"\" сохранена";
+				boolean newVerCreated = bargain.bargainVer!=result.bargainVer;
+				BargainWrapper savebargain = bargain;
+				boolean insertMode = bargain.isNew();
+				
 				if(closed) {
+					String message = "Сделка \""+getTitle()+"\" сохранена";
 					Form.toast(FormBargain.this, message);
 					tabPanel.remove(FormBargain.this);
 					History.back();
 				} else { 
+					bargain.saveCompleted();
+					String message = "Сделка \""+getTitle()+"\" сохранена";
+					if(newVerCreated)
+						message = "Создана новая версия "+(result.bargainVer+1)+" сделки "+getTitle(); 
 					Form.toast(FormBargain.this.btnSave, message);
-					bargainToFormField(result);
-					bargain = result;
-					if(eStatus.isLocked()) eStatus.lock(false);
-					eStatus.refreshStatus();
-					setAttention();					
-				};	
+					loadBargain(result);					
+				};
+				if(external!=null) external.onNotify(result);
 				
+				// системная нотификация
+				if(insertMode || newVerCreated) {
+					if(newVerCreated) SystemNotify.getDeleteNotify().notify(savebargain);
+					SystemNotify.getInsertNotify().notify(result);
+				} else SystemNotify.getUpdateNotify().notify(result);
 			}
 			
 			@Override
@@ -477,6 +575,17 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		});
 		
 	};
+
+	private void loadBargain(BargainWrapper result) {
+		loadCounter++;
+		bargain = result;
+		refreshTitle();				
+		bargainToFormField(bargain);
+		if(eStatus.isLocked()) eStatus.lock(false);
+		eStatus.refreshStatus();
+		setAttention();
+		loadCounter--;
+	}
 
 	protected void bargainToFormField(BargainWrapper bw) {
 		lTitle.setText(bargain.getFullName());
@@ -622,6 +731,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	@Override
 	public void onValueChange(ValueChangeEvent event) {
 		resetErrors();
+		
+		if(loadCounter>0) return;
 		
 		bargain.modify();
 		

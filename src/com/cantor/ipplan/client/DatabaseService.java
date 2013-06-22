@@ -44,6 +44,8 @@ public interface DatabaseService extends RemoteService {
 	public void dropTemporalyBargain(int id);
 	public void saveTemporalyBargain(BargainWrapper bargain) throws Exception;
 	public BargainWrapper saveBargain(BargainWrapper bargain, boolean drop) throws Exception;
+	public BargainWrapper prevBargainVersion(int id) throws Exception;
+	public BargainWrapper nextBargainVersion(int id) throws Exception;
 	
 	public List<CustomerWrapper> findCustomer(String query);
 	public CustomerWrapper addCustomer(CustomerWrapper value) throws Exception; 

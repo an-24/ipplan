@@ -46,4 +46,6 @@ public interface DatabaseServiceAsync {
 	void deleteCustomer(List<CustomerWrapper> list, AsyncCallback<Void> callback);
 	void findBargain(String text, Date date, boolean allUser, boolean[] stats,
 			AsyncCallback<List<BargainWrapper>> callback);
+	void prevBargainVersion(int id, AsyncCallback<BargainWrapper> callback);
+	void nextBargainVersion(int id, AsyncCallback<BargainWrapper> callback);
 }

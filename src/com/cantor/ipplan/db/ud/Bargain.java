@@ -11,7 +11,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -57,7 +56,8 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 	private Integer bargainFine;
 	private Integer bargainTax;
 	private Integer bargainHead;
-	public Date bargainCreated;
+	private Date bargainCreated;
+	private int bargainVisible = 1;
 
 	private Set<Bargaincosts> bargaincostses = new HashSet<Bargaincosts>(0);
 	private Set<Bargain> bargains = new HashSet<Bargain>(0);
@@ -284,6 +284,16 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 	public void setBargainCreated(Date bargainCreated) {
 		this.bargainCreated = bargainCreated;
 	}
+
+	@Column(name = "BARGAIN_VISIBLE", nullable = false)
+	public int getBargainVisible() {
+		return bargainVisible;
+	}
+
+	public void setBargainVisible(int bargainVisible) {
+		this.bargainVisible = bargainVisible;
+	}
+	
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "bargain", cascade = CascadeType.ALL, orphanRemoval=true)
 	public Set<Bargaincosts> getBargaincostses() {
@@ -425,8 +435,10 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			if(this.getContract()!=null) this.getContract().fetch(deep);
 			if(this.getCustomer()!=null) this.getCustomer().fetch(deep);
 			if(this.getPuser()!=null) this.getPuser().fetch(deep);
-			if(this.getRootBargain()!=null && this.getRootBargain()!=this) this.getRootBargain().fetch(deep);
+			if(this.getRootBargain()!=null && this.getRootBargain().getBargainId()!=this.getBargainId()) this.getRootBargain().fetch(deep);
 			if(this.getStatus()!=null) this.getStatus().fetch(deep);
+			for (Bargaincosts bc : this.getBargaincostses()) 
+				bc.fetch(deep);
 		}
 	}
 
@@ -491,4 +503,60 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 	public void saveCompleted() {
 		dirty = false;
 	}
+	
+	public boolean equals(Bargain source) {
+		if(!source.bargainName.equals(bargainName)) return false;
+		if(source.customer==null && customer!=null) return false;
+		if(customer==null && source.customer!=null) return false;
+		if(customer!=null && source.customer!=null && 
+				source.customer.getCustomerId()!=customer.getCustomerId()) return false;
+		if(source.puser.getId()!=puser.getId()) return false;
+		if(source.status.getId()!=status.getId()) return false;
+		//исключаем так как только по фактическим полям
+		//source.bargainVer !=  bargainVer; 
+		//source.rootBargain != rootBargain;
+		//source.bargainHead != bargainHead;
+		//source.bargainCreated != bargainCreated;
+		if(source.bargainStart.getTime() != bargainStart.getTime())  return false;
+		if(source.bargainFinish.getTime() != bargainFinish.getTime()) return false;
+		if(!intEqu(source.bargainRevenue,bargainRevenue)) return false;
+		if(!intEqu(source.bargainPrepayment,bargainPrepayment)) return false;
+		if(!intEqu(source.bargainCosts,bargainCosts)) return false;
+		if(!intEqu(source.bargainPaymentCosts,bargainPaymentCosts)) return false;
+		if(!intEqu(source.bargainFine,bargainFine)) return false;
+		if(!intEqu(source.bargainTax,bargainTax)) return false;
+		// проверка состава расходов
+		if(source.bargaincostses.size()!=bargaincostses.size())  return false;
+		for (Bargaincosts c : source.bargaincostses) {
+			Bargaincosts d = findCostById(c.getCosts().getCostsId());
+			if(d==null) return false;
+			if(!d.equals(c)) return false;
+		}	
+		return true;
+		
+	}
+
+	public Bargaincosts findCostById(int id) {
+		for (Bargaincosts c : bargaincostses) {
+			if(c.getCosts().getCostsId()==id) return c;
+		}
+		return null;
+	} 
+	
+	private boolean intEqu(Integer i1,Integer i2) {
+		int n1 = 0, n2 = 0;
+		if(i1==i2) return true;
+		if(i1!=null) n1 = i1.intValue();
+		if(i2!=null) n2 = i2.intValue();
+		return n1==n2;
+	}
+
+	public void nextVersion(int lastversion) {
+		bargainVer = lastversion+1;
+		bargainId = 0;
+		bargainCreated = new Date();
+		bargainHead = 1;
+	}
+
+	
 }

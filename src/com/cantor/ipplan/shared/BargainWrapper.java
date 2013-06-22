@@ -58,6 +58,11 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	
 	public void saveCompleted() {
 		dirty = false;
+		isnew = false;
+	}
+
+	public void cancel() {
+		dirty = false;
 	}
 	
 	public boolean isNew() {
@@ -67,6 +72,7 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public boolean isDirty() {
 		return dirty;
 	}
+
 
 	public int getProfit() {
 		int v = bargainRevenue!=null?bargainRevenue:0; 
@@ -152,5 +158,6 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 		wrap.dirty = dirty; 
 		return wrap;
 	}
+
 	
 }

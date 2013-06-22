@@ -139,6 +139,21 @@ public class Bargaincosts implements java.io.Serializable, DataBridge<Bargaincos
 	@Override
 	public void fetch(boolean deep) {
 		Hibernate.initialize(costs);
+		getCosts().fetch(deep);
+	}
+	
+	public boolean equals(Bargaincosts source) {
+		if(source.getCosts().getCostsId()!=costs.getCostsId()) return false;
+		//private Bargain bargain;
+		if(source.bargaincostsValue!=bargaincostsValue) return false;
+		if(source.bargaincostsPayment!=bargaincostsPayment) return false;
+		if(!str(source.bargaincostsNote).equals(str(bargaincostsNote))) return false;
+		return true;
+		
+	}
+	
+	private String str(String s) {
+		return s==null?"":s;
 	}
 
 }

@@ -270,6 +270,8 @@ h1 {
 .mainCommand {
     padding:10px  !important;
     font-weight: bold !important;
+    background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent !important;
+    color: whitesmoke !important;
 }
 
 

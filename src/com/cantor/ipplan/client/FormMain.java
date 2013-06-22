@@ -3,23 +3,18 @@ package com.cantor.ipplan.client;
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import com.cantor.ipplan.client.CellTable.ChangeCheckListEvent;
-import com.cantor.ipplan.client.OAuth2.EventOnCloseWindow;
 import com.cantor.ipplan.client.Slider.ChangeEvent;
 import com.cantor.ipplan.db.ud.PUserIdent;
-import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
-import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
-import com.cantor.ipplan.shared.Utils;
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.AbstractCell;
+import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.NumberCell;
@@ -28,13 +23,9 @@ import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -49,77 +40,64 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
-import com.google.gwt.core.client.Scheduler;
 
 public class FormMain extends Form {
 	
+	protected static final int TAB_MAIN = 0;
+	protected static final int TAB_BARGAINS = 1;
+	protected static final int TAB_CUSTOMER = 2;
+	protected static final int TAB_ANALYTICAL = 3;
+
 	public static FormMain currentForm = null;
 
-	private PUserWrapper user;
+	PUserWrapper user;
 	private FlexTable currentTab = null;
 	private Integer currentTabId = 0;
 	
 	private Label lUserName;
 	private MainTabPanel tabPanel;
-	private CellTable<BargainWrapper> tableAttention;
+	CellTable<BargainWrapper> tableAttention;
 	private DatabaseServiceAsync dbservice;
-	private Image loading;
-	private NumberLabel<Double> lRevenue;
-	private NumberLabel<Double> lRevenueDelta;
-	private NumberLabel<Double> lPrePayment;
-	private NumberLabel<Double> lMargin;
-	private NumberLabel<Double> lMarginDelta;
-	private NumberLabel<Double> lTax;
-	private NumberLabel<Double> lTaxDelta;
-	private NumberLabel<Double> lProfit;
-	private NumberLabel<Double> lProfitDelta;
-	private FlexTable tableStats;
-	private Label lCaption;
+	Image loading;
+	NumberLabel<Double> lRevenue;
+	NumberLabel<Double> lRevenueDelta;
+	NumberLabel<Double> lPrePayment;
+	NumberLabel<Double> lMargin;
+	NumberLabel<Double> lMarginDelta;
+	NumberLabel<Double> lTax;
+	NumberLabel<Double> lTaxDelta;
+	NumberLabel<Double> lProfit;
+	NumberLabel<Double> lProfitDelta;
+	FlexTable tableStats;
+	Label lCaption;
+	Button btnCustomerAdd;
+	Button btnCustomerDelete;
+	CellTable<CustomerWrapper> tableCustomer;
+	TextBox tbFindCustomer;
+	CellTable<BargainWrapper> tableBargain;
+	TextBox tbFindBargain;
+	MonthPicker filterBargainDate;
+	ToggleButton[] filterBargainStatus;
+	CheckBox filterBargainAllUsers;
+	MenuItem syncMenuItem;
+	MenuItem syncAutoMenuItem;
+	Button btnBargainAdd;
+	Button btnBargainDelete;
+	Button btnBargainRefresh;
+	MenuItem exportBargainsMenuItem;
+	Button btnCustomerRefresh;
+	Label lBargainTotal;
 
-	private Button btnCustomerAdd;
-
-	private Button btnCustomerDelete;
-
-	private CellTable<CustomerWrapper> tableCustomer;
-
-	private TextBox tbFindCustomer;
-
-	private CellTable<BargainWrapper> tableBargain;
-
-	private TextBox tbFindBargain;
-
-	private MonthPicker filterBargainDate;
-
-	private ToggleButton[] filterBargainStatus;
-
-	private CheckBox filterBargainAllUsers;
-
-	private MenuItem syncMenuItem;
-
-	private MenuItem syncAutoMenuItem;
-
-	private Button btnBargainAdd;
-
-	private Button btnBargainDelete;
-
-	private Button btnBargainRefresh;
-
-	private Button btnCustomerRefresh;
-
-	private Label lBargainTotal;
 
 	public FormMain(Ipplan main, RootPanel root, PUserWrapper usr, int numTab) {
 		super(main, root);
@@ -135,7 +113,7 @@ public class FormMain extends Form {
 		p0.setSpacing(5);
 		p0.setStyleName("gwt-Form");
 		initWidget(p0);
-		p0.setSize("800px", "600px");
+		p0.setSize("800px", "812px");
 		
 		HorizontalPanel p1 = new HorizontalPanel();
 		p0.add(p1);
@@ -146,28 +124,20 @@ public class FormMain extends Form {
 		tabPanel = new MainTabPanel();
 		p0.add(tabPanel);
 		p0.setCellHorizontalAlignment(tabPanel, HasHorizontalAlignment.ALIGN_CENTER);
-		tabPanel.setSize("100%", "564px");
+		tabPanel.setSize("100%", "770px");
 		tabPanel.setAnimationEnabled(true);
 		
-		FlexTable tab1 = new FlexTable();
+		FlexTable tab1 = new TabMain(this,getDataBaseService());
 		tabPanel.add(tab1, "Главное", false);
-		tab1.setSize("100%", "3cm");
-		initTab1(tab1);
 		
-		FlexTable tab2 = new FlexTable();
+		FlexTable tab2 = new TabBargains(this,getDataBaseService());
 		tabPanel.add(tab2, "Сделки", false);
-		tab2.setSize("100%", "3cm");
-		initTab2(tab2);
 		
-		FlexTable tab3 = new FlexTable();
+		FlexTable tab3 = new TabCustomers(this,getDataBaseService());
 		tabPanel.add(tab3, "Клиенты", false);
-		tab3.setSize("100%", "3cm");
-		initTab3(tab3);
 		
-		FlexTable tab4 = new FlexTable();
+		FlexTable tab4 = new TabAnalytical(this,getDataBaseService());
 		tabPanel.add(tab4, "Анализ", false);
-		tab4.setSize("100%", "3cm");
-		initTab4(tab4);
 		
 		Label l0 = new Label(" ");
 		tabPanel.add(l0, "...", false);
@@ -177,138 +147,7 @@ public class FormMain extends Form {
 		prepare();
 	}
 
-	private void initTab1(FlexTable tab1) {
-		Button btnNew = new Button("Создать новую сделку");
-		btnNew.addStyleName("mainCommand");
-		btnNew.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				try {
-					addNew();
-				} catch (Exception e) {
-					Ipplan.error(e);
-				}
-			}
-		});
-		tab1.setWidget(0, 0, btnNew);
-		tab1.getCellFormatter().setHeight(0, 0, "70px");
-		tab1.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		tab1.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER);
-		
-		Button btnNewFromPattern = new Button("Создать по шаблону");
-		tab1.setWidget(0, 1, btnNewFromPattern);
-		
-		Button btnNewFromSample = new Button("Создать по образцу");
-		tab1.setWidget(0, 2, btnNewFromSample);
-		tab1.getCellFormatter().setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_CENTER);
-		
-		lCaption = new Label("Всего в работе");
-		tab1.setWidget(1, 0, lCaption);
-		lCaption.setHeight("");
-		lCaption.addStyleName("bold-text");
-		
-		tableStats = new FlexTable();
-		tableStats.setCellSpacing(5);
-		tableStats.setCellPadding(5);
-		tab1.setWidget(2, 0, tableStats);
-		tableStats.setWidth("100%");
-		tableStats.addStyleName("tableBorderCollapse");
-
-		tab1.getFlexCellFormatter().setColSpan(2, 0, 3);
-		
-
-		Label l11 = new Label("на общую сумму");
-		tableStats.setWidget(0, 0, l11);
-		tableStats.getCellFormatter().setWidth(0, 0, "300px");
-		
-		lRevenue = newNumberLabel();
-		tableStats.setWidget(0, 1, lRevenue);
-		
-		lRevenueDelta = newDeltaNumberLabel();
-		tableStats.setWidget(0, 2, lRevenueDelta);
-		
-		Label l3 = new Label("Авансы");
-		tableStats.setWidget(1, 0, l3);
-		
-		lPrePayment = newNumberLabel();
-		tableStats.setWidget(1, 1, lPrePayment);
-		
-		Label l4 = new Label("Маржа");
-		tableStats.setWidget(2, 0, l4);
-		
-		lMargin = newNumberLabel();
-		tableStats.setWidget(2, 1, lMargin);
-		
-		lMarginDelta = newDeltaNumberLabel();
-		tableStats.setWidget(2, 2, lMarginDelta);
-		
-		Label l5 = new Label("Налог");
-		tableStats.setWidget(3, 0, l5);
-		
-		lTax = newNumberLabel();
-		tableStats.setWidget(3, 1, lTax);
-		
-		lTaxDelta = newDeltaNumberLabel();
-		tableStats.setWidget(3, 2, lTaxDelta);
-		
-		Label l6 = new Label("Прибыль");
-		tableStats.setWidget(4, 0, l6);
-		l6.addStyleName("bold-text");
-		
-		
-		lProfit = newNumberLabel();
-		tableStats.setWidget(4, 1, lProfit);
-		lProfit.setStyleName("gwt-CurrencyLabel");
-		lProfit.addStyleName("bold-text");
-		lProfit.addStyleName("auto-width");
-		
-		lProfitDelta = newDeltaNumberLabel();
-		tableStats.setWidget(4, 2, lProfitDelta);
-		lProfitDelta.addStyleName("bold-text");
-		
-		
-		tableStats.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		tableStats.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		tableStats.getRowFormatter().setVerticalAlign(0, HasVerticalAlignment.ALIGN_MIDDLE);
-		tableStats.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		tableStats.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		tableStats.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		tableStats.getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		tableStats.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		tableStats.getCellFormatter().setHorizontalAlignment(3, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		tableStats.getCellFormatter().setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		tableStats.getCellFormatter().setStyleName(4, 0, "redBorder");
-		tableStats.getCellFormatter().setStyleName(4, 1, "redBorder");
-		tableStats.getCellFormatter().setStyleName(4, 2, "redBorder");
-		tableStats.getCellFormatter().setStyleName(0, 0, "grayBorder");
-		tableStats.getCellFormatter().setStyleName(0, 1, "grayBorder");
-		tableStats.getCellFormatter().setStyleName(0, 2, "grayBorder");
-		
-		setProfitLoading(tableStats);
-		
-		Label l10 = new Label("Требуют срочного вмешательства");
-		tab1.setWidget(3, 0, l10);
-		tab1.getCellFormatter().setHeight(3, 0, "50px");
-		l10.addStyleName("bold-text");
-		
-		SimplePanel simplePanel = new SimplePanel();
-		tab1.setWidget(4, 0, simplePanel);
-		simplePanel.setSize("100%", "200px");
-		
-		tableAttention = new CellTable<BargainWrapper>(5);
-		tableAttention.setSelectionModel(null);
-
-		simplePanel.setWidget(tableAttention);
-		tableAttention.setSize("100%", "");
-		
-		makeBargainColumns(tableAttention);
-		
-		tab1.getFlexCellFormatter().setColSpan(4, 0, 3);
-		tab1.getCellFormatter().setVerticalAlignment(1, 0, HasVerticalAlignment.ALIGN_BOTTOM);
-		tab1.getCellFormatter().setVerticalAlignment(3, 0, HasVerticalAlignment.ALIGN_BOTTOM);
-	}
-
-	private void makeBargainColumns(CellTable<BargainWrapper> table) {
+	void makeBargainColumns(CellTable<BargainWrapper> table) {
 		Column<BargainWrapper, String> c1 = new Column<BargainWrapper, String>(new ClickableTextCell()) {
 
 			@Override
@@ -330,7 +169,12 @@ public class FormMain extends Form {
 			public SafeHtml getValue(BargainWrapper object) {
 				SafeHtmlBuilder sb = new SafeHtmlBuilder();
 				if(object!=null) {
-					sb.appendHtmlConstant("<b class=\"linkcell\"><div>"+object.customer.customerName+"</div></b>");
+					String s = "<b class=\"linkcell\"><div";
+					if(object.customer.customerName.length()>16) s+=" style=\"text-overflow: ellipsis;display:block;\">";
+															else s+=">";
+					s+=object.customer.customerName;
+					s+="</div></b>";
+					sb.appendHtmlConstant(s);
 					if(object.customer.customerCompany!=null) {
 						sb.appendHtmlConstant("<div>"+object.customer.customerCompany);
 						if(object.customer.customerPosition!=null)
@@ -365,8 +209,24 @@ public class FormMain extends Form {
 			}
 		};
 		с4.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+/*
+		Column<BargainWrapper, Number> с5 = new Column<BargainWrapper, Number>(new NumberCell(NumberFormat.getFormat("#,##0.00"))) {
+			@Override
+			public Number getValue(BargainWrapper object) {
+				return (object==null || object.bargainCosts==null)?null:object.bargainCosts/100.0;
+			}
+		};
+		с5.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+*/
+		Column<BargainWrapper, Number> с6 = new Column<BargainWrapper, Number>(new NumberCell(NumberFormat.getFormat("#,##0.00"))) {
+			@Override
+			public Number getValue(BargainWrapper object) {
+				return (object==null)?null:object.getProfit()/100.0;
+			}
+		};
+		с6.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		TextColumn<BargainWrapper> c5 = new TextColumn<BargainWrapper>() {
+		TextColumn<BargainWrapper> c7 = new TextColumn<BargainWrapper>() {
 			
 			@Override
             public String getCellStyleNames(Context context, BargainWrapper  object) {
@@ -390,326 +250,19 @@ public class FormMain extends Form {
 		table.addColumn(c2,"Клиент");
 		table.addColumn(c3,"Сотрудник");
 		table.addColumn(с4,"Выручка");
-		table.addColumn(c5,"");
+		//table.addColumn(с5,"Расходы");
+		table.addColumn(с6,"Прибыль");
+		table.addColumn(c7,"");
 		
-		table.setColumnWidth(c1, "300px");
-		table.setColumnWidth(c2, "150px");
+		table.setColumnWidth(c1, "200px");
+		table.setColumnWidth(c2, "130px");
 		table.setColumnWidth(c3, "80px");
 		table.setColumnWidth(с4, "80px");
+		//table.setColumnWidth(с5, "80px");
+		table.setColumnWidth(с6, "80px");
 	}
 
-	private void initTab2(FlexTable tab2) {
-		int row = 0;
-		filterBargainStatus = new ToggleButton[]{new ToggleButton("в работе"),new ToggleButton("выполненные"),
-				 new ToggleButton("просроченные"),new ToggleButton("несогласованные"),new ToggleButton("все")};
-		final ToggleButton allBtn =  filterBargainStatus[filterBargainStatus.length-1];
-		
-		HorizontalPanel p = new HorizontalPanel();
-		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		p.setSpacing(10);
-		btnBargainAdd = new Button("Новая");
-		btnBargainAdd.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				try {
-					addNew();
-				} catch (Exception e) {
-					Ipplan.error(e);
-				}
-			}
-		});
-		p.add(btnBargainAdd);
-		
-		btnBargainRefresh = new Button("Обновить");
-		btnBargainRefresh.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				startBargain(tbFindBargain.getText(),filterBargainDate.getFinishDate(),
-						filterBargainAllUsers.getValue(), (allBtn.isDown()?null:getFilterBargainStatuses()));
-			}
-		});
-		p.add(btnBargainRefresh);
-		
-		btnBargainDelete = new Button("Удалить");
-		btnBargainDelete.setEnabled(false);
-		btnBargainDelete.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				final List<BargainWrapper> list = tableBargain.getCheckedList();
-				dbservice.deleteBargain(list, new AsyncCallback<Void>() {
-					
-					@Override
-					public void onSuccess(Void result) {
-						List<BargainWrapper> all = tableBargain.getProvider().getList();
-						for (BargainWrapper cw : list) all.remove(cw);
-						list.clear();
-						tableBargain.redraw();
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						Ipplan.showError(caught);
-						
-					}
-				});
-			}
-		});
-		p.add(btnBargainDelete);
-
-		tab2.setWidget(row, 0, p);
-		
-		row++;
-		
-		HorizontalPanel th = new HorizontalPanel();
-		th.setSpacing(5);
-		th.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		
-		th.add(new Label("C начала года до конца месяца "));
-		
-		filterBargainDate = new MonthPicker();
-		filterBargainDate.setTabIndex(0);
-		th.add(filterBargainDate);
-		filterBargainAllUsers = new CheckBox("Сделки подчиненных");
-		th.add(filterBargainAllUsers);
-		tab2.setWidget(row, 0, th);
-		tab2.getFlexCellFormatter().setColSpan(row, 0, 2);
-		row++;
-		
-		th = new HorizontalPanel();
-		ClickHandler groupclick = new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				ToggleButton btn = (ToggleButton) event.getSource();
-				if(btn==allBtn) {
-					for (int i = 0; i < filterBargainStatus.length; i++) 
-						filterBargainStatus[i].setDown(false);
-					allBtn.setDown(true);
-				} else
-					allBtn.setDown(false);
-			}
-		};
-		filterBargainStatus[0].setDown(true);
-		
-		for (int i = 0; i < filterBargainStatus.length; i++) {
-			th.add(filterBargainStatus[i]);
-			filterBargainStatus[i].addClickHandler(groupclick);
-		}
-		tab2.setWidget(row, 1, th);
-		tab2.getFlexCellFormatter().setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-
-		HorizontalPanel ph = new HorizontalPanel();
-		ph.setSpacing(5);
-		ph.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		
-		ph.add(new Label("Встречаются слова"));
-		
-		tbFindBargain = new TextBox();
-		tbFindBargain.setWidth("231px");
-		tbFindBargain.addKeyDownHandler(new KeyDownHandler() {
-			@Override
-			public void onKeyDown(KeyDownEvent event) {
-				if(event.getNativeEvent().getKeyCode()==KeyCodes.KEY_ENTER) 
-					startBargain(tbFindBargain.getText(),filterBargainDate.getFinishDate(),
-							filterBargainAllUsers.getValue(), (allBtn.isDown()?null:getFilterBargainStatuses()));
-			}
-		});
-		ph.add(tbFindBargain);
-		tab2.setWidget(row, 0, ph);
-		
-		tab2.getFlexCellFormatter().setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_LEFT);
-		//tab2.getFlexCellFormatter().setVerticalAlignment(row,0, HasVerticalAlignment.ALIGN_MIDDLE);
-		tab2.getFlexCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		row++;
-		
-		
-		tableBargain = new CellTable<BargainWrapper>(10);
-		tableBargain.setSelectionModel(null);
-		tableBargain.setWidth("100%");
-
-		GridPager pager = new GridPager();
-		pager.setDisplay(tableBargain);
-		tab2.setWidget(row,1, pager);
-		tab2.getCellFormatter().setHorizontalAlignment(row, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		lBargainTotal = new Label();
-		tab2.setWidget(row,0, lBargainTotal);
-
-		row++;
-		
-		tableBargain.createCheckedColumn(new ChangeCheckListEvent() {
-			@Override
-			public void onChange() {
-				btnBargainDelete.setEnabled(tableBargain.getCheckedList().size()>0);
-			}
-		});
-		
-		makeBargainColumns(tableBargain);
-		
-		tab2.getFlexCellFormatter().setColSpan(row, 0, 2);
-		tab2.setWidget(row, 0, tableBargain);
-		
-		// not open
-		prepareGrid(tableBargain, new ArrayList<BargainWrapper>(),true);
-		tableBargain.setRowCount(0);
-		showBargainTotals();
-	}
-	
-	private void showBargainTotals(){
-		List<BargainWrapper> list = tableBargain.getProvider().getList();
-		int total = 0;
-		for (BargainWrapper bw : list) {
-			total+= bw.bargainRevenue;
-		}
-		lBargainTotal.setText("Всего "+list.size()+" сделок на общую сумму "+NumberFormat.getFormat("#,##0.00").format(total/100.0));
-	}
-	
-	private boolean[] getFilterBargainStatuses() {
-		boolean[] stats = new boolean[4];
-		for (int i = 0; i < filterBargainStatus.length-1; i++) 
-			stats[i] = filterBargainStatus[i].isDown();
-		return stats;
-	}
-
-	protected void startBargain(String text, Date date, boolean allUser, boolean[] stats) {
-		dbservice.findBargain(text, date, allUser, stats, new AsyncCallback<List<BargainWrapper>>() {
-			
-			@Override
-			public void onSuccess(List<BargainWrapper> result) {
-				prepareGrid(tableBargain , result,true);
-				tableBargain.setRowCount(result.size());
-				showBargainTotals();
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				Ipplan.showError(caught);
-			}
-		});
-		
-	}
-
-	private void initTab3(FlexTable tab3) {
-		HorizontalPanel p;
-		p = new HorizontalPanel();
-		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		p.setSpacing(10);
-		
-		tab3.setWidget(0, 1, p);
-
-		p = new HorizontalPanel();
-		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		p.setSpacing(10);
-		btnCustomerAdd = new Button("Новый");
-		btnCustomerAdd.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				editCustomer(null);
-			}
-		});
-		p.add(btnCustomerAdd);
-		
-		btnCustomerRefresh = new Button("Обновить");
-		btnCustomerRefresh.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				startCustomers(tbFindCustomer.getText());
-			}
-		});
-		p.add(btnCustomerRefresh);
-		
-		btnCustomerDelete = new Button("Удалить");
-		btnCustomerDelete.setEnabled(false);
-		btnCustomerDelete.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				final List<CustomerWrapper> list = tableCustomer.getCheckedList();
-				dbservice.deleteCustomer(list, new AsyncCallback<Void>() {
-					
-					@Override
-					public void onSuccess(Void result) {
-						List<CustomerWrapper> all = tableCustomer.getProvider().getList();
-						for (CustomerWrapper cw : list) all.remove(cw);
-						list.clear();
-						tableCustomer.redraw();
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						Ipplan.showError(caught);
-						
-					}
-				});
-			}
-		});
-		p.add(btnCustomerDelete);
-		
-		final DropdownButton cmd = new DropdownButton("Еще");
-		syncMenuItem = new MenuItem("Синхронизировать прямо сейчас",new Scheduler.ScheduledCommand() {
-			@Override
-			public void execute() {
-				syncContactsdDrectly();
-				cmd.closeup();
-			}
-		});
-		cmd.getMenu().addItem(syncMenuItem);
-		syncAutoMenuItem = new MenuItem(getContactAutoSyncCaption(),new Scheduler.ScheduledCommand() {
-			@Override
-			public void execute() {
-				syncContactsdAuto();
-				cmd.closeup();
-			}
-		});
-		cmd.getMenu().addItem(syncAutoMenuItem);
-		
-		p.add(cmd);
-		
-		tab3.setWidget(0, 0, p);
-		tab3.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT);
-		tab3.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		p = new HorizontalPanel();
-		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		p.setSpacing(5);
-		
-		p.add(new Label("Встречаются слова"));
-		tbFindCustomer = new TextBox();
-		tbFindCustomer.setWidth("300px");
-		tbFindCustomer.addKeyDownHandler(new KeyDownHandler() {
-			@Override
-			public void onKeyDown(KeyDownEvent event) {
-				if(event.getNativeEvent().getKeyCode()==KeyCodes.KEY_ENTER) 
-					startCustomers(tbFindCustomer.getText());
-			}
-		});
-		p.add(tbFindCustomer);
-		
-		tab3.setWidget(1, 0, p);
-		
-		tableCustomer = new CellTable<CustomerWrapper>(10);
-		tableCustomer.setSelectionModel(null);
-		tableCustomer.setWidth("100%");
-		
-		makeColumnCustomerTable(tableCustomer);
-
-		GridPager pager = new GridPager();
-		pager.setDisplay(tableCustomer);
-		tab3.setWidget(1,1, pager);
-		tab3.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		tab3.getFlexCellFormatter().setColSpan(2, 0, 2);
-		tab3.setWidget(2,0, tableCustomer);
-		tab3.getFlexCellFormatter().setVerticalAlignment(2, 0, HasVerticalAlignment.ALIGN_TOP);
-	}
-
-	private void initTab4(FlexTable tab4) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void makeColumnCustomerTable(final CellTable<CustomerWrapper> customerTable) {
+	void makeColumnCustomerTable(final CellTable<CustomerWrapper> customerTable) {
 		
 		Column<CustomerWrapper,SafeHtml> c1 = new Column<CustomerWrapper, SafeHtml>(new ClickableSafeHtmlCell()) {
 
@@ -838,28 +391,6 @@ public class FormMain extends Form {
 			});
 	}
 
-	private String getContactAutoSyncCaption() {
-		String s;
-		switch (user.puserContactSyncDuration) {
-			case 0:
-				s = "[нет]"; 
-				break;
-			case 30*60:
-				s = "[раз в полчаса]"; 
-				break;
-			case 60*60:
-				s = "[раз в час]"; 
-				break;
-			case 24*60*60:
-				s = "[раз в сутки]"; 
-				break;
-			default:
-				s = "[раз в "+user.puserContactSyncDuration/60+" минут]";
-				break;
-		}
-		return "Автоматическая синхронизация "+s;
-	}
-
 	protected void edit(BargainWrapper b) {
 		// поиск в окрытых вкладках
 		int tabidx = tabPanel.find(b.bargainId);
@@ -874,7 +405,7 @@ public class FormMain extends Form {
 			
 			@Override
 			public void onSuccess(BargainWrapper result) {
-				FormBargain bft = tabPanel.add(result);
+				tabPanel.add(result);
 				tabPanel.selectBargain(result);
 			}
 			
@@ -993,7 +524,7 @@ public class FormMain extends Form {
 					new AsyncCallback<BargainWrapper>() {
 					@Override
 					public void onSuccess(BargainWrapper result) {
-						FormBargain bft = tabPanel.add(result);
+						tabPanel.add(result);
 						tabPanel.selectBargain(result);
 						dialog.hide();
 					}
@@ -1011,20 +542,6 @@ public class FormMain extends Form {
 		
 	}
 
-	private void setProfitLoading(FlexTable tableStats) {
-		tableStats.setWidget(4, 1, loading);
-		tableStats.getCellFormatter().setWidth(4, 1, "200px");
-		tableStats.getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_LEFT);
-	}
-
-	private NumberLabel<Double> newNumberLabel() {
-		return new NumberLabel<Double>(NumberFormat.getFormat("#,##0.00"));
-	}
-
-	private NumberLabel<Double> newDeltaNumberLabel() {
-		return new NumberLabel<Double>(NumberFormat.getFormat("(#,##0.00)"));
-	}
-
 	private void prepare() {
 		
 		lUserName.setText(user.getFullName());
@@ -1038,22 +555,29 @@ public class FormMain extends Form {
 				FocusWidget w = getFirstFocusedWidget(currentTab);
 				if(w!=null) w.setFocus(true);
 
-				
+				switch (currentTabId) {
+				case TAB_MAIN:
+					((TabMain)currentTab).refresh();
+					break;
 				// Сделки
-				//if(currentTabId==1) bargainGrid.redraw();
-				
+				case TAB_BARGAINS:
+					break;
 				// Клиенты
-				if(currentTabId==2) {
-					if(tableCustomer.getProvider()==null) refreshCustomers();
-							else tableCustomer.redraw();
+				case TAB_CUSTOMER:
+					if(tableCustomer.getProvider()==null) ((TabCustomers)currentTab).refreshCustomers();
+													 else tableCustomer.redraw();
+					break;
+				case TAB_ANALYTICAL:
+					break;
+
+				default:
+					break;
 				}
 				
 				History.newItem("main."+currentTabId, false);
 			}
 		});
 		
-		startAttention();
-		startTotals();
 		startRecoveryEditBargain();
 		
 		tabPanel.getTabBar().selectTab(currentTabId);
@@ -1074,42 +598,6 @@ public class FormMain extends Form {
 		return dbservice;
 	}
 
-	private void startAttention() {
-		DatabaseServiceAsync db = getDataBaseService();
-		db.attention(new AsyncCallback<List<BargainWrapper>>() {
-			
-			@Override
-			public void onSuccess(List<BargainWrapper> result) {
-				prepareGrid(tableAttention, result,false);
-				tableAttention.setRowCount(result.size());
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				Ipplan.showError(caught);
-			}
-		});
-	}
-	
-	private void startCustomers(String query) {
-		DatabaseServiceAsync db = getDataBaseService();
-		db.findCustomer(query, new AsyncCallback<List<CustomerWrapper>>() {
-			
-			@Override
-			public void onSuccess(List<CustomerWrapper> result) {
-				prepareGrid(tableCustomer, result,true);
-				tableCustomer.setRowCount(result.size());
-			}
-			
-			@Override
-			public void onFailure(Throwable e) {
-				Ipplan.showError(e);
-				
-			}
-		});
-	}
-	
-
 	private void startRecoveryEditBargain() {
 		DatabaseServiceAsync db = getDataBaseService();
 		db.getTemporalyBargains(new AsyncCallback<List<BargainWrapper>>() {
@@ -1117,7 +605,7 @@ public class FormMain extends Form {
 			@Override
 			public void onSuccess(List<BargainWrapper> result) {
 				for (BargainWrapper bw : result) {
-					FormBargain bft = tabPanel.add(bw);
+					tabPanel.add(bw);
 				}
 			}
 			
@@ -1126,188 +614,6 @@ public class FormMain extends Form {
 				// молчим
 			}
 		});
-	}
-	
-	private void startTotals() {
-		DatabaseServiceAsync db = getDataBaseService();
-		db.getTotals(new AsyncCallback<BargainTotals[]>() {
-			
-			@Override
-			public void onSuccess(BargainTotals[] result) {
-				lCaption.setText("Всего в работе "+result[0].getCount()+" "+Utils.getNumberPadeg(new String[]{"сделка","сделки","сделок"},
-						result[0].getCount()));
-				lRevenue.setValue(result[0].getRevenue()/100.0);
-				lPrePayment.setValue(result[0].getPrepayment()/100.0);
-				lMargin.setValue(result[0].getMargin()/100.0);
-				lTax.setValue(result[0].getTax()/100.0);
-				lProfit.setValue(result[0].getProfit()/100.0);
-
-				lRevenueDelta.setValue((result[0].getRevenue()-result[1].getRevenue())/100.0);
-				lMarginDelta.setValue((result[0].getMargin() - result[1].getMargin())/100.0);
-				lTaxDelta.setValue((result[0].getTax()-result[1].getTax())/100.0);
-				lProfitDelta.setValue((result[0].getProfit()-result[1].getProfit())/100.0);
-
-				if(lRevenueDelta.getValue()<0)
-					lRevenueDelta.addStyleName("Attention3"); else
-						if(lRevenueDelta.getValue()>0) 
-							lRevenueDelta.addStyleName("Attention1"); 
-				if(lMarginDelta.getValue()<0)
-					lMarginDelta.addStyleName("Attention3"); else
-						if(lMarginDelta.getValue()>0) 
-							lMarginDelta.addStyleName("Attention1"); 
-				if(lTaxDelta.getValue()>0)
-					lTaxDelta.addStyleName("Attention3"); else
-						if(lTaxDelta.getValue()<0) 
-							lTaxDelta.addStyleName("Attention1"); 
-				if(lProfitDelta.getValue()<0)
-					lProfitDelta.addStyleName("Attention3"); else
-						if(lProfitDelta.getValue()>0) 
-							lProfitDelta.addStyleName("Attention1"); 
-				
-				tableStats.setWidget(4, 1, lProfit);
-				tableStats.getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				Ipplan.showError(caught);
-			}
-		});
-	}
-
-	private void syncContactsdAuto() {
-		final Dialog dialog = new Dialog("Выберите вариант синхронизации");
-		final FlexTable table = dialog.getContent();
-		
-		int duration = user.puserContactSyncDuration;
-		
-		RadioButton rb;
-		rb = new RadioButton("gr", "Не синхронизировать");
-		rb.setValue(duration==0);
-		final RadioButton rb0 = rb;
-		table.setWidget(0, 0, rb);
-		rb = new RadioButton("gr", "Раз в полчаса");
-		rb.setValue(duration==30*60);
-		table.setWidget(1, 0, rb);
-		rb = new RadioButton("gr", "Раз в час");
-		rb.setValue(duration==60*60);
-		table.setWidget(2, 0, rb);
-		rb = new RadioButton("gr", "Раз в сутки");
-		rb.setValue(duration==24*60*60);
-		table.setWidget(3, 0, rb);
-		
-		dialog.getButtonOk().setText("Установить");
-		dialog.setButtonOkClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				dialog.cancel();
-				
-				// запрос разрешения
-				if(!rb0.getValue()) {
-					OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
-							Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
-					auth.loginOffline(new EventOnCloseWindow() {
-						@Override
-						public void onCloseWindow() {
-							for (int i = 1, len = table.getRowCount(); i < len; i++) {
-								RadioButton rb = (RadioButton) table.getWidget(i,0);
-								if(rb.getValue()) {
-									final int durationClass = i;
-									dbservice.setContactsAutoSync(i, new AsyncCallback<Void>() {
-										
-										@Override
-										public void onSuccess(Void result) {
-											user.puserContactSyncDuration = 0;
-											switch (durationClass) {
-												case 1: //полчаса 
-													user.puserContactSyncDuration = 30*60;
-												break;
-												case 2: //час 
-													user.puserContactSyncDuration = 60*60;
-												break;
-												case 3: //сутки 
-													user.puserContactSyncDuration = 24*60*60;
-												break;
-											}
-											syncAutoMenuItem.setText(getContactAutoSyncCaption());
-										}
-										
-										@Override
-										public void onFailure(Throwable e) {
-											Ipplan.showError(e);
-										}
-									});
-									dialog.hide();
-									break;
-								}
-							}
-						}
-					});
-				} else
-				dbservice.setContactsAutoSync(0, new AsyncCallback<Void>() {
-					@Override
-					public void onSuccess(Void result) {
-						user.puserContactSyncDuration = 0;
-						syncAutoMenuItem.setText(getContactAutoSyncCaption());
-						dialog.hide();
-					}
-					@Override
-					public void onFailure(Throwable e) {
-						Ipplan.showError(e);
-					}
-				});
-			}
-		});
-		dialog.center();
-	}
-
-	private void syncContactsdDrectly() {
-		dbservice.syncContacts(new AsyncCallback<ImportExportProcessInfo>() {
-			
-			@Override
-			public void onSuccess(ImportExportProcessInfo result) {
-				// получение token
-				if(result.getError()==ImportExportProcessInfo.TOKEN_NOTFOUND) {
-					OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
-							Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
-					auth.login(new EventOnCloseWindow() {
-						@Override
-						public void onCloseWindow() {
-							syncMenuItem.getScheduledCommand().execute(); 
-						}
-					});
-				} else
-				// обовление token
-				if(result.getError()==ImportExportProcessInfo.TOKEN_EXPIRED) {
-					dbservice.refreshGoogleToken(new AsyncCallback<Void>() {
-						
-						@Override
-						public void onSuccess(Void result) {
-							syncMenuItem.getScheduledCommand().execute(); //!attention, its's recursion
-						}
-						
-						@Override
-						public void onFailure(Throwable e) {
-							Ipplan.showError(e);
-						}
-					});
-				} else {
-					refreshCustomers();	
-					toast(tableCustomer, "Синхронизация окончена. При импорте обработано "+result.getImportAllCount()+
-							   " записей , из них новых - "+result.getImportInsert()+". При экспорте обработано "+result.getExportAllCount()+
-							   " записей , из них новых - "+result.getExportInsert()+"."
-					      );
-				}
-			}
-			@Override
-			public void onFailure(Throwable e) {
-				Ipplan.showError(e);
-			}
-		});
-	}
-
-	private void refreshCustomers() {
-		startCustomers(tbFindCustomer.getText());
 	}
 		
 	class ClickableSafeHtmlCell extends AbstractCell<SafeHtml> {

@@ -83,6 +83,7 @@ public class Dialog extends DialogBox {
 		HorizontalPanel p = new HorizontalPanel();
 		p.setSpacing(10);
 		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		pm.add(p);
 		
 		if(noPanelButton) {
@@ -109,7 +110,7 @@ public class Dialog extends DialogBox {
 					hide();
 				}
 			});
-			
+			buttonOk.addStyleName("mainCommand");
 			p.add(buttonOk);
 			p.add(buttonCancel);
 		}

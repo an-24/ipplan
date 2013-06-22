@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     18.06.2013 18:56:41                          */
+/* Created on:     22.06.2013 16:41:35                          */
 /*==============================================================*/
 
 
@@ -50,6 +50,7 @@ bargain_fine         INTEGER,
 bargain_tax          INTEGER,
 bargain_head         INTEGER,
 bargain_created      TIMESTAMP                      not null,
+bargain_visible      INTEGER                        default 1 not null,
 constraint PK_BARGAIN primary key (bargain_id),
 constraint AK_KEY_2_BARGAIN unique (root_bargain_id, bargain_ver)
 );

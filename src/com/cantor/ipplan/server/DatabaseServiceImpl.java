@@ -31,6 +31,7 @@ import org.firebirdsql.gds.impl.GDSType;
 import org.firebirdsql.management.BackupManager;
 import org.firebirdsql.management.FBBackupManager;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -44,6 +45,7 @@ import com.cantor.ipplan.client.DatabaseService;
 import com.cantor.ipplan.client.Ipplan;
 import com.cantor.ipplan.client.LoginService;
 import com.cantor.ipplan.core.IdGenerator;
+import com.cantor.ipplan.core.Utils;
 import com.cantor.ipplan.db.ud.Bargain;
 import com.cantor.ipplan.db.ud.Costs;
 import com.cantor.ipplan.db.ud.Customer;
@@ -155,7 +157,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	Session session = sessionFactory.openSession();
 		List<BargainWrapper> list = new ArrayList<BargainWrapper>();
     	try {
-    		String hsq = "select b from Bargain b where b.bargainHead=1";
+    		String hsq = "select b from Bargain b where b.bargainHead=1 and b.bargainVisible=1";
     		int usrid = getUserId();
     		if(usrid != PUserIdent.USER_ROOT_ID)
     			hsq+=" and b.puser.puserId="+usrid;
@@ -201,7 +203,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		  	  "select count(b.bargain_id) \"count\",sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
     	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
     			  "from bargain b "+
-    			  "where b.bargain_head=1 AND "+
+    			  "where b.bargain_head=1 AND b.bargain_visible=1 AND "+
     			  "b.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+')';
     		if(usrid != PUserIdent.USER_ROOT_ID)
     			sql+=" AND b.puser_id="+usrid;
@@ -212,7 +214,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
       		  	  "select count(b.bargain_id) \"count\", sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
       	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
       			  "from bargain b "+
-      			  "where b.bargain_id=b.root_bargain_id AND "+
+      			  "where b.bargain_id=b.root_bargain_id AND b.bargain_visible=1 AND "+
       			  "b.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+')';
       		if(usrid != PUserIdent.USER_ROOT_ID)
       			sql+=" AND b.puser_id="+usrid;
@@ -285,7 +287,9 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	@Override
 	public void dropTemporalyBargain(int id) {
 		HashMap<Integer, Bargain> bl =  getTempBargains();
-		bl.remove(id);
+		Bargain removedb = bl.remove(id);
+		if(removedb!=null)
+			getSavedBargainChain().remove(removedb.getRootBargain().getBargainId());
 	}
 
 	@Override
@@ -308,6 +312,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			try {
 				Bargain b = (Bargain) session.get(Bargain.class, bargain.bargainId);
 				boolean isnew = false;
+				Bargain newverb = null;
 				if(b==null) {
 					// новая запись
 					b = new Bargain();
@@ -318,30 +323,69 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 					bargain.bargainCreated = new Date();
 					bargain.puser = getLoginUser();
 					isnew = true;
-				} else
+				} else {
 					session.update(b);
-					
-				b.fromClient(bargain);
+					b.fetch(true);
+					// проверяем на новую версию
+					newverb = new Bargain();
+					newverb.fromClient(bargain);
+					/*
+					 * Определяем нужна ли новая версия. Условие создания новой версии:
+					 * - изменения в данных сделки
+					 * - root не содержится в списке ранее сохраненных
+					 *   (из этого списка root-сделки удаляются в dropTemporalyBargain) 
+					 */
+					if(newverb.equals(b) || 
+					   getSavedBargainChain().containsKey(b.getRootBargain().getBargainId())) newverb = null;
+				}	
+				if(newverb==null) b.fromClient(bargain);else {
+					newverb.fromClient(bargain);
+					resetBargainHeads(session,newverb.getRootBargain().getBargainId());
+					newverb.nextVersion(getLastVersion(session,b.getRootBargain()));
+				}
 				if(isnew) {
 					// root - он же
 					b.setRootBargain(b); 
 					session.save(b);
-				};
-
+				} else {
+					// генерация новой версии
+					if(newverb!=null) {
+						newverb.setRootBargain(b.getRootBargain());
+						session.save(newverb);
+					}	
+				}
 				// если не сбрасываем, то читаем вновь добавленный объект, тчобы возвратить 
 				if(!drop) {
-					bargain = b.toClient();
-					bargain.attention = b.makeAttention();
+					if(newverb==null) {
+						bargain = b.toClient(); 
+						bargain.attention = b.makeAttention();
+					} else  {
+						bargain = newverb.toClient(); 
+						bargain.attention = newverb.makeAttention();
+					}
 				}	
 				
 				b.saveCompleted();
+				if(newverb!=null) newverb.saveCompleted();
 				bargain.saveCompleted();
 				
 				tx.commit();
-				if(drop) dropTemporalyBargain(bargain.bargainId); else
-					putTempBargain(b);
-				// возвратим вновь добавленный объект 
-				if(!drop) return bargain; else return null;
+				
+				if(drop) dropTemporalyBargain(b.getBargainId()); else {
+					if(newverb!=null) {
+						dropTemporalyBargain(b.getBargainId());
+						putTempBargain(newverb);
+						/* добавляем в сохраненные, чтобы
+						* не порождать новые версии в рамках одной сессии 
+						* работы со root-сделкой
+						*/ 
+						Bargain r = newverb.getRootBargain();
+						getSavedBargainChain().put(r.getBargainId(), r);
+					} else
+						putTempBargain(b);
+				}
+				// возвратим вновь добавленный объект
+				return bargain;
 				
 			} catch (Exception e) {
 				tx.rollback();
@@ -351,6 +395,20 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		session.close();
     	}
 		
+	}
+
+	private void resetBargainHeads(Session sess, int rootId) {
+   		String sql = "update bargain set bargain_head=0 where root_bargain_id=:id";
+   		sess.createSQLQuery(sql).
+   			setParameter("id", rootId).
+   			executeUpdate();
+	}
+
+	private int getLastVersion(Session session, Bargain rootBargain) {
+		String sql = "select max(b.bargain_ver) from bargain b where b.root_bargain_id=:id";
+		SQLQuery q = session.createSQLQuery(sql);
+		q.setParameter("id", rootBargain.getBargainId());
+		return (Integer) q.uniqueResult();
 	}
 
 	@Override
@@ -466,6 +524,16 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		}
 		return bl;
 	}
+	
+	private HashMap<Integer, Bargain> getSavedBargainChain() {
+		HttpSession sess = this.getSession();
+		HashMap<Integer, Bargain> bl =  (HashMap) sess.getAttribute("saved_bargain_list");
+		if(bl==null) {
+			bl = new HashMap<Integer, Bargain>();
+			sess.setAttribute("saved_bargain_list", bl);
+		}
+		return bl;
+	}
 
 	private PUserWrapper checkAccess(String sessId) throws Exception {
 		HttpSession sess = this.getSession();
@@ -501,7 +569,14 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		String dbName;
 		if(newCatalog) {
 			userroot.mkdir();
+			// создаем бд из pattern.fbk
 			dbName = createDatabase(root,name);
+			// переносим файл конфигурации
+			File cfg = new File(userroot,"config.xml");
+			if(cfg.createNewFile())
+				Utils.copyFile(new File(root,"config.xml"), cfg); else
+				throw new Exception("Не могу создать файл config.xml");
+			
 			newDBFlag  = true;
 		} else {
 			dbName = getCurrentDBName(root, name);
@@ -1052,19 +1127,19 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	    
 	}
 
-	private HashMap<String, Customer> getCustomersFromGoogle(Session session) {
+	private HashMap<String, Customer> getCustomersFromGoogle(Session sess) {
 		HashMap<String, Customer> map = new HashMap<String, Customer>();
 		String hsq = "select c from Customer c where c.customerLookupKey is not null";
-		Query q = session.createQuery(hsq);
+		Query q = sess.createQuery(hsq);
 		List<Customer> l = q.list();
 		for (Customer customer : l) 
 			map.put(customer.getCustomerLookupKey(), customer);
 		return map;
 	}
 
-	private List<Customer> getCustomersToGoogle(Session session) {
+	private List<Customer> getCustomersToGoogle(Session sess) {
    		String hsq = "select c from Customer c where c.customerVisible=1 and (c.customerLookupKey is null or c.customerLastupdate is not null)";
-   		Query q = session.createQuery(hsq);
+   		Query q = sess.createQuery(hsq);
    		return q.list();
 	}
 	
@@ -1255,7 +1330,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	Session session = sessionFactory.openSession();
 		List<BargainWrapper> list = new ArrayList<BargainWrapper>();
     	try {
-    		String hsq = "select b from Bargain b where b.bargainHead=1";
+    		String hsq = "select b from Bargain b where b.bargainHead=1 and b.bargainVisible=1";
     		int usrid = getUserId();
     		if(usrid != PUserIdent.USER_ROOT_ID)
     			hsq+=" and b.puser.puserId="+usrid;
@@ -1344,9 +1419,47 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	}
 	}
 
-	private void deleteBargainInner(int id, Session session) {
+	private boolean deleteBargainInner(int id, Session session) {
 		Bargain c = (Bargain) session.get(Bargain.class, id);
-		session.delete(c);
+		if(c==null || c.getBargainVisible()==0) return false;
+		c.setBargainVisible(0);
+		return true;
+	}
+
+	@Override
+	public BargainWrapper prevBargainVersion(int id) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		String hsq = "select b1 from Bargain b, Bargain b1 where b.bargainId=:id"+
+    					 " and b1.rootBargain=b.rootBargain and b1.bargainVer=b.bargainVer-1";
+    		Query q = session.createQuery(hsq);
+    		q.setParameter("id", id);
+    		Bargain b = (Bargain) q.uniqueResult();
+    		if(b!=null) return b.toClient();
+    			   else return null;
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public BargainWrapper nextBargainVersion(int id) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		String hsq = "select b1 from Bargain b, Bargain b1 where b.bargainId=:id"+
+					 " and b1.rootBargain=b.rootBargain and b1.bargainVer=b.bargainVer+1";
+		Query q = session.createQuery(hsq);
+		q.setParameter("id", id);
+		Bargain b = (Bargain) q.uniqueResult();
+		if(b!=null) return b.toClient();
+			   else return null;
+    	} finally {
+    		session.close();
+    	}
 	}
 
 

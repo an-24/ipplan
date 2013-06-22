@@ -187,6 +187,18 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		});
 		box.center();
 	}
+
+	public static void showError(String s) {
+		Dialog box = configEventBox(s);
+		activeDialogs.push(box);
+		box.addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				activeDialogs.pop();
+			}
+		});
+		box.center();
+	}
 	
 	public static Dialog showSaveConfirmation(String text, ClickHandler ok,ClickHandler withoutSave) {
 		Dialog box = configSaveConfirmationBox(text,ok,withoutSave);
