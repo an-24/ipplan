@@ -82,5 +82,38 @@ public class StatusWrapper extends ClonableObject implements java.io.Serializabl
     public StatusWrapper clone() {
     	return (StatusWrapper) super.clone(new StatusWrapper());    	
     }
+    
+    public static String getBackgroundColor(int state) {
+		switch (state) {
+			case PRIMARY_CONTACT: return "#F8F8FF"; 
+			case TALK: return "#FFFACD"; 
+			case DECISION_MAKING: return "#F0FFF0";
+			case RECONCILIATION_AGREEMENT: return "#ADD8E6";
+			case CLOSE_OK:
+			case COMPLETION:
+			case EXECUTION: return "#3CB371";
+			case SUSPENDED: return "#FF9900";
+			case CLOSE_FAIL: return "#AA0000";
+			
+		}
+		return null;
+    }
+
+    public static String getTextColor(int state) {
+		switch (state) {
+			case PRIMARY_CONTACT: 
+			case TALK: 
+			case DECISION_MAKING:
+			case SUSPENDED:
+			case RECONCILIATION_AGREEMENT: return "black";
+			
+			case CLOSE_OK:
+			case COMPLETION:
+			case CLOSE_FAIL:
+			case EXECUTION: return "white";
+			
+		}
+		return null;
+    }
 	
 }

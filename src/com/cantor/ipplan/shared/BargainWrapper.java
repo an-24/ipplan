@@ -16,7 +16,7 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public ContractWrapper contract;
 	public CustomerWrapper customer;
 	public PUserWrapper puser;
-	public BargainWrapper bargain;
+	public BargainWrapper rootBargain;
 	public StatusWrapper status;
 	public int bargainVer;
 	public Date bargainStart;
@@ -49,7 +49,7 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	}
 
 	public String getFullName() {
-		return bargainId+". "+bargainName;
+		return rootBargain.bargainId+". "+bargainName;
 	}
 	
 	public void modify() {
@@ -137,7 +137,7 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 		wrap.puser = puser;  //no copy
 		wrap.status = status.clone();
 		wrap.bargainVer =  bargainVer;
-		wrap.bargain = bargain;
+		wrap.rootBargain = rootBargain;
 		wrap.bargainStart = bargainStart;
 		wrap.bargainFinish = bargainFinish;
 		wrap.bargainRevenue = bargainRevenue;

@@ -1,16 +1,3 @@
-/*******************************************************************************
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *******************************************************************************/
 package com.cantor.ipplan.server;
 
 import java.io.File;
@@ -188,6 +175,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public BargainTotals[] getTotals() throws Exception {
 		checkAccess();
@@ -203,25 +191,65 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		  	  "select count(b.bargain_id) \"count\",sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
     	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
     			  "from bargain b "+
-    			  "where b.bargain_head=1 AND b.bargain_visible=1 AND "+
+    			  "where b.bargain_head=1 AND b.bargain_visible=1 AND EXTRACT(YEAR from bargain_start)=:year AND "+
     			  "b.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+')';
     		if(usrid != PUserIdent.USER_ROOT_ID)
     			sql+=" AND b.puser_id="+usrid;
     		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
+      		q.setParameter("year", 1900+new Date().getYear());
     		b = (BargainTotals) q.uniqueResult();
     		// запрашиваем начальные данные
     		sql = 
       		  	  "select count(b.bargain_id) \"count\", sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
       	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
       			  "from bargain b "+
-      			  "where b.bargain_id=b.root_bargain_id AND b.bargain_visible=1 AND "+
-      			  "b.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+')';
+      			  "where b.bargain_id=b.root_bargain_id AND b.bargain_visible=1 AND EXTRACT(YEAR from bargain_start)=:year AND "+
+      			  " exists (select * from bargain b1 where b1.root_bargain_id=b.root_bargain_id AND b1.bargain_head=1 AND "+
+      			  "b1.bargain_visible=1 AND b1.status_id in ("+StatusWrapper.EXECUTION+','+StatusWrapper.COMPLETION+','+StatusWrapper.SUSPENDED+"))";
       		if(usrid != PUserIdent.USER_ROOT_ID)
       			sql+=" AND b.puser_id="+usrid;
       		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
+      		q.setParameter("year", 1900+new Date().getYear());
     		bold = (BargainTotals) q.uniqueResult();
+    		// ход продаж
+    		// по продажным статусам
+    		sql = 
+      		  	  "select count(b.bargain_id) \"count\",sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
+      	          "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\", "+
+      	          "b.status_id \"statusId\""+
+      			  "from bargain b "+
+      			  "where b.bargain_head=1 AND b.bargain_visible=1 AND EXTRACT(YEAR from bargain_start)=:year AND "+
+      			  "b.status_id in ("+StatusWrapper.PRIMARY_CONTACT+','+StatusWrapper.TALK+','+StatusWrapper.DECISION_MAKING+','+StatusWrapper.RECONCILIATION_AGREEMENT+") "+
+      			  "group by b.status_id "+
+      			  "order by b.status_id";
+      		if(usrid != PUserIdent.USER_ROOT_ID)
+      			sql+=" AND b.puser_id="+usrid;
+      		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
+        	q.setParameter("year", 1900+new Date().getYear());
+        	List<BargainTotals> listSales = q.list();
+        	// по статусу "Закючивших контракт"
+    		sql = "select count(b.bargain_id) \"count\",sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
+        	      "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
+        	      "from bargain b "+
+        	      "where b.bargain_visible=1 AND b.bargain_head=1 AND EXTRACT(YEAR from bargain_start)=:year AND "+
+        	      "b.status_id>"+StatusWrapper.RECONCILIATION_AGREEMENT+" AND b.status_id<>"+StatusWrapper.CLOSE_FAIL+" AND "+
+        	      StatusWrapper.PRIMARY_CONTACT+"=(select min(b1.status_id) from bargain b1 where b1.root_bargain_id=b.root_bargain_id)";
+      		if(usrid != PUserIdent.USER_ROOT_ID)
+      			sql+=" AND b.puser_id="+usrid;
+      		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
+        	q.setParameter("year", 1900+new Date().getYear());
+    		BargainTotals bSaleConfirmed = (BargainTotals) q.uniqueResult();
+    		bSaleConfirmed.setStatusId(StatusWrapper.EXECUTION);
     		
-    		return new BargainTotals[]{b,bold};
+        	BargainTotals[] totals = new BargainTotals[2+listSales.size()+1];
+        	totals[0] = b;
+        	totals[1] = bold;
+        	int i = 1;
+        	for (BargainTotals t : listSales) 
+        		totals[++i] = t;
+        	totals[totals.length-1] = bSaleConfirmed;
+        	
+    		return totals;
     	} finally {
     		session.close();
     	}

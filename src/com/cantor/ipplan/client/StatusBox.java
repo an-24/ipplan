@@ -2,6 +2,7 @@ package com.cantor.ipplan.client;
 
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.google.gwt.dom.client.Style.Clear;
+import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -126,7 +127,14 @@ public class StatusBox extends FocusWidget implements HasValueChangeHandlers<Sta
 			if(this.status.statusId==StatusWrapper.SUSPENDED) {
 				getElement().addClassName("Attention2");
 				if(!isLocked()) getElement().addClassName("gwt-StatusBox-suspend");
-			}	
+			}
+			// продажи приостановить Нельзя!
+			if(this.status.statusId<StatusWrapper.EXECUTION) {
+				divPause.getStyle().setVisibility(Visibility.HIDDEN);
+			} else
+				divPause.getStyle().setVisibility(Visibility.VISIBLE);
+			
+			
 		} else  {
 			divStatusName.setInnerText("<неизвестен>");
 			divNext.setTitle("");

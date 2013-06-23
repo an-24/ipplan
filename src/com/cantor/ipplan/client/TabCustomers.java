@@ -139,7 +139,7 @@ public class TabCustomers extends FlexTable {
 		form.tableCustomer.setSelectionModel(null);
 		form.tableCustomer.setWidth("100%");
 		
-		form.makeColumnCustomerTable(form.tableCustomer);
+		form.makeCustomerColumns(form.tableCustomer);
 
 		GridPager pager = new GridPager();
 		pager.setDisplay(form.tableCustomer);

@@ -14,6 +14,7 @@ public class BargainTotals implements Serializable, IsSerializable {
 	private int paymentCosts;
 	private int fine;
 	private int tax;
+	private int statusId;
 	
 	public BargainTotals() {
 		super();
@@ -81,6 +82,14 @@ public class BargainTotals implements Serializable, IsSerializable {
 
 	public int getMargin() {
 		return revenue - costs;
+	}
+
+	public int getStatusId() {
+		return statusId;
+	}
+
+	public void setStatusId(int statusId) {
+		this.statusId = statusId;
 	}
 
 

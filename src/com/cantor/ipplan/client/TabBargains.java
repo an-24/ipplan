@@ -49,7 +49,7 @@ public class TabBargains extends FlexTable {
 			@Override
 			public void onClick(ClickEvent event) {
 				try {
-					form.addNew();
+					form.addNewBargain();
 				} catch (Exception e) {
 					Ipplan.error(e);
 				}
@@ -79,7 +79,10 @@ public class TabBargains extends FlexTable {
 					@Override
 					public void onSuccess(Void result) {
 						List<BargainWrapper> all = form.tableBargain.getProvider().getList();
-						for (BargainWrapper cw : list) all.remove(cw);
+						for (BargainWrapper cw : list) {
+							SystemNotify.getDeleteNotify().notify(cw);							
+							all.remove(cw);
+						}
 						list.clear();
 						form.tableBargain.redraw();
 					}

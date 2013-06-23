@@ -1,27 +1,56 @@
 package com.cantor.ipplan.client;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.Utils;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class TabMain extends FlexTable {
 	
+	protected static final int SALES_BOX_MAXWIDTH = 160;
 	private FormMain form;
 	private DatabaseServiceAsync dbservice;
 	private boolean dirty = true;
+
+	private Label lWorkCaption;
+	private NumberLabel<Double> lRevenue;
+	private NumberLabel<Double> lRevenueDelta;
+	private NumberLabel<Double> lPrePayment;
+	private NumberLabel<Double> lMargin;
+	private NumberLabel<Double> lMarginDelta;
+	private NumberLabel<Double> lTax;
+	private NumberLabel<Double> lTaxDelta;
+	private NumberLabel<Double> lProfit;
+	private NumberLabel<Double> lProfitDelta;
+	private FlexTable tableWorkStats;
+	private Label lSalesCaption;
+	private FlexTable tableSalesStats;
+	private SimplePanel divPrimaryContact;
+	private SimplePanel divTalk;
+	private SimplePanel divDecMake;
+	private Widget divAgreement;
+	private SimplePanel divExecution;
 
 	public TabMain(FormMain form,DatabaseServiceAsync dbservice) {
 		super();
@@ -43,113 +72,39 @@ public class TabMain extends FlexTable {
 	}
 
 	private void init() {
+
+		HorizontalPanel ph = new HorizontalPanel();
+		ph.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		ph.setSpacing(5);
 		Button btnNew = new Button("Создать новую сделку");
 		btnNew.addStyleName("mainCommand");
 		btnNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				try {
-					form.addNew();
+					form.addNewBargain();
 				} catch (Exception e) {
 					Ipplan.error(e);
 				}
 			}
 		});
-		setWidget(0, 0, btnNew);
-		getCellFormatter().setHeight(0, 0, "70px");
-		getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		ph.add(btnNew);
 		
 		Button btnNewFromPattern = new Button("Создать по шаблону");
-		setWidget(0, 1, btnNewFromPattern);
+		ph.add(btnNewFromPattern);
 		
 		Button btnNewFromSample = new Button("Создать по образцу");
-		setWidget(0, 2, btnNewFromSample);
-		getCellFormatter().setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_CENTER);
+		ph.add(btnNewFromSample);
 		
-		form.lCaption = new Label("Всего в работе");
-		setWidget(1, 0, form.lCaption);
-		form.lCaption.setHeight("");
-		form.lCaption.addStyleName("bold-text");
+		getFlexCellFormatter().setColSpan(0, 0, 3);
+		setWidget(0, 0, ph);
+		getCellFormatter().setHeight(0, 0, "70px");
+		getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		getCellFormatter().setVerticalAlignment(0, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		form.tableStats = new FlexTable();
-		form.tableStats.setCellSpacing(5);
-		form.tableStats.setCellPadding(5);
-		setWidget(2, 0, form.tableStats);
-		form.tableStats.setWidth("100%");
-		form.tableStats.addStyleName("tableBorderCollapse");
-
-		getFlexCellFormatter().setColSpan(2, 0, 3);
+		//getCellFormatter().setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_CENTER);
 		
-
-		Label l11 = new Label("на общую сумму");
-		form.tableStats.setWidget(0, 0, l11);
-		form.tableStats.getCellFormatter().setWidth(0, 0, "300px");
-		
-		form.lRevenue = newNumberLabel();
-		form.tableStats.setWidget(0, 1, form.lRevenue);
-		
-		form.lRevenueDelta = newDeltaNumberLabel();
-		form.tableStats.setWidget(0, 2, form.lRevenueDelta);
-		
-		Label l3 = new Label("Авансы");
-		form.tableStats.setWidget(1, 0, l3);
-		
-		form.lPrePayment = newNumberLabel();
-		form.tableStats.setWidget(1, 1, form.lPrePayment);
-		
-		Label l4 = new Label("Маржа");
-		form.tableStats.setWidget(2, 0, l4);
-		
-		form.lMargin = newNumberLabel();
-		form.tableStats.setWidget(2, 1, form.lMargin);
-		
-		form.lMarginDelta = newDeltaNumberLabel();
-		form.tableStats.setWidget(2, 2, form.lMarginDelta);
-		
-		Label l5 = new Label("Налог");
-		form.tableStats.setWidget(3, 0, l5);
-		
-		form.lTax = newNumberLabel();
-		form.tableStats.setWidget(3, 1, form.lTax);
-		
-		form.lTaxDelta = newDeltaNumberLabel();
-		form.tableStats.setWidget(3, 2, form.lTaxDelta);
-		
-		Label l6 = new Label("Прибыль");
-		form.tableStats.setWidget(4, 0, l6);
-		l6.addStyleName("bold-text");
-		
-		
-		form.lProfit = newNumberLabel();
-		form.tableStats.setWidget(4, 1, form.lProfit);
-		form.lProfit.setStyleName("gwt-CurrencyLabel");
-		form.lProfit.addStyleName("bold-text");
-		//form.lProfit.addStyleName("auto-width");
-		
-		form.lProfitDelta = newDeltaNumberLabel();
-		form.tableStats.setWidget(4, 2, form.lProfitDelta);
-		form.lProfitDelta.addStyleName("bold-text");
-		
-		
-		form.tableStats.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		form.tableStats.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		form.tableStats.getRowFormatter().setVerticalAlign(0, HasVerticalAlignment.ALIGN_MIDDLE);
-		form.tableStats.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		form.tableStats.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		form.tableStats.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		form.tableStats.getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		form.tableStats.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		form.tableStats.getCellFormatter().setHorizontalAlignment(3, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		form.tableStats.getCellFormatter().setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		form.tableStats.getCellFormatter().setStyleName(4, 0, "redBorder");
-		form.tableStats.getCellFormatter().setStyleName(4, 1, "redBorder");
-		form.tableStats.getCellFormatter().setStyleName(4, 2, "redBorder");
-		form.tableStats.getCellFormatter().setStyleName(0, 0, "grayBorder");
-		form.tableStats.getCellFormatter().setStyleName(0, 1, "grayBorder");
-		form.tableStats.getCellFormatter().setStyleName(0, 2, "grayBorder");
-		
-		setProfitLoading(form.tableStats);
+		initWorkStats();
+		initSalesStats();
 		
 		Label l10 = new Label("Требуют срочного вмешательства");
 		setWidget(3, 0, l10);
@@ -173,18 +128,156 @@ public class TabMain extends FlexTable {
 		getCellFormatter().setVerticalAlignment(3, 0, HasVerticalAlignment.ALIGN_BOTTOM);
 	}
 
+	private void initSalesStats() {
+		getFlexCellFormatter().setColSpan(2, 1, 2);
+		
+		lSalesCaption = new Label("Ход продаж");
+		setWidget(1, 1, lSalesCaption);
+		lSalesCaption.addStyleName("bold-text");
+		
+		
+		tableSalesStats = new FlexTable();
+		tableSalesStats.setCellSpacing(5);
+		tableSalesStats.setCellPadding(5);
+		tableSalesStats.setWidth("350px");
+		tableSalesStats.addStyleName("tableBorderCollapse");
+		setWidget(2, 1, tableSalesStats);
+		
+		//PRIMARY_CONTACT = 1;
+		tableSalesStats.setWidget(0, 0, new Label("Первичный контакт"));
+		divPrimaryContact = createStatusBox(StatusWrapper.PRIMARY_CONTACT);
+		tableSalesStats.setWidget(0, 1, divPrimaryContact);
+		tableSalesStats.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		//TALK = 10;
+		tableSalesStats.setWidget(1, 0, new Label("Переговоры"));
+		divTalk = createStatusBox(StatusWrapper.TALK);
+		tableSalesStats.setWidget(1, 1, divTalk);
+		tableSalesStats.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		//DECISION_MAKING = 20;
+		tableSalesStats.setWidget(2, 0, new Label("Принимают решение"));
+		divDecMake = createStatusBox(StatusWrapper.DECISION_MAKING);
+		tableSalesStats.setWidget(2, 1, divDecMake);
+		tableSalesStats.getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		//RECONCILIATION_AGREEMENT = 30;
+		tableSalesStats.setWidget(3, 0, new Label("Согласование договора"));
+		divAgreement = createStatusBox(StatusWrapper.RECONCILIATION_AGREEMENT);
+		tableSalesStats.setWidget(3, 1, divAgreement);
+		tableSalesStats.getCellFormatter().setHorizontalAlignment(3, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		// -> EXECUTION
+		tableSalesStats.setWidget(4, 0, new Label("Заключено сделок"));
+		divExecution = createStatusBox(StatusWrapper.EXECUTION);
+		divExecution.getElement().getStyle().setMarginTop(7, Unit.PX);
+		divExecution.getElement().getStyle().setMarginBottom(7, Unit.PX);
+		tableSalesStats.setWidget(4, 1, divExecution);
+		tableSalesStats.getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		
+		tableSalesStats.getCellFormatter().setStyleName(4, 0, "redBorder");
+		tableSalesStats.getCellFormatter().setStyleName(4, 1, "redBorder");
+		tableSalesStats.getCellFormatter().setStyleName(0, 0, "grayBorder");
+		tableSalesStats.getCellFormatter().setStyleName(0, 1, "grayBorder");
+		
+		tableSalesStats.setWidget(4, 1, new Image(form.resources.cellTableLoading()));
+	}
+
+	private SimplePanel createStatusBox(int stat) {
+		SimplePanel box = new SimplePanel();
+		box.setStyleName("statusbox");
+		box.setWidth("0px");
+		box.getElement().getStyle().setBackgroundColor(StatusWrapper.getBackgroundColor(stat));
+		return box;
+	}
+
+	private void initWorkStats() {
+		lWorkCaption = new Label("Ход работ");
+		setWidget(1, 0, lWorkCaption);
+		lWorkCaption.addStyleName("bold-text");
+		
+		tableWorkStats = new FlexTable();
+		tableWorkStats.setCellSpacing(5);
+		tableWorkStats.setCellPadding(5);
+		setWidget(2, 0, tableWorkStats);
+		tableWorkStats.setWidth("380px");
+		tableWorkStats.addStyleName("tableBorderCollapse");
+
+		Label l11 = new Label("на общую сумму");
+		tableWorkStats.setWidget(0, 0, l11);
+		tableWorkStats.getCellFormatter().setWidth(0, 0, "300px");
+		
+		lRevenue = newNumberLabel();
+		tableWorkStats.setWidget(0, 1, lRevenue);
+		
+		lRevenueDelta = newDeltaNumberLabel();
+		tableWorkStats.setWidget(0, 2, lRevenueDelta);
+		
+		Label l3 = new Label("Авансы");
+		tableWorkStats.setWidget(1, 0, l3);
+		
+		lPrePayment = newNumberLabel();
+		tableWorkStats.setWidget(1, 1, lPrePayment);
+		
+		Label l4 = new Label("Маржа");
+		tableWorkStats.setWidget(2, 0, l4);
+		
+		lMargin = newNumberLabel();
+		tableWorkStats.setWidget(2, 1, lMargin);
+		
+		lMarginDelta = newDeltaNumberLabel();
+		tableWorkStats.setWidget(2, 2, lMarginDelta);
+		
+		Label l5 = new Label("Налог");
+		tableWorkStats.setWidget(3, 0, l5);
+		
+		lTax = newNumberLabel();
+		tableWorkStats.setWidget(3, 1, lTax);
+		
+		lTaxDelta = newDeltaNumberLabel();
+		tableWorkStats.setWidget(3, 2, lTaxDelta);
+		
+		Label l6 = new Label("Прибыль");
+		tableWorkStats.setWidget(4, 0, l6);
+		l6.addStyleName("bold-text");
+		
+		
+		lProfit = newNumberLabel();
+		tableWorkStats.setWidget(4, 1, lProfit);
+		lProfit.setStyleName("gwt-CurrencyLabel");
+		lProfit.addStyleName("bold-text");
+		//form.lProfit.addStyleName("auto-width");
+		
+		lProfitDelta = newDeltaNumberLabel();
+		tableWorkStats.setWidget(4, 2, lProfitDelta);
+		lProfitDelta.addStyleName("bold-text");
+		
+		
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		tableWorkStats.getRowFormatter().setVerticalAlign(0, HasVerticalAlignment.ALIGN_MIDDLE);
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(3, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		
+		tableWorkStats.getCellFormatter().setStyleName(4, 0, "redBorder");
+		tableWorkStats.getCellFormatter().setStyleName(4, 1, "redBorder");
+		tableWorkStats.getCellFormatter().setStyleName(4, 2, "redBorder");
+		tableWorkStats.getCellFormatter().setStyleName(0, 0, "grayBorder");
+		tableWorkStats.getCellFormatter().setStyleName(0, 1, "grayBorder");
+		tableWorkStats.getCellFormatter().setStyleName(0, 2, "grayBorder");
+		
+		tableWorkStats.setWidget(4, 1, new Image(form.resources.cellTableLoading()));
+		//table.getCellFormatter().setWidth(4, 1, "100px");
+		tableWorkStats.getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_LEFT);
+	}
+
 	private NumberLabel<Double> newNumberLabel() {
 		return new NumberLabel<Double>(NumberFormat.getFormat("#,##0.00"));
 	}
 
 	private NumberLabel<Double> newDeltaNumberLabel() {
 		return new NumberLabel<Double>(NumberFormat.getFormat("(#,##0.00)"));
-	}
-
-	private void setProfitLoading(FlexTable tableStats) {
-		tableStats.setWidget(4, 1, form.loading);
-		tableStats.getCellFormatter().setWidth(4, 1, "200px");
-		tableStats.getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_LEFT);
 	}
 
 	private void startAttention() {
@@ -208,38 +301,86 @@ public class TabMain extends FlexTable {
 			
 			@Override
 			public void onSuccess(BargainTotals[] result) {
-				form.lCaption.setText("Всего в работе "+result[0].getCount()+" "+Utils.getNumberPadeg(new String[]{"сделка","сделки","сделок"},
-						result[0].getCount()));
-				form.lRevenue.setValue(result[0].getRevenue()/100.0);
-				form.lPrePayment.setValue(result[0].getPrepayment()/100.0);
-				form.lMargin.setValue(result[0].getMargin()/100.0);
-				form.lTax.setValue(result[0].getTax()/100.0);
-				form.lProfit.setValue(result[0].getProfit()/100.0);
-
-				form.lRevenueDelta.setValue((result[0].getRevenue()-result[1].getRevenue())/100.0);
-				form.lMarginDelta.setValue((result[0].getMargin() - result[1].getMargin())/100.0);
-				form.lTaxDelta.setValue((result[0].getTax()-result[1].getTax())/100.0);
-				form.lProfitDelta.setValue((result[0].getProfit()-result[1].getProfit())/100.0);
-
-				if(form.lRevenueDelta.getValue()<0)
-					form.lRevenueDelta.addStyleName("Attention3"); else
-						if(form.lRevenueDelta.getValue()>0) 
-							form.lRevenueDelta.addStyleName("Attention1"); 
-				if(form.lMarginDelta.getValue()<0)
-					form.lMarginDelta.addStyleName("Attention3"); else
-						if(form.lMarginDelta.getValue()>0) 
-							form.lMarginDelta.addStyleName("Attention1"); 
-				if(form.lTaxDelta.getValue()>0)
-					form.lTaxDelta.addStyleName("Attention3"); else
-						if(form.lTaxDelta.getValue()<0) 
-							form.lTaxDelta.addStyleName("Attention1"); 
-				if(form.lProfitDelta.getValue()<0)
-					form.lProfitDelta.addStyleName("Attention3"); else
-						if(form.lProfitDelta.getValue()>0) 
-							form.lProfitDelta.addStyleName("Attention1"); 
+				int bcount = result[0].getCount();
+				if(bcount>0)
+					lWorkCaption.setText("Ход работ ("+bcount+" "+Utils.getNumberPadeg(new String[]{"сделка","сделки","сделок"},bcount)+")");
 				
-				form.tableStats.setWidget(4, 1, form.lProfit);
-				form.tableStats.getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+				lRevenue.setValue(result[0].getRevenue()/100.0);
+				lPrePayment.setValue(result[0].getPrepayment()/100.0);
+				lMargin.setValue(result[0].getMargin()/100.0);
+				lTax.setValue(result[0].getTax()/100.0);
+				lProfit.setValue(result[0].getProfit()/100.0);
+
+				lRevenueDelta.setValue((result[0].getRevenue()-result[1].getRevenue())/100.0);
+				lMarginDelta.setValue((result[0].getMargin() - result[1].getMargin())/100.0);
+				lTaxDelta.setValue((result[0].getTax()-result[1].getTax())/100.0);
+				lProfitDelta.setValue((result[0].getProfit()-result[1].getProfit())/100.0);
+
+				if(lRevenueDelta.getValue()<0)
+					lRevenueDelta.addStyleName("Attention3"); else
+						if(lRevenueDelta.getValue()>0) 
+							lRevenueDelta.addStyleName("Attention1"); 
+				if(lMarginDelta.getValue()<0)
+					lMarginDelta.addStyleName("Attention3"); else
+						if(lMarginDelta.getValue()>0) 
+							lMarginDelta.addStyleName("Attention1"); 
+				if(lTaxDelta.getValue()>0)
+					lTaxDelta.addStyleName("Attention3"); else
+						if(lTaxDelta.getValue()<0) 
+							lTaxDelta.addStyleName("Attention1"); 
+				if(lProfitDelta.getValue()<0)
+					lProfitDelta.addStyleName("Attention3"); else
+						if(lProfitDelta.getValue()>0) 
+							lProfitDelta.addStyleName("Attention1"); 
+				
+				tableWorkStats.setWidget(4, 1, lProfit);
+				tableWorkStats.getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+				// начиная с 2 - ход продаж
+				Map<Integer,BargainTotals> list =  new HashMap<Integer,BargainTotals>();
+				int cmax = 0;
+				for (int i = 2; i < result.length; i++) {
+					list.put(result[i].getStatusId(), result[i]);
+					cmax = Math.max(result[i].getCount(), cmax);
+				}
+				// заполняем
+				int call = 0;
+				BargainTotals bt;
+				bt = list.get(StatusWrapper.PRIMARY_CONTACT);
+				if(bt!=null) {
+					int c =bt.getCount();
+					divPrimaryContact.setWidth(String.valueOf(c*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					((Label)tableSalesStats.getWidget(0, 0)).setText("Первичный контакт ("+c+")");
+					call+=c;
+				}
+				bt = list.get(StatusWrapper.TALK);
+				if(bt!=null) {
+					int c =bt.getCount();
+					divTalk.setWidth(String.valueOf(c*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					((Label)tableSalesStats.getWidget(1, 0)).setText("Переговоры ("+c+")");
+					call+=c;
+				};
+				bt = list.get(StatusWrapper.DECISION_MAKING);
+				if(bt!=null) {
+					int c =bt.getCount();
+					divDecMake.setWidth(String.valueOf(c*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					((Label)tableSalesStats.getWidget(2, 0)).setText("Принимают решение ("+c+")");
+					call+=c;
+				}
+				bt = list.get(StatusWrapper.RECONCILIATION_AGREEMENT);
+				if(bt!=null) {
+					int c =bt.getCount();
+					divAgreement.setWidth(String.valueOf(c*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					((Label)tableSalesStats.getWidget(3, 0)).setText("Согласование договора ("+c+")");
+					call+=c;
+				}
+				bt = list.get(StatusWrapper.EXECUTION);
+				if(bt!=null) {
+					divExecution.setWidth(String.valueOf(bt.getCount()*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					tableSalesStats.setWidget(4, 1, divExecution);
+					((Label)tableSalesStats.getWidget(4, 0)).setText("Заключено сделок ("+bt.getCount()+")");
+				}
+				lSalesCaption.setText("Ход продаж ("+call+" "+Utils.getNumberPadeg(new String[]{"сделка","сделки","сделок"},call)+")");
+				
 			}
 			
 			@Override

@@ -316,3 +316,18 @@ img#apploader {
 .customer-info div{
     padding-top: 2px;
 }
+
+.statusbox {
+    height:1em;
+    border: 1px solid #939393;
+    border-radius:2px;
+}
+
+.statusbox-in-grid {
+   border: 1px solid #939393;
+   border-radius: 2px;
+   padding: 1px;
+   margin-top: 4px;
+   text-align: center;
+   width: 128px;
+}

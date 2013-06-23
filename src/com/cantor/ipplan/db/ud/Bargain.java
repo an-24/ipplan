@@ -333,15 +333,15 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		wrap.status = getStatus().toClient();
 		wrap.bargainVer =  bargainVer;
 		
-		if(rootBargain==this || bargainVer==0) wrap.bargain = wrap;
+		if(rootBargain==this || bargainVer==0) wrap.rootBargain = wrap;
 			else {
 				// опасность зацикливания, когда rootBargain и this один и 
 				// тот же объект. Все проверки, которые ниже не помогают. 
 				// Ключевая проверка bargainVer==0 
 				Bargain root = getRootBargain();
-				if(root==null) wrap.bargain = null; else
-					if(root.bargainId==bargainId) wrap.bargain = wrap; 
-						else wrap.bargain = root.toClient();
+				if(root==null) wrap.rootBargain = null; else
+					if(root.bargainId==bargainId) wrap.rootBargain = wrap; 
+						else wrap.rootBargain = root.toClient();
 			}
 		
 		wrap.bargainStart = bargainStart;
@@ -384,12 +384,12 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			puser = new PUserIdent();
 			puser.fromClient(wrap.puser);
 		}
-		if(wrap.bargain==null) rootBargain = null; else {
-			if(wrap.bargain==wrap) {
+		if(wrap.rootBargain==null) rootBargain = null; else {
+			if(wrap.rootBargain==wrap) {
 				rootBargain = this;
 			} else {
 				rootBargain = new Bargain();
-				rootBargain.fromClient(wrap.bargain);
+				rootBargain.fromClient(wrap.rootBargain);
 			}
 		}
 		if(wrap.status==null) status = null; else {

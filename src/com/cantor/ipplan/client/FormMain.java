@@ -1,8 +1,5 @@
 package com.cantor.ipplan.client;
 
-import static com.google.gwt.dom.client.BrowserEvents.CLICK;
-import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-
 import java.util.Date;
 import java.util.List;
 
@@ -13,16 +10,12 @@ import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
-import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.cell.client.SafeHtmlCell;
-import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -41,10 +34,8 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
@@ -68,18 +59,6 @@ public class FormMain extends Form {
 	private MainTabPanel tabPanel;
 	CellTable<BargainWrapper> tableAttention;
 	private DatabaseServiceAsync dbservice;
-	Image loading;
-	NumberLabel<Double> lRevenue;
-	NumberLabel<Double> lRevenueDelta;
-	NumberLabel<Double> lPrePayment;
-	NumberLabel<Double> lMargin;
-	NumberLabel<Double> lMarginDelta;
-	NumberLabel<Double> lTax;
-	NumberLabel<Double> lTaxDelta;
-	NumberLabel<Double> lProfit;
-	NumberLabel<Double> lProfitDelta;
-	FlexTable tableStats;
-	Label lCaption;
 	Button btnCustomerAdd;
 	Button btnCustomerDelete;
 	CellTable<CustomerWrapper> tableCustomer;
@@ -97,6 +76,7 @@ public class FormMain extends Form {
 	MenuItem exportBargainsMenuItem;
 	Button btnCustomerRefresh;
 	Label lBargainTotal;
+	CellTable.Resources resources;
 
 
 	public FormMain(Ipplan main, RootPanel root, PUserWrapper usr, int numTab) {
@@ -105,9 +85,7 @@ public class FormMain extends Form {
 		currentForm = this;
 		
 		// ресурсы для таблицы
-		CellTable.Resources resources = GWT.create(CellTable.Resources.class);
-		loading = new Image(resources.cellTableLoading());
-		
+		resources = GWT.create(CellTable.Resources.class);
 		
 		VerticalPanel p0 = new VerticalPanel();
 		p0.setSpacing(5);
@@ -148,20 +126,34 @@ public class FormMain extends Form {
 	}
 
 	void makeBargainColumns(CellTable<BargainWrapper> table) {
-		Column<BargainWrapper, String> c1 = new Column<BargainWrapper, String>(new ClickableTextCell()) {
+		Column<BargainWrapper, SafeHtml> c1 = new Column<BargainWrapper, SafeHtml>(new ClickableSafeHtmlCell()) {
 
 			@Override
-			public String getValue(BargainWrapper object) {
-				return (object==null)?"":object.getFullName();
+			public SafeHtml getValue(BargainWrapper object) {
+				
+				SafeHtmlBuilder sb = new SafeHtmlBuilder();
+				if(object!=null) {
+					String s = "<b class=\"linkcell\"><div";
+					if(object.getFullName().length()>32) s+=" style=\"text-overflow: ellipsis;display:block;\">";
+													else s+=">";
+					s+=object.getFullName();
+					s+="</div></b>";
+					sb.appendHtmlConstant(s);
+					sb.appendHtmlConstant("<div class=\"statusbox-in-grid\" style=\"background-color:"+StatusWrapper.getBackgroundColor(object.status.statusId)+";"+
+							"color:"+StatusWrapper.getTextColor(object.status.statusId)+";"+
+							"\">"+object.status.statusName);
+					sb.appendHtmlConstant("</div>");
+				}
+				return sb.toSafeHtml();
 			}
 		};
-		c1.setFieldUpdater(new FieldUpdater<BargainWrapper, String>() {
+		c1.setFieldUpdater(new FieldUpdater<BargainWrapper, SafeHtml>() {
 			@Override
-			public void update(int index, BargainWrapper object, String value) {
-				edit(object);
+			public void update(int index, BargainWrapper object, SafeHtml value) {
+				editBargain(object);
 			}
 		});
-		c1.setCellStyleNames("linkcell");
+		//c1.setCellStyleNames("linkcell");
 		
 		Column<BargainWrapper,SafeHtml> c2 = new Column<BargainWrapper, SafeHtml>(new ClickableSafeHtmlCell()) {
 
@@ -209,15 +201,7 @@ public class FormMain extends Form {
 			}
 		};
 		с4.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-/*
-		Column<BargainWrapper, Number> с5 = new Column<BargainWrapper, Number>(new NumberCell(NumberFormat.getFormat("#,##0.00"))) {
-			@Override
-			public Number getValue(BargainWrapper object) {
-				return (object==null || object.bargainCosts==null)?null:object.bargainCosts/100.0;
-			}
-		};
-		с5.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-*/
+		
 		Column<BargainWrapper, Number> с6 = new Column<BargainWrapper, Number>(new NumberCell(NumberFormat.getFormat("#,##0.00"))) {
 			@Override
 			public Number getValue(BargainWrapper object) {
@@ -262,7 +246,7 @@ public class FormMain extends Form {
 		table.setColumnWidth(с6, "80px");
 	}
 
-	void makeColumnCustomerTable(final CellTable<CustomerWrapper> customerTable) {
+	void makeCustomerColumns(final CellTable<CustomerWrapper> customerTable) {
 		
 		Column<CustomerWrapper,SafeHtml> c1 = new Column<CustomerWrapper, SafeHtml>(new ClickableSafeHtmlCell()) {
 
@@ -391,7 +375,7 @@ public class FormMain extends Form {
 			});
 	}
 
-	protected void edit(BargainWrapper b) {
+	protected void editBargain(BargainWrapper b) {
 		// поиск в окрытых вкладках
 		int tabidx = tabPanel.find(b.bargainId);
 		if(tabidx>=0) {
@@ -416,7 +400,7 @@ public class FormMain extends Form {
 		});
 	}
 
-	protected void addNew() throws Exception {
+	protected void addNewBargain() throws Exception {
 		
 		Label l;
 		final long weekTime = 7 * 24 * 60 * 60 * 1000; // 7 d * 24 h * 60 min * 60 s * 1000 millis
@@ -614,35 +598,5 @@ public class FormMain extends Form {
 				// молчим
 			}
 		});
-	}
-		
-	class ClickableSafeHtmlCell extends AbstractCell<SafeHtml> {
-		
-		ClickableSafeHtmlCell() {
-			super(CLICK, KEYDOWN);
-		}
-		
-		@Override
-		public void onBrowserEvent(Context context, Element parent, SafeHtml value,
-		      NativeEvent event, ValueUpdater<SafeHtml> valueUpdater) {
-		    super.onBrowserEvent(context, parent, value, event, valueUpdater);
-		    if (CLICK.equals(event.getType())) {
-		      onEnterKeyDown(context, parent, value, event, valueUpdater);
-		    }
-		}
-		@Override
-		protected void onEnterKeyDown(Context context, Element parent, SafeHtml value,
-		      NativeEvent event, ValueUpdater<SafeHtml> valueUpdater) {
-		    if (valueUpdater != null) {
-		      valueUpdater.update(value);
-		    }
-		}
-		@Override
-		public void render(com.google.gwt.cell.client.Cell.Context context,
-				SafeHtml value, SafeHtmlBuilder sb) {
-		    if (value != null) {
-		        sb.append(value);
-		      }
-		}
 	}
 }
