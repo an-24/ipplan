@@ -429,7 +429,7 @@ public class FormMain extends Form {
 		p1.add(l);
 		l.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		final DateBox dbstart = new DateBox();
-		dbstart.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		dbstart.setFormat(Ipplan.DEFAULT_DATE_FORMAT);
 		dbstart.setValue(new Date());
 		p1.add(dbstart);
 		p1.setWidth("100%");
@@ -442,7 +442,7 @@ public class FormMain extends Form {
 		p2.add(l);
 		l.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		final DateBox dbfinish = new DateBox();
-		dbfinish.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		dbfinish.setFormat(Ipplan.DEFAULT_DATE_FORMAT);
 		p2.add(dbfinish);
 		p2.setWidth("100%");
 		table.setWidget(2, 1, p2);

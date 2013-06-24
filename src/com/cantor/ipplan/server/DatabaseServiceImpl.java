@@ -34,10 +34,13 @@ import com.cantor.ipplan.client.LoginService;
 import com.cantor.ipplan.core.IdGenerator;
 import com.cantor.ipplan.core.Utils;
 import com.cantor.ipplan.db.ud.Bargain;
+import com.cantor.ipplan.db.ud.Calendar;
 import com.cantor.ipplan.db.ud.Costs;
 import com.cantor.ipplan.db.ud.Customer;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.db.ud.Status;
+import com.cantor.ipplan.db.ud.Task;
+import com.cantor.ipplan.db.ud.Tasktype;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CostsWrapper;
@@ -45,6 +48,8 @@ import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
+import com.cantor.ipplan.shared.TaskWrapper;
+import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
@@ -303,13 +308,6 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	} finally {
     		session.close();
     	}
-	}
-
-	@Override
-	public boolean deleteBargain(int id) throws Exception {
-		checkAccess();
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override
@@ -1095,7 +1093,8 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 				if(allphones.length()>0) allphones += ",";
 				String s ="";
 				if(p.getLabel()!=null) s+=p.getLabel()+":";
-				allphones += p.getPhoneNumber();
+				s+=p.getPhoneNumber();
+				allphones += s;
 			}	
 		}
 		if(allphones.length()>0)
@@ -1447,6 +1446,26 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	}
 	}
 
+	@Override
+	public boolean deleteBargain(int id) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				boolean r = deleteBargainInner(id, session);
+				tx.commit();
+				return r;
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
+
 	private boolean deleteBargainInner(int id, Session session) {
 		Bargain c = (Bargain) session.get(Bargain.class, id);
 		if(c==null || c.getBargainVisible()==0) return false;
@@ -1480,11 +1499,138 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	try {
     		String hsq = "select b1 from Bargain b, Bargain b1 where b.bargainId=:id"+
 					 " and b1.rootBargain=b.rootBargain and b1.bargainVer=b.bargainVer+1";
-		Query q = session.createQuery(hsq);
-		q.setParameter("id", id);
-		Bargain b = (Bargain) q.uniqueResult();
-		if(b!=null) return b.toClient();
-			   else return null;
+    		Query q = session.createQuery(hsq);
+    		q.setParameter("id", id);
+    		Bargain b = (Bargain) q.uniqueResult();
+    		if(b!=null) return b.toClient();
+    			   else return null;
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public List<TasktypeWrapper> getTasktypes() throws Exception {
+		checkAccess();
+		List<TasktypeWrapper> result =  new ArrayList<TasktypeWrapper>();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		Query q = session.createQuery("from Tasktype tt order by tt.tasktypeId");
+    		List<Tasktype> list = q.list();
+    		for (Tasktype tt : list) 
+				result.add(tt.toClient());
+			return result;
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public List<TaskWrapper> getTask(int bargainId) throws Exception {
+		checkAccess();
+		List<TaskWrapper> result =  new ArrayList<TaskWrapper>();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+    		Query q = session.createQuery("from Task t where t.calendar.bargain.bargainId=:id order by t.taskDeadline");
+    		q.setParameter("id", bargainId);
+    		List<Task> list = q.list();
+    		for (Task tt : list) 
+				result.add(tt.toClient());
+			return result;
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public TaskWrapper addTask(TaskWrapper task) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				Task t = new Task(); 
+				t.fromClient(task);
+				if(t.getCalendar()==null) 
+					t.setCalendar(setNewCalendar(session,task.bargainId));
+				session.save(t);
+				tx.commit();
+				return t.toClient();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	private Calendar setNewCalendar(Session session2, int bargainId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TaskWrapper updateTask(TaskWrapper task) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				Task t = (Task) session.load(Task.class, task.taskId); 
+				t.fromClient(task);	
+				tx.commit();
+				return t.toClient();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
+	
+	@Override
+	public void executedTask(int id) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				Task t = (Task) session.load(Task.class, id);
+				t.setTaskExecuted(1);
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	@Override
+	public boolean deleteTask(int id) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Task t = (Task) session.get(Task.class, id);
+			if(t==null) return false;
+			Transaction tx = session.beginTransaction();
+			try {
+				session.delete(t);
+				tx.commit();
+				return true;
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
     	} finally {
     		session.close();
     	}

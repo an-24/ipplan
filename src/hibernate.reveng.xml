@@ -14,4 +14,6 @@
   <table-filter match-name="PAYMENTS"/>
   <table-filter match-name="SYNC"/>
   <table-filter match-name="MESSAGES"/>
+  <table-filter match-name="TASK"/>
+  <table-filter match-name="TASKTYPE"/>
 </hibernate-reverse-engineering>

@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     22.06.2013 16:41:35                          */
+/* Created on:     24.06.2013 10:00:48                          */
 /*==============================================================*/
 
 
@@ -153,6 +153,42 @@ status_daylimit      INTEGER,
 constraint PK_STATUS primary key (status_id)
 );
 
+/*==============================================================*/
+/* Table: task                                                  */
+/*==============================================================*/
+create table task (
+task_id              INTEGER                        not null,
+bargain_id           INTEGER                        not null,
+tasktype_id          INTEGER                        not null,
+after_status_id      INTEGER,
+task_name            VARCHAR(240)                   not null,
+task_deadline        TIMESTAMP                      not null,
+task_start           TIMESTAMP,
+task_warning_duration INTEGER,
+task_warning_unit    INTEGER,
+task_place           VARCHAR(200),
+task_executed        INTEGER                        default 0 not null,
+constraint PK_TASK primary key (task_id)
+);
+
+/*==============================================================*/
+/* Table: tasktype                                              */
+/*==============================================================*/
+create table tasktype (
+tasktype_id          INTEGER                        not null,
+tasktype_name        VARCHAR(40),
+constraint PK_TASKTYPE primary key (tasktype_id)
+);
+
+insert into tasktype values(1,'Написать электронное письмо');
+insert into tasktype values(2,'Позвонить');
+insert into tasktype values(3,'Подготовить документы');
+insert into tasktype values(4,'Отправить документы по почте');
+insert into tasktype values(5,'Встреча/Совещание');
+insert into tasktype values(6,'Изготовить/Поставить');
+insert into tasktype values(7,'Другое');
+commit;
+
 alter table agreed
    add constraint FK_AGREED_REFERENCE_BARGAIN foreign key (bargain_id)
       references bargain (bargain_id)
@@ -208,4 +244,20 @@ alter table status
       references puser (puser_id)
       on delete cascade
       on update cascade;
+
+alter table task
+   add constraint FK_TASK_REFERENCE_CALENDAR foreign key (bargain_id)
+      references calendar (bargain_id)
+      on delete cascade
+      on update cascade;
+
+alter table task
+   add constraint FK_TASK_REFERENCE_TASKTYPE foreign key (tasktype_id)
+      references tasktype (tasktype_id);
+
+alter table task
+   add constraint FK_TASK_REFERENCE_STATUS foreign key (after_status_id)
+      references status (status_id)
+      on delete set null
+      on update set null;
 

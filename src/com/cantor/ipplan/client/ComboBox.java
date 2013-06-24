@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SelectElement;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -177,7 +178,8 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 			});
 			fillPopupList();
 			popupList.show();
-
+			popupList.getElement().getStyle().setOverflowY(Overflow.SCROLL);
+			popupList.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
 		}
 	}
 
@@ -295,9 +297,13 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 				isMultipleSelect);
 		select.setClassName("gwt-ComboBox-inner");
 		select.setTabIndex(-1);
+		Element btnPlace = DOM.createDiv();
+		btnPlace.setClassName("gwt-ComboBox-button");
+		div.appendChild(btnPlace);
 		Element btn = DOM.createDiv();
-		btn.setClassName("gwt-ComboBox-button");
-		div.appendChild(btn);
+		btn.setClassName("gwt-ComboBox-button-img");
+		btnPlace.appendChild(btn);
+		
 		div.appendChild(select);
 		return div;
 	}

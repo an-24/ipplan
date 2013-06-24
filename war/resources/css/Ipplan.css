@@ -123,8 +123,10 @@ h1 {
 }
 
 .link {
-	border-bottom: 1px dashed #004276;
+	border-bottom: 1px dotted #004276;
 	text-decoration: none;	
+	cursor:pointer;
+	display: inline-block;
 }
 
 .link:hover {
@@ -133,7 +135,7 @@ h1 {
 }
 
 .linkcell div {
-	border-bottom: 1px dashed #004276;
+	border-bottom: 1px dotted #004276;
 	text-decoration: none;	
 	display: inline-block;
 	cursor:pointer;
@@ -165,10 +167,11 @@ h1 {
 }
 
 .FormBargain {
-  left: 50%;
-  margin-left: -300px;
+  margin: 10px;
   position: relative;
-  width: 600px;
+  background-color: #F8F8FF;
+  border-radius: 6px;
+  table-layout:fixed;
 }
 
 .main-text {
@@ -330,4 +333,12 @@ img#apploader {
    margin-top: 4px;
    text-align: center;
    width: 128px;
+}
+
+.calendarBox {
+   height: 100%;
+   background-color: #FFFFF0;
+   border: 1px solid #939393;
+   border-radius: 6px;
+   margin-right: 5px;
 }

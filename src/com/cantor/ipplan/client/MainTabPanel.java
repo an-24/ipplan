@@ -11,7 +11,6 @@ public class MainTabPanel extends TabPanel {
 	public FormBargain add(BargainWrapper bw) {
 		final FormBargain bft = new FormBargain(bw);
 		bft.setOwner(this);
-		bft.setIndex(getTabBar().getTabCount());
 		super.add(bft,bft.makeHTMLTab(),true);
 		new Timer(){
 			@Override

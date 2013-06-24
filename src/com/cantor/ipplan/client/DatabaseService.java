@@ -24,6 +24,8 @@ import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
+import com.cantor.ipplan.shared.TaskWrapper;
+import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -52,6 +54,13 @@ public interface DatabaseService extends RemoteService {
 	public void updateCustomer(CustomerWrapper value)  throws Exception; 
 	public boolean deleteCustomer(int id) throws Exception; 
 	public void deleteCustomer(List<CustomerWrapper> list) throws Exception; 
+	
+	public List<TasktypeWrapper> getTasktypes() throws Exception;
+	public List<TaskWrapper> getTask(int bargainId) throws Exception;
+	public TaskWrapper addTask(TaskWrapper task) throws Exception;
+	public TaskWrapper updateTask(TaskWrapper task) throws Exception;
+	public void executedTask(int id) throws Exception;
+	public boolean deleteTask(int id) throws Exception;
 	
 	public List<StatusWrapper> getAllStatuses();
 	public List<CostsWrapper> findCost(String newtext);

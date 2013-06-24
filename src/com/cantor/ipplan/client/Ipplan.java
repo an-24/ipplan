@@ -16,6 +16,7 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.StatusCodeException;
@@ -27,11 +28,14 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.datepicker.client.DateBox;
+import com.google.gwt.user.datepicker.client.DateBox.DefaultFormat;
 
 public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 
-	private static String USER_AGENT;
-	private static boolean USER_AGENT_IPHONE;
+	public static String USER_AGENT;
+	public static boolean USER_AGENT_IPHONE;
+	public static DefaultFormat DEFAULT_DATE_FORMAT;
 
 	private static Logger rootLogger = Logger.getLogger("iPPlan");
 	static String INIT_TOKEN = "";
@@ -42,6 +46,7 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
     	super();
     	USER_AGENT = Form.getUserAgent();
     	USER_AGENT_IPHONE = USER_AGENT.indexOf("iPhone")>=0;
+    	DEFAULT_DATE_FORMAT = new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy"));
 		init();
     }
     

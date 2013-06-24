@@ -10,6 +10,8 @@ import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
+import com.cantor.ipplan.shared.TaskWrapper;
+import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface DatabaseServiceAsync {
@@ -48,4 +50,10 @@ public interface DatabaseServiceAsync {
 			AsyncCallback<List<BargainWrapper>> callback);
 	void prevBargainVersion(int id, AsyncCallback<BargainWrapper> callback);
 	void nextBargainVersion(int id, AsyncCallback<BargainWrapper> callback);
+	void getTasktypes(AsyncCallback<List<TasktypeWrapper>> callback);
+	void getTask(int bargainId, AsyncCallback<List<TaskWrapper>> callback);
+	void executedTask(int id, AsyncCallback<Void> callback);
+	void deleteTask(int id, AsyncCallback<Boolean> callback);
+	void addTask(TaskWrapper task, AsyncCallback<TaskWrapper> callback);
+	void updateTask(TaskWrapper task, AsyncCallback<TaskWrapper> callback);
 }

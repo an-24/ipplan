@@ -10,7 +10,9 @@ import com.cantor.ipplan.client.StatusBox.StatusChangeEventListiner;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
+import com.cantor.ipplan.shared.TaskWrapper;
 import com.cantor.ipplan.shared.Utils;
+import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
@@ -29,6 +31,9 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.EventListener;
@@ -43,9 +48,9 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 @SuppressWarnings("rawtypes")
@@ -78,7 +83,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private NumberLabel<Double> lProfit;
 	private NumberLabel<Double> lDeltaProfit;
 	private MainTabPanel tabPanel;
-	private int index;
+	//private int index;
 	private Label lTitle;
 	private List<Integer> errorList = new ArrayList<Integer>();
 	private Label lVersion;
@@ -92,17 +97,30 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 	private int loadCounter = 0;
 
+	private CellTable<TaskWrapper> tableTasks;
+
 	public FormBargain(BargainWrapper b) {
 		super();
 		setCellPadding(4);
-		setSize("530px", "");
-		getCellFormatter().setWidth(1, 0, "150px");
-		getCellFormatter().setWidth(1, 1, "225px");
-		getCellFormatter().setWidth(1, 2, "150px");
+		setSize("740px", "");
+		getColumnFormatter().setWidth(0, "10px");
+		getColumnFormatter().setWidth(1, "150px");
+		getColumnFormatter().setWidth(2, "225px");
+		getColumnFormatter().setWidth(3, "150px");
+		getColumnFormatter().setWidth(4, "200px");
+/*		
+		getCellFormatter().setWidth(1, 0, "20px");
+		getCellFormatter().setWidth(1, 1, "150px");
+		getCellFormatter().setWidth(1, 2, "225px");
+		getCellFormatter().setWidth(1, 3, "150px");
+		getCellFormatter().setWidth(1, 4, "150px");
+*/		
 		//getElement().getStyle().setTableLayout(TableLayout.FIXED);
 		setStyleName("FormBargain");
 		addStyleName("tableBorderCollapse");
 		this.bargain = b;
+
+		int startCol = 1;
 		
 		Label l;
 		VerticalPanel p;
@@ -110,7 +128,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		lTitle = new Label(getTitle());
 		lTitle.setStyleName("gwt-FormCaption");
 		setWidget(0, 0, lTitle);
-		getFlexCellFormatter().setColSpan(0, 0, 3);
+		getFlexCellFormatter().setColSpan(0, 0, 5);
 		getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		btnPrev = new Button("<");
@@ -157,7 +175,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 				});
 			}
 		});
-		setWidget(1, 0, btnPrev);
+		setWidget(1, startCol, btnPrev);
 		
 		p = new VerticalPanel();
 		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -169,8 +187,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		lDateCreated = new Label(DateTimeFormat.getMediumDateFormat().format(bargain.bargainCreated));
 		p.add(lDateCreated);
 		
-		setWidget(1, 1, p);
-		getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		setWidget(1, startCol+1, p);
+		getCellFormatter().setHorizontalAlignment(1, startCol+1, HasHorizontalAlignment.ALIGN_CENTER);
 
 		btnNext = new Button(">");
 		btnNext.addClickHandler(new ClickHandler() {
@@ -215,31 +233,27 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 				});
 			}
 		});
-		setWidget(1, 2, btnNext);
-		getCellFormatter().setHorizontalAlignment(1, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		setWidget(1, startCol+2, btnNext);
+		getCellFormatter().setHorizontalAlignment(1, startCol+2, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		dbStart = new DateBox();
-		setWidget(2, 0, dbStart);
+		setWidget(2, startCol, dbStart);
 		dbStart.setWidth("113px");
-		dbStart.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		dbStart.setFormat(Ipplan.DEFAULT_DATE_FORMAT);
 		dbStart.setValue(bargain.bargainStart);
 		dbStart.setEnabled(false);
 		
-		Button button = new Button("Календарь");
-		setWidget(2, 1, button);
-		getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_CENTER);
-		
 		dbFinish = new DateBox();
-		setWidget(2, 2, dbFinish);
+		setWidget(2, startCol+2, dbFinish);
 		dbFinish.setWidth("113px");
-		dbFinish.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		dbFinish.setFormat(Ipplan.DEFAULT_DATE_FORMAT);
 		dbFinish.setValue(bargain.bargainFinish);
 		dbFinish.setEnabled(false);
-		getCellFormatter().setHorizontalAlignment(2, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		getCellFormatter().setHorizontalAlignment(2, startCol+2, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		l = new Label("Статус: ");
-		setWidget(3, 0, l);
-		getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		setWidget(3, startCol+0, l);
+		getCellFormatter().setHorizontalAlignment(3, startCol+0, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		eStatus = new StatusBox(null);
 		eStatus.setChangeListiner(new StatusChangeEventListiner() {
@@ -268,20 +282,20 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			}
 		}.schedule(0);
 			
-		setWidget(3, 1, eStatus);
+		setWidget(3, startCol+1, eStatus);
 		
 		lAttention = new Label("");
-		setWidget(3, 2, lAttention);
-		getCellFormatter().setVerticalAlignment(3, 2, HasVerticalAlignment.ALIGN_MIDDLE);
-		getCellFormatter().setHorizontalAlignment(3, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		setWidget(3, startCol+2, lAttention);
+		getCellFormatter().setVerticalAlignment(3, startCol+2, HasVerticalAlignment.ALIGN_MIDDLE);
+		getCellFormatter().setHorizontalAlignment(3, startCol+2, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		l = new Label("Клиент:");
 		//l.addStyleName("tpad10");
 		l.getElement().getStyle().setPaddingTop(20, Unit.PX);
-		setWidget(4, 0, l);
-		getCellFormatter().setHorizontalAlignment(4, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		getCellFormatter().setVerticalAlignment(4, 0, HasVerticalAlignment.ALIGN_TOP);
-		getCellFormatter().setHeight(4,0,"36px");
+		setWidget(4, startCol+0, l);
+		getCellFormatter().setHorizontalAlignment(4, startCol+0, HasHorizontalAlignment.ALIGN_RIGHT);
+		getCellFormatter().setVerticalAlignment(4, startCol+0, HasVerticalAlignment.ALIGN_TOP);
+		getCellFormatter().setHeight(4,startCol+0,"36px");
 
 		pCustomer = new VerticalPanel();
 		pCustomer.addStyleName("bpad10");
@@ -299,37 +313,37 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		eCustomer.setCustomer(bargain.customer);
 		showInfoCustomer();
 		eCustomer.getElement().setAttribute("placeholder", "введите имя клиента");
-		eCustomer.setWidth("100%");
+		eCustomer.setWidth("358px");
 		
 /*		
 		eContract = new ContractBox(bargain.contract);
 		p.add(eContract);
 */
 		pCustomer.setWidth("100%");
-		setWidget(4, 1, pCustomer);
+		setWidget(4, startCol+1, pCustomer);
 		
-		getFlexCellFormatter().setColSpan(4, 1, 2);
-		getCellFormatter().setHorizontalAlignment(4, 1, HasHorizontalAlignment.ALIGN_RIGHT);
-		getCellFormatter().setVerticalAlignment(4, 1, HasVerticalAlignment.ALIGN_MIDDLE);
+		getFlexCellFormatter().setColSpan(4, startCol+1, 2);
+		getCellFormatter().setHorizontalAlignment(4, startCol+1, HasHorizontalAlignment.ALIGN_RIGHT);
+		getCellFormatter().setVerticalAlignment(4, startCol+1, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		getCellFormatter().setStyleName(5, 0, "grayBorder");
-		getCellFormatter().setStyleName(5, 1, "grayBorder");
-		getCellFormatter().setStyleName(5, 2, "grayBorder");
+		getCellFormatter().setStyleName(5, startCol+0, "grayBorder");
+		getCellFormatter().setStyleName(5, startCol+1, "grayBorder");
+		getCellFormatter().setStyleName(5, startCol+2, "grayBorder");
 
-		getCellFormatter().setHeight(5,0,"36px");
+		getCellFormatter().setHeight(5,startCol+0,"36px");
 		
 		l = new Label("Выручка");
-		setWidget(5, 0, l);
+		setWidget(5, startCol+0, l);
 
 		eRevenue = new CurrencyBox(bargain.bargainRevenue);
 		eRevenue.setWidth("130px");
-		setWidget(5, 1, eRevenue);
+		setWidget(5, startCol+1, eRevenue);
 		
 		lRevenueDelta = newDeltaNumberLabel(0); //TODO
-		setWidget(5, 2, lRevenueDelta);
+		setWidget(5, startCol+2, lRevenueDelta);
 
 		l = new Label("Аванс");
-		setWidget(6, 0, l);
+		setWidget(6, startCol+0, l);
 
 		ePrePayment = new CurrencyBox(bargain.bargainPrepayment);
 		ePrePayment.setWidth("130px");
@@ -340,11 +354,11 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 				setAttention();
 			}
 		});
-		setWidget(6, 1, ePrePayment);
+		setWidget(6, startCol+1, ePrePayment);
 		
 
 		l = new Label("Расходы,");
-		setWidget(7, 0, l);
+		setWidget(7, startCol+0, l);
 
 		btnCosts = new Button(getTotalCostDisplay());
 		btnCosts.addClickHandler(new ClickHandler() {
@@ -376,71 +390,100 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 				formCost.center();
 			}
 		});
-		setWidget(7, 1, btnCosts);
+		setWidget(7, startCol+1, btnCosts);
 		btnCosts.setWidth("140px");
 		
 		lDeltaCosts = newDeltaNumberLabel(0); //TODO
-		setWidget(7, 2, lDeltaCosts);
+		setWidget(7, startCol+2, lDeltaCosts);
 		
 
 		l = new Label("из них оплачено");
-		setWidget(8, 0, l);
+		setWidget(8, startCol+0, l);
 		
 		lPaymentCost = newNumberLabel(bargain.bargainPaymentCosts);
 		lPaymentCost.setWidth("130px");
-		setWidget(8, 1, lPaymentCost);
+		setWidget(8, startCol+1, lPaymentCost);
 		
 		lAttentionPrePayment = new Label("");
-		setWidget(8, 2, lAttentionPrePayment);
+		setWidget(8, startCol+2, lAttentionPrePayment);
 		
 		l = new Label("Маржа");
-		setWidget(9, 0, l);
+		setWidget(9, startCol+0, l);
 		
 		lMargin = newNumberLabel(bargain.getMargin());
 		lMargin.setWidth("130px");
-		setWidget(9, 1, lMargin);
+		setWidget(9, startCol+1, lMargin);
 
 		lDeltaMargin = newDeltaNumberLabel(0); //TODO
-		setWidget(9, 2, lDeltaMargin);
+		setWidget(9, startCol+2, lDeltaMargin);
 		
 		l = new Label("Штрафы, пени");
-		setWidget(10, 0, l);
+		setWidget(10, startCol+0, l);
 		
 		eFine = new CurrencyBox(bargain.bargainFine);
 		eFine.setWidth("130px");
-		setWidget(10, 1, eFine);
+		setWidget(10, startCol+1, eFine);
 
 		lDeltaFine = newDeltaNumberLabel(0); //TODO
-		setWidget(10, 2, lDeltaFine);
+		setWidget(10, startCol+2, lDeltaFine);
 		
 		
 		l = new Label("Налог");
-		setWidget(11, 0, l);
+		setWidget(11, startCol+0, l);
 		
 		lTax = newNumberLabel(bargain.bargainTax);
 		lTax.setWidth("130px");
-		setWidget(11, 1, lTax);
+		setWidget(11, startCol+1, lTax);
 		
 		lDeltaTax = newDeltaNumberLabel(0); //TODO
-		setWidget(11, 2, lDeltaTax);
+		setWidget(11, startCol+2, lDeltaTax);
 		
-		getCellFormatter().setStyleName(12, 0, "grayBorder");
-		getCellFormatter().setStyleName(12, 1, "grayBorder");
-		getCellFormatter().setStyleName(12, 2, "grayBorder");
+		getCellFormatter().setStyleName(12, startCol+0, "grayBorder");
+		getCellFormatter().setStyleName(12, startCol+1, "grayBorder");
+		getCellFormatter().setStyleName(12, startCol+2, "grayBorder");
 		
 		l = new Label("Прибыль");
-		setWidget(13, 0, l);
+		setWidget(13, startCol+0, l);
 		l.addStyleName("bold-text");
 		
 		lProfit = newNumberLabel(bargain.getProfit());
 		lProfit.setWidth("130px");
-		setWidget(13, 1, lProfit);
+		setWidget(13, startCol+1, lProfit);
 		lProfit.addStyleName("bold-text");
 		
 		lDeltaProfit = newDeltaNumberLabel(0); //TODO
-		setWidget(13, 2, lDeltaProfit);
+		setWidget(13, startCol+2, lDeltaProfit);
 		lDeltaProfit.addStyleName("bold-text");
 
+		SimplePanel sp = new SimplePanel();
+		sp.setStyleName("calendarBox");
+		getFlexCellFormatter().setRowSpan(1, startCol+3, 13);
+		setWidget(1, startCol+3, sp);
+		
+		VerticalPanel vp =  new VerticalPanel();
+		l = new Label("Задачи");
+		l.addStyleName("gwt-FormSubCaption");
+		l.getElement().getStyle().setPaddingBottom(2, Unit.PX);
+		vp.setWidth("100%");
+		vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		vp.add(l);
+		Label ledit = new Label("Новая");
+		ledit.addStyleName("link");
+		//ledit.getElement().getStyle().setDisplay(Display.INLINE_BLOCK);
+		ledit.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				FormTask.addTask(dbservice, null);
+			}
+		});
+		vp.add(ledit);
+		
+		
+		sp.setWidget(vp);
+		tableTasks = new CellTable<TaskWrapper>(Integer.MAX_VALUE);
+		tableTasks.getElement().getStyle().setPaddingTop(10, Unit.PX);
+		makeTaskCells();
+		vp.add(tableTasks);
 
 		HorizontalPanel ph = new HorizontalPanel();
 		ph.setSpacing(10);
@@ -472,16 +515,53 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			}
 		});
 		
-		setWidget(14, 0, ph);
-		getFlexCellFormatter().setColSpan(14, 0, 3);
-		getCellFormatter().setHorizontalAlignment(14, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		getCellFormatter().setVerticalAlignment(14, 0, HasVerticalAlignment.ALIGN_MIDDLE);
+		setWidget(14, startCol+0, ph);
+		getFlexCellFormatter().setColSpan(14, startCol+0, 5);
+		getCellFormatter().setHorizontalAlignment(14, startCol+0, HasHorizontalAlignment.ALIGN_CENTER);
+		getCellFormatter().setVerticalAlignment(14, startCol+0, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		
-		
+		startTasks();
 		setAttention();
 		lockControl();
 
+	}
+
+	private void makeTaskCells() {
+		Column<TaskWrapper, SafeHtml> c1 = new Column<TaskWrapper, SafeHtml>(new ClickableSafeHtmlCell()) {
+
+			@Override
+			public SafeHtml getValue(TaskWrapper object) {
+				SafeHtmlBuilder sb = new SafeHtmlBuilder();
+				if(object!=null) {
+					sb.appendHtmlConstant(object.taskName);
+				}
+				return sb.toSafeHtml();
+			}
+		};
+		c1.setFieldUpdater(new FieldUpdater<TaskWrapper, SafeHtml>() {
+			@Override
+			public void update(int index, TaskWrapper object, SafeHtml value) {
+				//TODO
+			}
+		});
+		tableTasks.addColumn(c1);
+	}
+
+	private void startTasks() {
+		dbservice.getTask(bargain.bargainId, new AsyncCallback<List<TaskWrapper>>() {
+			@Override
+			public void onSuccess(List<TaskWrapper> result) {
+				Form.prepareGrid(tableTasks, result,false);
+				tableTasks.setRowCount(result.size());
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Ipplan.showError(caught);
+			}
+		});
+		
 	}
 
 	private String getTotalCostDisplay() {
@@ -837,7 +917,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	}
 
 	private void refreshTitle() {
-		tabPanel.getTabBar().setTabHTML(index, makeHTMLTab());
+		tabPanel.getTabBar().setTabHTML(getIndex(), makeHTMLTab());
 		initButtonClose();
 		lTitle.setText(getTitle());
 	}
@@ -845,7 +925,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 	private void initButtonClose() {
 		TableElement bar = TableElement.as(tabPanel.getTabBar().getElement());
-		TableCellElement cell = TableCellElement.as(TableRowElement.as(bar.getRows().getItem(0)).getCells().getItem(index+1));
+		TableCellElement cell = TableCellElement.as(TableRowElement.as(bar.getRows().getItem(0)).getCells().getItem(getIndex()+1));
 		NodeList<Element> ndl = cell.getElementsByTagName("span");
 		if(ndl.getLength()>0) {
 			Element btn = ndl.getItem(0);
@@ -884,13 +964,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		this.tabPanel = panel;
 	}
 
-	public void setIndex(int idx) {
-		this.index = idx;
-		
-	}
-
 	public int getIndex() {
-		return index;
+		return tabPanel.find(bargain.bargainId);
 	}
 
 	public String makeHTMLTab() {

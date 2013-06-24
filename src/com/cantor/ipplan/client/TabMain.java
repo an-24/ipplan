@@ -374,11 +374,12 @@ public class TabMain extends FlexTable {
 					call+=c;
 				}
 				bt = list.get(StatusWrapper.EXECUTION);
-				if(bt!=null) {
+				if(bt!=null && cmax>0) {
 					divExecution.setWidth(String.valueOf(bt.getCount()*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
-					tableSalesStats.setWidget(4, 1, divExecution);
 					((Label)tableSalesStats.getWidget(4, 0)).setText("Заключено сделок ("+bt.getCount()+")");
-				}
+				};
+				tableSalesStats.setWidget(4, 1, divExecution);
+					
 				lSalesCaption.setText("Ход продаж ("+call+" "+Utils.getNumberPadeg(new String[]{"сделка","сделки","сделок"},call)+")");
 				
 			}

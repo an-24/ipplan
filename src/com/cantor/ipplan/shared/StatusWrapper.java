@@ -75,7 +75,7 @@ public class StatusWrapper extends ClonableObject implements java.io.Serializabl
 		}
 	}
 
-	private static HashMap<Integer, StatusWrapper> getAllStatuses() {
+	public static HashMap<Integer, StatusWrapper> getAllStatuses() {
 		return allStatuses;
 	}
 

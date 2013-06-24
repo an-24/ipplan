@@ -51,7 +51,7 @@ public class FormCustomer extends Dialog  implements ValueChangeHandler {
 		
 		startCol=0;
 		table.setWidget(1, startCol, new Label("Дата рождения"));
-		tbBirthday = new DateBox(new DatePicker(),null,new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy")));
+		tbBirthday = new DateBox(new DatePicker(),null,Ipplan.DEFAULT_DATE_FORMAT);
 		table.setWidget(1, startCol+1, tbBirthday);
 
 		table.setWidget(2, startCol, new Label("Представляет юридическое лицо"));
