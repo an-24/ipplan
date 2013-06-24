@@ -1554,8 +1554,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			try {
 				Task t = new Task(); 
 				t.fromClient(task);
-				if(t.getCalendar()==null) 
-					t.setCalendar(setNewCalendar(session,task.bargainId));
+				// проеряем на наличие календаря
+				int rootbargainId = t.getCalendar().getBargain().getBargainId();
+				Calendar cal = (Calendar) session.get(Calendar.class, rootbargainId);
+				if(cal==null)
+					session.save(t.getCalendar());
 				session.save(t);
 				tx.commit();
 				return t.toClient();
@@ -1566,11 +1569,6 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	} finally {
     		session.close();
     	}
-	}
-
-	private Calendar setNewCalendar(Session session2, int bargainId) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

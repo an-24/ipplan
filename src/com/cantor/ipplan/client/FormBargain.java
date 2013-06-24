@@ -473,7 +473,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		ledit.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				FormTask.addTask(dbservice, null);
+				FormTask.addTask(dbservice, bargain);
 			}
 		});
 		vp.add(ledit);
@@ -481,6 +481,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		
 		sp.setWidget(vp);
 		tableTasks = new CellTable<TaskWrapper>(Integer.MAX_VALUE);
+		tableTasks.setSelectionModel(null);
 		tableTasks.getElement().getStyle().setPaddingTop(10, Unit.PX);
 		makeTaskCells();
 		vp.add(tableTasks);
@@ -519,7 +520,24 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getFlexCellFormatter().setColSpan(14, startCol+0, 5);
 		getCellFormatter().setHorizontalAlignment(14, startCol+0, HasHorizontalAlignment.ALIGN_CENTER);
 		getCellFormatter().setVerticalAlignment(14, startCol+0, HasVerticalAlignment.ALIGN_MIDDLE);
-		
+
+		SystemNotify.getInsertNotify().registerNotify(TaskWrapper.class, new NotifyHandler<TaskWrapper>() {
+			@Override
+			public void onNotify(TaskWrapper c) {
+				if(c.calendar.bargainId == bargain.bargainId)
+					startTasks();
+			}
+		});
+		SystemNotify.getUpdateNotify().registerNotify(TaskWrapper.class, new NotifyHandler<TaskWrapper>() {
+			@Override
+			public void onNotify(TaskWrapper c) {
+				if(c.calendar.bargainId == bargain.bargainId) {
+					List<TaskWrapper> list = tableTasks.getProvider().getList();
+					list.set(list.indexOf(c),c);
+					tableTasks.redraw();
+				}	
+			}
+		});
 		
 		startTasks();
 		setAttention();

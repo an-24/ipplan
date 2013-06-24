@@ -60,12 +60,15 @@ public class Calendar implements java.io.Serializable,DataBridge<CalendarWrapper
 	public CalendarWrapper toClient() {
 		CalendarWrapper wrap = new CalendarWrapper();
 		wrap.calendarGoogleId = calendarGoogleId;
+		wrap.bargainId = bargain.getBargainId();
 		return wrap;
 	}
 
 	@Override
 	public void fromClient(CalendarWrapper data) {
 		calendarGoogleId = data.calendarGoogleId;
+		if(bargain==null) bargain = new Bargain();
+		bargain.setBargainId(data.bargainId);
 	}
 
 	@Override

@@ -4,12 +4,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.TaskWrapper;
 import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasAlignment;
@@ -249,8 +249,9 @@ public class FormTask extends Dialog {
 		okExternalHandler = clickHandler;
 	}
 
-	public static void addTask(final DatabaseServiceAsync dbservice,TaskWrapper task) {
-		final FormTask formTask = new FormTask(task, dbservice);
+	public static void addTask(final DatabaseServiceAsync dbservice,BargainWrapper bargain) {
+		final FormTask formTask = new FormTask(null, dbservice);
+		formTask.getTask().calendar.bargainId = bargain.bargainId;
 		formTask.setExternalHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -258,8 +259,30 @@ public class FormTask extends Dialog {
 					
 					@Override
 					public void onSuccess(TaskWrapper result) {
-						// TODO Auto-generated method stub
-						
+						SystemNotify.getInsertNotify().notify(result);
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+					}
+				});
+				
+			}
+		});
+		formTask.center();
+	}
+
+	public static void editTask(final DatabaseServiceAsync dbservice,BargainWrapper bargain, TaskWrapper task) {
+		final FormTask formTask = new FormTask(task, dbservice);
+		formTask.setExternalHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				dbservice.updateTask(formTask.getTask(), new AsyncCallback<TaskWrapper>() {
+					
+					@Override
+					public void onSuccess(TaskWrapper result) {
+						SystemNotify.getUpdateNotify().notify(result);
 					}
 					
 					@Override

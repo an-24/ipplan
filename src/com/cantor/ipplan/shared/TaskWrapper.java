@@ -15,10 +15,10 @@ public class TaskWrapper  implements java.io.Serializable,com.google.gwt.user.cl
 	public Integer taskWarningUnit;
 	public String taskPlace;
 	public int taskExecuted = 0;
-	public int bargainId;
 	
 	public TaskWrapper() {
 		tasktype = new TasktypeWrapper();
+		calendar = new CalendarWrapper();
 	} 
 	
 	public TaskWrapper copy() {
