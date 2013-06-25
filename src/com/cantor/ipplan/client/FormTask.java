@@ -131,7 +131,16 @@ public class FormTask extends Dialog {
 				cancel();
 				if(validate()) {
 					fromEditFields();
-					if(okExternalHandler!=null) okExternalHandler.onClick(event);
+					if(okExternalHandler!=null) {
+
+						class FormClickEvent extends ClickEvent {
+							public FormClickEvent(Object source) {
+								super();
+								setSource(source);
+							}
+						};
+						okExternalHandler.onClick(new FormClickEvent(FormTask.this));
+					}
 					hide();
 				}
 			}
@@ -249,50 +258,16 @@ public class FormTask extends Dialog {
 		okExternalHandler = clickHandler;
 	}
 
-	public static void addTask(final DatabaseServiceAsync dbservice,BargainWrapper bargain) {
+	public static void addTask(DatabaseServiceAsync dbservice,BargainWrapper bargain, ClickHandler clickHandler) {
 		final FormTask formTask = new FormTask(null, dbservice);
 		formTask.getTask().calendar.bargainId = bargain.bargainId;
-		formTask.setExternalHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				dbservice.addTask(formTask.getTask(), new AsyncCallback<TaskWrapper>() {
-					
-					@Override
-					public void onSuccess(TaskWrapper result) {
-						SystemNotify.getInsertNotify().notify(result);
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						Ipplan.showError(caught);
-					}
-				});
-				
-			}
-		});
+		formTask.setExternalHandler(clickHandler);
 		formTask.center();
 	}
 
-	public static void editTask(final DatabaseServiceAsync dbservice,BargainWrapper bargain, TaskWrapper task) {
+	public static void editTask(DatabaseServiceAsync dbservice,BargainWrapper bargain, TaskWrapper task, ClickHandler clickHandler) {
 		final FormTask formTask = new FormTask(task, dbservice);
-		formTask.setExternalHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				dbservice.updateTask(formTask.getTask(), new AsyncCallback<TaskWrapper>() {
-					
-					@Override
-					public void onSuccess(TaskWrapper result) {
-						SystemNotify.getUpdateNotify().notify(result);
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						Ipplan.showError(caught);
-					}
-				});
-				
-			}
-		});
+		formTask.setExternalHandler(clickHandler);
 		formTask.center();
 	}
 }

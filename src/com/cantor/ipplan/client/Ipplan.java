@@ -36,6 +36,8 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	public static String USER_AGENT;
 	public static boolean USER_AGENT_IPHONE;
 	public static DefaultFormat DEFAULT_DATE_FORMAT;
+	public static DefaultFormat DEFAULT_DATETIME_FORMAT;
+	public static DefaultFormat ALTERNATE_DATETIME_FORMAT;
 
 	private static Logger rootLogger = Logger.getLogger("iPPlan");
 	static String INIT_TOKEN = "";
@@ -47,6 +49,8 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
     	USER_AGENT = Form.getUserAgent();
     	USER_AGENT_IPHONE = USER_AGENT.indexOf("iPhone")>=0;
     	DEFAULT_DATE_FORMAT = new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy"));
+    	DEFAULT_DATETIME_FORMAT = new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy, HH:mm"));
+    	ALTERNATE_DATETIME_FORMAT = new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd MMMM yyyy, HH:mm"));
 		init();
     }
     

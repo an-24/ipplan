@@ -285,14 +285,21 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	@Override
 	public List<BargainWrapper> getTemporalyBargains() throws Exception {
 		checkAccess();
-		HashMap<Integer, Bargain> bl = getTempBargains();
-		List<BargainWrapper> bwl = new ArrayList<BargainWrapper>();
-		for (Bargain b : bl.values()) {
-			BargainWrapper bw = b.toClient();
-			bw.attention = b.makeAttention();
-			bwl.add(bw);
-		}
-		return bwl;
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			HashMap<Integer, Bargain> bl = getTempBargains();
+			List<BargainWrapper> bwl = new ArrayList<BargainWrapper>();
+			for (Bargain b : bl.values()) {
+				BargainWrapper bw = b.toClient();
+				bw.attention = b.makeAttention();
+				fillTaskList(b.getBargainId(), session, bw);
+				bwl.add(bw);
+			}
+			return bwl;
+    	} finally {
+    		session.close();
+    	}
 	}
 	@Override
 	public BargainWrapper editBargain(int id) throws Exception {
@@ -304,10 +311,23 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		putTempBargain(b);
     		BargainWrapper bw = b.toClient();
     		bw.attention = b.makeAttention();
+    		// получаем tasks
+			fillTaskList(id, session, bw);
     		return bw;
     	} finally {
     		session.close();
     	}
+	}
+
+	private void fillTaskList(int id, Session sess, BargainWrapper bw) {
+		Calendar cal = (Calendar) sess.get(Calendar.class, id);
+		if(cal!=null) {
+			Query q = sess.createQuery("from Task t where t.calendar.bargain.bargainId=:id order by t.taskDeadline");
+			q.setParameter("id", id);
+			List<Task> list = q.list();
+			for (Task task : list) 
+				bw.tasks.add(task.toClient());
+		}
 	}
 
 	@Override
@@ -380,6 +400,26 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 						session.save(newverb);
 					}	
 				}
+				// сохранение tasks
+				if(bargain.tasks.size()>0) {
+					int id = (newverb==null)?b.getBargainId():newverb.getBargainId();
+					// почистим старые задачи
+					if(!isnew && newverb==null) clearTaskBargain(session, id);
+					// проеряем на наличие календаря
+					Calendar cal = (Calendar) session.get(Calendar.class, id);
+					if(cal==null) {
+						cal = new Calendar(newverb==null?b:newverb);
+						session.save(cal);
+					}	
+					// сохраняем список задач
+					for (TaskWrapper tw : bargain.tasks) {
+						Task t = new Task();
+						t.fromClient(tw);
+						t.setCalendar(cal); // нужно в случае, когда cal создается заново
+						session.save(t);
+					}
+				}
+				
 				// если не сбрасываем, то читаем вновь добавленный объект, тчобы возвратить 
 				if(!drop) {
 					if(newverb==null) {
@@ -389,6 +429,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 						bargain = newverb.toClient(); 
 						bargain.attention = newverb.makeAttention();
 					}
+	    			fillTaskList(b.getBargainId(), session, bargain);
 				}	
 				
 				b.saveCompleted();
@@ -421,6 +462,13 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		session.close();
     	}
 		
+	}
+
+	private void clearTaskBargain(Session sess, int bargainId) {
+   		String sql = "delete from task where bargain_id=:id";
+   		sess.createSQLQuery(sql).
+			setParameter("id", bargainId).
+			executeUpdate();
 	}
 
 	private void resetBargainHeads(Session sess, int rootId) {
@@ -1484,8 +1532,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		Query q = session.createQuery(hsq);
     		q.setParameter("id", id);
     		Bargain b = (Bargain) q.uniqueResult();
-    		if(b!=null) return b.toClient();
-    			   else return null;
+    		if(b!=null) {
+    			BargainWrapper bw = b.toClient();
+    			fillTaskList(b.getBargainId(), session, bw);
+    			return bw;
+    		}else return null;
     	} finally {
     		session.close();
     	}
@@ -1502,8 +1553,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		Query q = session.createQuery(hsq);
     		q.setParameter("id", id);
     		Bargain b = (Bargain) q.uniqueResult();
-    		if(b!=null) return b.toClient();
-    			   else return null;
+    		if(b!=null) {
+    			BargainWrapper bw = b.toClient();
+    			fillTaskList(b.getBargainId(), session, bw);
+    			return bw;
+    		}else return null;
     	} finally {
     		session.close();
     	}

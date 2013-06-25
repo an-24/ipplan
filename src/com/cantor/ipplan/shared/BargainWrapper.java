@@ -31,7 +31,7 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public Date bargainCreated;
 	public CalendarWrapper calendar;
 	public Set<BargaincostsWrapper> bargaincostses = new HashSet<BargaincostsWrapper>(0);
-	public Set<BargainWrapper> bargains = new HashSet<BargainWrapper>(0);
+	public Set<TaskWrapper> tasks = new HashSet<TaskWrapper>(0);
 	public Set<AgreedWrapper> agreeds = new HashSet<AgreedWrapper>(0);
 	
 	public Attention attention;
@@ -150,9 +150,14 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 		wrap.bargainCreated = bargainCreated;
 		
 		wrap.bargaincostses = new HashSet<BargaincostsWrapper>(0);
-		for (BargaincostsWrapper bcw : bargaincostses) {
+		for (BargaincostsWrapper bcw : bargaincostses) 
 			wrap.bargaincostses.add(bcw.copy());
-		}
+		
+		
+		wrap.tasks = new HashSet<TaskWrapper>(0);
+		for (TaskWrapper bcw : tasks) 
+			wrap.tasks.add(bcw.copy());
+		
 		
 		wrap.isnew = isnew;
 		wrap.dirty = dirty; 

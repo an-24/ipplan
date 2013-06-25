@@ -342,3 +342,15 @@ img#apploader {
    border-radius: 6px;
    margin-right: 5px;
 }
+
+.task-list-item {
+  padding-left:10px;
+}
+
+.executed div.name {
+ text-decoration: line-through;
+}
+
+.task-list-item div.name {
+  font-weight: bold;
+}

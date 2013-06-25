@@ -52,6 +52,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
+import com.ibm.icu.text.DateFormat;
 
 @SuppressWarnings("rawtypes")
 public class FormBargain extends FlexTable implements ValueChangeHandler{
@@ -108,13 +109,6 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getColumnFormatter().setWidth(2, "225px");
 		getColumnFormatter().setWidth(3, "150px");
 		getColumnFormatter().setWidth(4, "200px");
-/*		
-		getCellFormatter().setWidth(1, 0, "20px");
-		getCellFormatter().setWidth(1, 1, "150px");
-		getCellFormatter().setWidth(1, 2, "225px");
-		getCellFormatter().setWidth(1, 3, "150px");
-		getCellFormatter().setWidth(1, 4, "150px");
-*/		
 		//getElement().getStyle().setTableLayout(TableLayout.FIXED);
 		setStyleName("FormBargain");
 		addStyleName("tableBorderCollapse");
@@ -378,13 +372,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 						btnCosts.setText(getTotalCostDisplay());
 						lPaymentCost.setValue(bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts/100.0);
 						
-						class ChangeEvent extends ValueChangeEvent<BargainWrapper> {
-							protected ChangeEvent(BargainWrapper value, Object source) {
-								super(value);
-								setSource(source);
-							}
-						};
-						onValueChange(new ChangeEvent(bargain, btnCosts));
+						onValueChange(new BargainChangeEvent(bargain, btnCosts));
 					}
 				});
 				formCost.center();
@@ -473,18 +461,32 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		ledit.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				FormTask.addTask(dbservice, bargain);
+				FormTask.addTask(dbservice, bargain, new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						TaskWrapper tw = ((FormTask)event.getSource()).getTask();
+						bargain.tasks.add(tw);
+						List<TaskWrapper> list = tableTasks.getProvider().getList();
+						list.add(tw);
+						// TODO sort?
+						tableTasks.redraw();
+						onValueChange(new BargainChangeEvent(bargain, tableTasks));
+					}
+				});
 			}
 		});
 		vp.add(ledit);
-		
-		
 		sp.setWidget(vp);
+		
 		tableTasks = new CellTable<TaskWrapper>(Integer.MAX_VALUE);
 		tableTasks.setSelectionModel(null);
+		tableTasks.setWidth("100%");
 		tableTasks.getElement().getStyle().setPaddingTop(10, Unit.PX);
 		makeTaskCells();
 		vp.add(tableTasks);
+		// данные
+		Form.prepareGrid(tableTasks, bargain.tasks,false);
+		tableTasks.setRowCount(bargain.tasks.size());
 
 		HorizontalPanel ph = new HorizontalPanel();
 		ph.setSpacing(10);
@@ -521,25 +523,16 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getCellFormatter().setHorizontalAlignment(14, startCol+0, HasHorizontalAlignment.ALIGN_CENTER);
 		getCellFormatter().setVerticalAlignment(14, startCol+0, HasVerticalAlignment.ALIGN_MIDDLE);
 
-		SystemNotify.getInsertNotify().registerNotify(TaskWrapper.class, new NotifyHandler<TaskWrapper>() {
-			@Override
-			public void onNotify(TaskWrapper c) {
-				if(c.calendar.bargainId == bargain.bargainId)
-					startTasks();
-			}
-		});
 		SystemNotify.getUpdateNotify().registerNotify(TaskWrapper.class, new NotifyHandler<TaskWrapper>() {
 			@Override
 			public void onNotify(TaskWrapper c) {
-				if(c.calendar.bargainId == bargain.bargainId) {
-					List<TaskWrapper> list = tableTasks.getProvider().getList();
-					list.set(list.indexOf(c),c);
-					tableTasks.redraw();
-				}	
+				onValueChange(new BargainChangeEvent(bargain, tableTasks));
+				List<TaskWrapper> list = tableTasks.getProvider().getList();
+				list.set(list.indexOf(c),c);
+				tableTasks.redraw();
 			}
 		});
 		
-		startTasks();
 		setAttention();
 		lockControl();
 
@@ -552,34 +545,42 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			public SafeHtml getValue(TaskWrapper object) {
 				SafeHtmlBuilder sb = new SafeHtmlBuilder();
 				if(object!=null) {
-					sb.appendHtmlConstant(object.taskName);
+					StringBuilder s = new StringBuilder();
+					
+					s.append("<div class=\"task-list-item");
+					if(object.taskExecuted!=0) s.append(" executed"); 
+					s.append("\">");
+					s.append("<div class=\"name link\">").append(object.taskName).append("</div>");
+					s.append("<div class=\"deadline\"> до ").append(Ipplan.ALTERNATE_DATETIME_FORMAT.format(null,object.taskDeadline)).append("</div>");
+					if(object.taskPlace!=null)
+						s.append("<div class=\"place\">").append(object.taskPlace).append("</div>");
+					
+					s.append("</div>");
+					sb.appendHtmlConstant(s.toString());
 				}
 				return sb.toSafeHtml();
 			}
 		};
 		c1.setFieldUpdater(new FieldUpdater<TaskWrapper, SafeHtml>() {
 			@Override
-			public void update(int index, TaskWrapper object, SafeHtml value) {
-				//TODO
-			}
+			public void update(int index, final TaskWrapper object, SafeHtml value) {
+				FormTask.editTask(dbservice, bargain, object, new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						TaskWrapper tw = ((FormTask)event.getSource()).getTask();
+						List<TaskWrapper> list = tableTasks.getProvider().getList();
+						bargain.tasks.remove(object);
+						bargain.tasks.add(tw);
+						list.set(list.indexOf(object), tw);
+						// TODO sort?
+						tableTasks.redraw();
+						onValueChange(new BargainChangeEvent(bargain, tableTasks));
+					}
+				});
+			};
 		});
+		c1.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 		tableTasks.addColumn(c1);
-	}
-
-	private void startTasks() {
-		dbservice.getTask(bargain.bargainId, new AsyncCallback<List<TaskWrapper>>() {
-			@Override
-			public void onSuccess(List<TaskWrapper> result) {
-				Form.prepareGrid(tableTasks, result,false);
-				tableTasks.setRowCount(result.size());
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				Ipplan.showError(caught);
-			}
-		});
-		
 	}
 
 	private String getTotalCostDisplay() {
@@ -698,6 +699,9 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		eRevenue.setValue(bw.bargainRevenue);
 		ePrePayment.setValue(bw.bargainPrepayment);
 		eFine.setValue(bw.bargainFine);
+		// tasks
+		Form.prepareGrid(tableTasks, bargain.tasks,false);
+		tableTasks.setRowCount(bargain.tasks.size());
 	}
 
 	private void formFieldToBargain(BargainWrapper bw) {
@@ -1021,4 +1025,10 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		
 	}
 	
+	class BargainChangeEvent extends ValueChangeEvent<BargainWrapper> {
+		protected BargainChangeEvent(BargainWrapper value, Object source) {
+			super(value);
+			setSource(source);
+		}
+	};
 }
