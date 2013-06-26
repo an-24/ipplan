@@ -11,7 +11,6 @@ import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.google.gwt.cell.client.Cell.Context;
-import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -21,7 +20,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -77,6 +75,9 @@ public class FormMain extends Form {
 	Button btnCustomerRefresh;
 	Label lBargainTotal;
 	CellTable.Resources resources;
+	public MenuItem syncBargainsMenuItem;
+	public MenuItem syncAutoBargainsMenuItem;
+	public ToggleButton allBtn;
 
 
 	public FormMain(Ipplan main, RootPanel root, PUserWrapper usr, int numTab) {
@@ -116,10 +117,6 @@ public class FormMain extends Form {
 		
 		FlexTable tab4 = new TabAnalytical(this,getDataBaseService());
 		tabPanel.add(tab4, "Анализ", false);
-		
-		Label l0 = new Label(" ");
-		tabPanel.add(l0, "...", false);
-		l0.setSize("5cm", "3cm");
 		
 		currentTabId = numTab;
 		prepare();
@@ -334,9 +331,9 @@ public class FormMain extends Form {
 			
 		};
 		
-		customerTable.createCheckedColumn(new ChangeCheckListEvent() {
+		customerTable.createCheckedColumn(new ChangeCheckListEvent<CustomerWrapper>() {
 			@Override
-			public void onChange() {
+			public void onChange(CustomerWrapper object, boolean check) {
 				btnCustomerDelete.setEnabled(customerTable.getCheckedList().size()>0);
 			}
 		});
@@ -380,7 +377,6 @@ public class FormMain extends Form {
 		int tabidx = tabPanel.find(b.bargainId);
 		if(tabidx>=0) {
 			tabPanel.selectBargain(b.bargainId);
-			tabPanel.getFormBargain(tabidx).selectHeadVersion();
 			return;
 		}
 		

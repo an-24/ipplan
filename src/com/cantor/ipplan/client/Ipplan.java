@@ -144,6 +144,36 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		
 	}
 
+	private static Dialog configContinueConfirmationBox(String text,ClickHandler ok) {
+		final Dialog eventBox = new Dialog("Требуется подтверждение",true);
+		VerticalPanel dialogVPanel = new VerticalPanel();
+		dialogVPanel.setWidth("300px");
+		dialogVPanel.setSpacing(5);
+		dialogVPanel.addStyleName("dialogVPanel");
+		dialogVPanel.add(new HTML(text));
+		dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
+		hp.setSpacing(5);
+		
+		dialogVPanel.add(hp);
+		Button cancelButton = new Button("Отмена");
+		eventBox.setButtonCancel(cancelButton);
+		eventBox.setWidget(dialogVPanel);
+		
+		Button okButton = new Button("Да");
+		okButton.addClickHandler(ok);
+
+		hp.add(okButton);
+		hp.add(cancelButton);
+		
+		cancelButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				eventBox.hide();
+			}
+		});
+		return eventBox;
+	}
 	
 	private static Dialog configSaveConfirmationBox(String text,ClickHandler ok,ClickHandler withoutSave) {
 		final Dialog eventBox = new Dialog("Требуется подтверждение",true);
@@ -208,6 +238,20 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		});
 		box.center();
 	}
+	
+	public static Dialog showContinueConfirmation(String text, ClickHandler ok) {
+		Dialog box = configContinueConfirmationBox(text,ok);
+		activeDialogs.push(box);
+		box.addCloseHandler(new CloseHandler<PopupPanel>() {
+			@Override
+			public void onClose(CloseEvent<PopupPanel> event) {
+				activeDialogs.pop();
+			}
+		});
+		box.center();
+		return box;
+	}
+	
 	
 	public static Dialog showSaveConfirmation(String text, ClickHandler ok,ClickHandler withoutSave) {
 		Dialog box = configSaveConfirmationBox(text,ok,withoutSave);

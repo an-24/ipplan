@@ -6,7 +6,10 @@ import java.util.List;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.cantor.ipplan.client.CellTable.ChangeCheckListEvent;
+import com.cantor.ipplan.client.OAuth2.EventOnCloseWindow;
 import com.cantor.ipplan.shared.BargainWrapper;
+import com.cantor.ipplan.shared.ImportExportProcessInfo;
+import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -39,7 +42,7 @@ public class TabBargains extends FlexTable {
 		int row = 0;
 		form.filterBargainStatus = new ToggleButton[]{new ToggleButton("в работе"),new ToggleButton("выполненные"),
 				 new ToggleButton("просроченные"),new ToggleButton("несогласованные"),new ToggleButton("все")};
-		final ToggleButton allBtn =  form.filterBargainStatus[form.filterBargainStatus.length-1];
+		form.allBtn =  form.filterBargainStatus[form.filterBargainStatus.length-1];
 		
 		HorizontalPanel p = new HorizontalPanel();
 		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -61,8 +64,7 @@ public class TabBargains extends FlexTable {
 		form.btnBargainRefresh.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				startBargain(form.tbFindBargain.getText(),form.filterBargainDate.getFinishDate(),
-						form.filterBargainAllUsers.getValue(), (allBtn.isDown()?null:getFilterBargainStatuses()));
+				refreshBargain();
 			}
 		});
 		p.add(form.btnBargainRefresh);
@@ -106,6 +108,28 @@ public class TabBargains extends FlexTable {
 			}
 		});
 		cmd.getMenu().addItem(form.exportBargainsMenuItem);
+		
+		cmd.getMenu().addSeparator();
+		
+		form.syncBargainsMenuItem = new MenuItem("Синхронизировать прямо сейчас календари сделок",new Scheduler.ScheduledCommand() {
+			@Override
+			public void execute() {
+				syncCalendarsDirectly();
+				cmd.closeup();
+			}
+		});
+		cmd.getMenu().addItem(form.syncBargainsMenuItem);
+
+		form.syncAutoBargainsMenuItem = new MenuItem("Автоматическая синхронизация [нет]",new Scheduler.ScheduledCommand() {
+			@Override
+			public void execute() {
+				// TODO sync
+				cmd.closeup();
+			}
+		});
+		cmd.getMenu().addItem(form.syncAutoBargainsMenuItem);
+		
+		
 		p.add(cmd);
 		
 		setWidget(row, 0, p);
@@ -132,12 +156,12 @@ public class TabBargains extends FlexTable {
 			@Override
 			public void onClick(ClickEvent event) {
 				ToggleButton btn = (ToggleButton) event.getSource();
-				if(btn==allBtn) {
+				if(btn==form.allBtn) {
 					for (int i = 0; i < form.filterBargainStatus.length; i++) 
 						form.filterBargainStatus[i].setDown(false);
-					allBtn.setDown(true);
+					form.allBtn.setDown(true);
 				} else
-					allBtn.setDown(false);
+					form.allBtn.setDown(false);
 			}
 		};
 		form.filterBargainStatus[0].setDown(true);
@@ -156,13 +180,15 @@ public class TabBargains extends FlexTable {
 		ph.add(new Label("Встречаются слова"));
 		
 		form.tbFindBargain = new TextBox();
+		// не больше 120-2 иначе Jaybird не умеет обрезать параметры и FB валится с ошибкой
+		// arithmetic exception, numeric overflow, or string truncation string right truncation
+		form.tbFindBargain.setMaxLength(110);
 		form.tbFindBargain.setWidth("231px");
 		form.tbFindBargain.addKeyDownHandler(new KeyDownHandler() {
 			@Override
 			public void onKeyDown(KeyDownEvent event) {
-				if(event.getNativeEvent().getKeyCode()==KeyCodes.KEY_ENTER) 
-					startBargain(form.tbFindBargain.getText(),form.filterBargainDate.getFinishDate(),
-							form.filterBargainAllUsers.getValue(), (allBtn.isDown()?null:getFilterBargainStatuses()));
+				if(event.getNativeEvent().getKeyCode()==KeyCodes.KEY_ENTER)
+					refreshBargain();
 			}
 		});
 		ph.add(form.tbFindBargain);
@@ -189,9 +215,9 @@ public class TabBargains extends FlexTable {
 
 		row++;
 		
-		form.tableBargain.createCheckedColumn(new ChangeCheckListEvent() {
+		form.tableBargain.createCheckedColumn(new ChangeCheckListEvent<BargainWrapper>() {
 			@Override
-			public void onChange() {
+			public void onChange(BargainWrapper object, boolean check) {
 				form.btnBargainDelete.setEnabled(form.tableBargain.getCheckedList().size()>0);
 			}
 		});
@@ -206,6 +232,53 @@ public class TabBargains extends FlexTable {
 		form.tableBargain.setRowCount(0);
 		showBargainTotals();
 	}
+	
+	protected void syncCalendarsDirectly() {
+		dbservice.syncCalendar(new AsyncCallback<ImportExportProcessInfo>() {
+			
+			@Override
+			public void onSuccess(ImportExportProcessInfo result) {
+				// получение token
+				if(result.getError()==ImportExportProcessInfo.TOKEN_NOTFOUND) {
+					OAuth2 auth = new OAuth2(Utils.GOOGLE_AUTH_URL, Utils.GOOGLE_CLIENT_ID,
+							Utils.GOOGLE_SCOPE, Utils.REDIRECT_URI);
+					auth.login(new EventOnCloseWindow() {
+						@Override
+						public void onCloseWindow() {
+							form.syncBargainsMenuItem.getScheduledCommand().execute(); 
+						}
+					});
+				} else
+				// обовление token
+				if(result.getError()==ImportExportProcessInfo.TOKEN_EXPIRED) {
+					dbservice.refreshGoogleToken(new AsyncCallback<Void>() {
+						
+						@Override
+						public void onSuccess(Void result) {
+							form.syncBargainsMenuItem.getScheduledCommand().execute(); //!attention, its's recursion
+						}
+						
+						@Override
+						public void onFailure(Throwable e) {
+							Ipplan.showError(e);
+						}
+					});
+				} else {
+					refreshBargain();	
+					Form.toast(form.tableBargain, "Синхронизация окончена. При импорте обработано "+result.getImportAllCount()+
+							   " записей , из них новых - "+result.getImportInsert()+". При экспорте обработано "+result.getExportAllCount()+
+							   " записей , из них новых - "+result.getExportInsert()+"."
+					      );
+				};
+			};
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Ipplan.showError(caught);
+			}
+		});
+	}
+
 	private void showBargainTotals(){
 		List<BargainWrapper> list = form.tableBargain.getProvider().getList();
 		int total = 0;
@@ -238,5 +311,10 @@ public class TabBargains extends FlexTable {
 			}
 		});
 		
+	}
+
+	private void refreshBargain() {
+		startBargain(form.tbFindBargain.getText(),form.filterBargainDate.getFinishDate(),
+				form.filterBargainAllUsers.getValue(), (form.allBtn.isDown()?null:getFilterBargainStatuses()));
 	}
 }

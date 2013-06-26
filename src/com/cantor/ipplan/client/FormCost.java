@@ -168,9 +168,9 @@ public class FormCost extends Dialog {
 			}
 		});
 		
-		mainTable.createCheckedColumn(new ChangeCheckListEvent() {
+		mainTable.createCheckedColumn(new ChangeCheckListEvent<BargaincostsWrapper>() {
 			@Override
-			public void onChange() {
+			public void onChange(BargaincostsWrapper object, boolean check) {
 				btnDelete.setEnabled(mainTable.getCheckedList().size()>0);
 			}
 		});

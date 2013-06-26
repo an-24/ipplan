@@ -24,6 +24,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.view.client.Range;
@@ -248,7 +249,8 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 
 		setValue(context,parent,(C) viewData.value);
 		viewData.editor = wrap(parent.getFirstChildElement());
-		viewData.editor.addStyleName("gwt-InplaceEditor");
+		if(!(viewData.editor instanceof SuggestBox))
+			viewData.editor.addStyleName("gwt-InplaceEditor");
 		parent.getStyle().setMarginRight(10, Unit.PX);
 		parent.getStyle().setOverflow(Overflow.VISIBLE);
 		

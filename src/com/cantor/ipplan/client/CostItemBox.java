@@ -56,7 +56,7 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 		});
 		getElement().setClassName("gwt-InnerBox");
 		outerDiv = DOM.createDiv();
-		setStyleName("gwt-SuggestBox");
+		setStyleName("gwt-SuggestBox container");
 		
 		addAttachHandler(new Handler() {
 			@Override
@@ -65,7 +65,7 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 					int w = getElement().getOffsetWidth();
 					com.google.gwt.dom.client.Element parent = getElement().getParentElement();
 					parent.appendChild(outerDiv);
-					outerDiv.getStyle().setWidth(w, Unit.PX);
+					//outerDiv.getStyle().setWidth(w, Unit.PX);
 					outerDiv.appendChild(getElement());
 					
 					btnPlace = DOM.createDiv();

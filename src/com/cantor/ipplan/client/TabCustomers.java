@@ -124,6 +124,9 @@ public class TabCustomers extends FlexTable {
 		p.add(new Label("Встречаются слова"));
 		form.tbFindCustomer = new TextBox();
 		form.tbFindCustomer.setWidth("300px");
+		// не больше 120-2 иначе Jaybird не умеет обрезать параметры и FB валится с ошибкой
+		// arithmetic exception, numeric overflow, or string truncation string right truncation
+		form.tbFindCustomer.setMaxLength(110);  
 		form.tbFindCustomer.addKeyDownHandler(new KeyDownHandler() {
 			@Override
 			public void onKeyDown(KeyDownEvent event) {

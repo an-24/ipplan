@@ -15,7 +15,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/jboss-logging-3.1.0.GA.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/jboss-transaction-api_1.2_spec-1.0.0.Alpha1.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/SyncProxy.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jaybird-2.2.2.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/connector-api-1.5.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gdata-contacts-3.0.jar" sourcepath="D:/Java/google/gdata/java/src"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gdata-contacts-meta-3.0.jar"/>
@@ -25,6 +24,7 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/guava-14.0.1.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/log4j-core.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gson-2.2.4.jar" sourcepath="D:/Java/google/google-gson-2.2.4/gson-2.2.4-sources.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/jaybird-2.2.3.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 	<referencedentry kind="lib" path="war/WEB-INF/lib/gdata-client-1.0.jar" sourcepath="D:/Java/google/gdata/java/src"/>
 </classpath>

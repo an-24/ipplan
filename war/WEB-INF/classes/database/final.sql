@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     24.06.2013 9:16:10                           */
+/* Created on:     24.06.2013 10:00:48                          */
 /*==============================================================*/
 
 
@@ -180,6 +180,7 @@ task_start           TIMESTAMP,
 task_warning_duration INTEGER,
 task_warning_unit    INTEGER,
 task_place           VARCHAR(200),
+task_executed        INTEGER                        default 0 not null,
 constraint PK_TASK primary key (task_id)
 );
 

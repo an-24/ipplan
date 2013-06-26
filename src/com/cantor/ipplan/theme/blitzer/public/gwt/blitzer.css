@@ -1645,8 +1645,13 @@ td.datePickerMonth {
 
 .gwt-CustomerBox {
     border:0px none;
+    width: 100%;
+    margin-left: -20px;
 }
 
+.container {
+    padding-left: 30px;
+}
 
 .gwt-SuggestBox div {
     width:20px;
@@ -1659,33 +1664,25 @@ td.datePickerMonth {
 }
 
 .Customer-bind+div {
-    background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -30px -191px transparent;
+    background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -30px -189px transparent;
 }
 
 .Customer-add+div {
-    background: url("images/ui-icons_004276_256x240.png") no-repeat scroll 5px -191px transparent;
+    background: url("images/ui-icons_004276_256x240.png") no-repeat scroll 5px -189px transparent;
 }
 
 .Customer-bind+div:hover {
-    background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -30px -191px transparent;
+    background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -30px -189px transparent;
 }
 
 .Customer-add+div:hover {
-    background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll 5px -191px transparent;
+    background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll 5px -189px transparent;
 }
 
 .gwt-InnerBox {
     border:0px none;
-    width: 100%;
-    padding-right: 20px;
-    -moz-box-sizing: border-box; /* Äëÿ Firefox */
-    -webkit-box-sizing: border-box; /* Äëÿ Safari è Chrome */
-    box-sizing: border-box; /* Äëÿ IE è Opera */
-}
-
-.gwt-InnerBox-Button {
-    position: relative;
-    margin-top: -20px;
+    margin-left: -20px;
+    width:100%;
 }
 
 .gwt-CustomerBox-Suggestion {

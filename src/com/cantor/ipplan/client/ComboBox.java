@@ -812,6 +812,15 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 		return selectElement;
 	}
 	
+	public int valueIndexOf(String value) {
+		NodeList<OptionElement> options = getSelectElement().getOptions();
+		for (int i = 0, len = options.getLength(); i < len; i++) {
+			OptionElement o = options.getItem(i);
+			if(value.equals(o.getValue())) return i;
+		}
+		return -1;
+	}
+	
 	class ComboPopupList extends PopupPanel {
 
 		public ComboPopupList(boolean b) {

@@ -56,11 +56,15 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	protected Map<TableCellElement,PopupPanel> ballons = new HashMap<TableCellElement,PopupPanel>();
 
 	public CellTable(int pageSize) {
-		this(pageSize,null);
+		this(pageSize,null,(CellTable.Resources)GWT.create(TableResources.class));
+	}
+
+	public CellTable(int pageSize,CellTable.Resources resource) {
+		this(pageSize,null,resource);
 	}
 	
-	public CellTable(int pageSize, ProvidesKey<T> keyProvider) {
-		super(pageSize, (CellTable.Resources)GWT.create(TableResources.class), keyProvider);
+	public CellTable(int pageSize, ProvidesKey<T> keyProvider, CellTable.Resources resource) {
+		super(pageSize, resource, keyProvider);
 		getElement().setAttribute("tabindex", "0");
 		
 		final RecordSelectionModel smodel = new RecordSelectionModel(new CanSelection<T>() {
@@ -108,7 +112,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
 	}
 	
-	public Column createCheckedColumn(final ChangeCheckListEvent handler) {
+	public Column<T, Boolean> createCheckedColumn(final ChangeCheckListEvent<T> handler, boolean header) {
 		Column<T, Boolean> c0 = new Column<T, Boolean>(new CheckboxCell()) { 
 	        @Override 
 	        public Boolean getValue(T object) { 
@@ -120,37 +124,40 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	        public void update(int index, T object, Boolean value) {
 	        	if(value) checkedList.add(object); 
 	        		 else checkedList.remove(object);
-	        	if(handler!=null) handler.onChange();
-	        	//btnDelete.setEnabled(checkedList.size()>0);
+	        	if(handler!=null) handler.onChange(object, value);
 	        } 
 	    });
-	    
-	    Header<Boolean> c0Header = new Header<Boolean>(new CheckboxCell(true,false)) { 
-	        @Override 
-	        public Boolean getValue() {
-	        	int len = 0;
-	        	if(provider!=null)
-	        		len = provider.getList().size();
-	            return len>0 && checkedList.size()==len; 
-	        } 
-	    }; 
-	    c0Header.setHeaderStyleNames("pad0");
-	    c0Header.setUpdater(new ValueUpdater<Boolean>() {
-	        @Override
-	        public void update(Boolean value) {
-        		checkedList.clear();
-	        	if(value) checkedList.addAll(provider.getList());
-				resetSelection(true);
-				redraw();
-	        	if(handler!=null) handler.onChange();
-	        	//btnDelete.setEnabled(checkedList.size()>0);
-	        }
-	    });
-	    insertColumn(0, c0,c0Header);
+	    if(header) {
+		    Header<Boolean> c0Header = new Header<Boolean>(new CheckboxCell(true,false)) { 
+		        @Override 
+		        public Boolean getValue() {
+		        	int len = 0;
+		        	if(provider!=null)
+		        		len = provider.getList().size();
+		            return len>0 && checkedList.size()==len; 
+		        } 
+		    }; 
+		    c0Header.setHeaderStyleNames("pad0");
+		    c0Header.setUpdater(new ValueUpdater<Boolean>() {
+		        @Override
+		        public void update(Boolean value) {
+	        		checkedList.clear();
+		        	if(value) checkedList.addAll(provider.getList());
+					resetSelection(true);
+					redraw();
+		        	if(handler!=null) handler.onChange(null,value);
+		        }
+		    });
+		    insertColumn(0, c0,c0Header);
+	    } else
+	    	insertColumn(0, c0);
 	    setColumnWidth(c0, "30px");	    
 	    return c0;
 	}
 	
+	public Column<T, Boolean> createCheckedColumn(final ChangeCheckListEvent<T> handler) {
+		return createCheckedColumn(handler, true);
+	}
 	
 	
 	public void setEditorMode(boolean b) {
@@ -620,8 +627,8 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
     	  }
     }
 
-	public interface ChangeCheckListEvent {
-		public void onChange();
+	public interface ChangeCheckListEvent<E> {
+		public void onChange(E object, boolean check);
 	}
 
 	public void showError(final T bcw, final int idx, final String text) {

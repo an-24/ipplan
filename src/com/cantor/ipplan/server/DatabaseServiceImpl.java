@@ -509,8 +509,8 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
       		sql+="C.CUSTOMER_PRIMARY_PHONE like :q or ";
       		sql+="C.CUSTOMER_PHONES like :q or ";
       		sql+="UPPER(C.CUSTOMER_COMPANY) like :q or ";
-      		sql+="UPPER(C.CUSTOMER_POSITION) like :q or ";
-      		sql+="C.CUSTOMER_BIRTHDAY like :q";
+      		sql+="UPPER(C.CUSTOMER_POSITION) like :q ";
+      		//sql+="C.CUSTOMER_BIRTHDAY like :q";
       		sql+=")";
 			Query q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(Customer.class));
 			q.setParameter("q", "%"+query.toUpperCase()+"%");
@@ -1426,7 +1426,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		     	 " or b.customer.customerPhones like :txt"+
 		     	 " or UPPER(b.customer.customerCompany) like :txt"+
 		     	 " or UPPER(b.customer.customerPosition) like :txt"+
-		     	 " or b.bargainRevenue like :txt"+
+		     	 " or b.bargainRevenue = :numb"+
 		     	 ")";
 		     // по состоянию
 			if(stats!=null) {
@@ -1458,8 +1458,17 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		Query q = session.createQuery(hsq);
     		q.setParameter("start", new Date(finish.getYear(),0,1));
     		q.setParameter("finish", finish);
-			if(text!=null && !text.isEmpty())
+			if(text!=null && !text.isEmpty()) {
 				q.setParameter("txt", "%"+text.toUpperCase()+"%");
+	    		q.setParameter("numb",null);
+				try {
+					double value = Double.parseDouble(text.replaceAll("\\s","").replace(',', '.'));
+					q.setParameter("numb", new Long(Math.round(value*100)).intValue());
+					
+				} catch(NumberFormatException e) {
+					// since
+				}	
+			}	
     		
     		List<Bargain> bargains = q.list();
     		for (Bargain b : bargains) {

@@ -36,6 +36,9 @@ public class CustomerBox extends SuggestBox {
 		super(new CustomerSuggestOracle(dbservice),new HelperTextBox(), new HelperSuggestionDisplay());
 		this.dbservice = dbservice;
 		((HelperTextBox)getValueBox()).box = this;
+		// не больше 120-2 иначе Jaybird не умеет обрезать параметры и FB валится с ошибкой
+		// arithmetic exception, numeric overflow, or string truncation string right truncation
+		((HelperTextBox)getValueBox()).setMaxLength(110);
 		((CustomerSuggestOracle)getSuggestOracle()).box = this;
 		this.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
 			
@@ -48,7 +51,7 @@ public class CustomerBox extends SuggestBox {
 		});
 		setStyleName("gwt-CustomerBox");
 		final Element div = DOM.createDiv();
-		div.setClassName("gwt-SuggestBox");
+		div.setClassName("gwt-SuggestBox container");
 		
 		addAttachHandler(new Handler() {
 			@Override
@@ -57,9 +60,9 @@ public class CustomerBox extends SuggestBox {
 					int w = getElement().getOffsetWidth();
 					com.google.gwt.dom.client.Element parent = getElement().getParentElement();
 					parent.appendChild(div);
-					div.getStyle().setWidth(w, Unit.PX);
+					//div.getStyle().setWidth(w, Unit.PX);
 					div.appendChild(getElement());
-					getElement().getStyle().setWidth(w-22, Unit.PX);
+					//getElement().getStyle().setWidth(w-22, Unit.PX);
 					
 					btnPlace = DOM.createDiv();
 					div.appendChild(btnPlace);

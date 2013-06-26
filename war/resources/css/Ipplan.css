@@ -167,8 +167,6 @@ h1 {
 }
 
 .FormBargain {
-  margin: 10px;
-  position: relative;
   background-color: #F8F8FF;
   border-radius: 6px;
   table-layout:fixed;
@@ -335,22 +333,46 @@ img#apploader {
    width: 128px;
 }
 
-.calendarBox {
+.simplebox {
    height: 100%;
+   width: 100%;
    background-color: #FFFFF0;
    border: 1px solid #939393;
    border-radius: 6px;
-   margin-right: 5px;
+   padding: 10px;
 }
 
 .task-list-item {
-  padding-left:10px;
+}
+
+.outofdate {
+   color:silver;
+}
+
+.task-list-item div.start{
+   width: 16px;
+   height: 1em;
+   background: url(../images/sprite-cc0000.png) no-repeat 0px 0px;
+   float: left;
 }
 
 .executed div.name {
- text-decoration: line-through;
+   text-decoration: line-through;
 }
 
 .task-list-item div.name {
-  font-weight: bold;
+   font-weight: bold;
+   display:block;
+}
+
+.delete-icon {
+   width: 1em;
+   height: 1em;
+   background:url(../images/sprite-004276.png) no-repeat -31px 0px;
+   float: left;
+   cursor: pointer;
+}
+
+.delete-icon:hover {
+   background:url(../images/sprite-cc0000.png) no-repeat -31px 0px;
 }

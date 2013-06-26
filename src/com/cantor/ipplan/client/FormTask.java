@@ -248,6 +248,9 @@ public class FormTask extends Dialog {
 			tbPlace.setText(task.taskPlace);
 		}
 		cbExecuted.setValue(task.taskExecuted!=0);
+
+		if(task.afterStatus!=null)
+			cbAfterStatus.setSelectedIndex(cbAfterStatus.valueIndexOf(new Integer(task.afterStatus.statusId).toString()));
 	}
 
 	public TaskWrapper getTask() {
