@@ -11,9 +11,9 @@
         <property name="hibernate.connection.username">sysdba</property>
         <property name="hibernate.connection.password">masterkey</property>
         
-        <property name="hibernate.dialect">org.hibernate.dialect.FirebirdDialect</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.FirebirdDialect</property>         
   		<property name="hibernate.connection.provider_class">com.cantor.ipplan.server.UserProfilePoolConnection</property>
- 
+  		
 		<!-- Echo all executed SQL to stdout -->
 		<property name="show_sql">true</property>
 

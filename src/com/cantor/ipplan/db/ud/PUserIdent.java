@@ -44,6 +44,8 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	private Date puserCalendarLastsync;
 	private int puserContactSyncDuration;
 	private int puserCalendarSyncDuration;
+	private String puserGooglecalendarId;
+
 
 	public PUserIdent() {
 		super();
@@ -154,14 +156,17 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	public Date getPuserCalendarLastsync() {
 		return this.puserCalendarLastsync;
 	}
+	public void setPuserCalendarLastsync(Date puserCalendarLastsync) {
+		this.puserCalendarLastsync = puserCalendarLastsync;
+	}
 
 	@Column(name = "PUSER_CALENDAR_SYNC_DURATION", nullable = false)
 	public int getPuserCalendarSyncDuration() {
 		return puserCalendarSyncDuration;
 	}
 	
-	public void setPuserCalendarLastsync(Date puserCalendarLastsync) {
-		this.puserCalendarLastsync = puserCalendarLastsync;
+	public void setPuserCalendarSyncDuration(int puserCalendarSyncDuration) {
+		this.puserCalendarSyncDuration = puserCalendarSyncDuration;
 	}
 	
 
@@ -173,10 +178,14 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	public void setPuserContactSyncDuration(int puserContactSyncDuration) {
 		this.puserContactSyncDuration = puserContactSyncDuration;
 	}
+	
+	@Column(name = "PUSER_GOOGLECALENDAR_ID", length = 250)
+	public String getPuserGooglecalendarId() {
+		return this.puserGooglecalendarId;
+	}
 
-
-	public void setPuserCalendarSyncDuration(int puserCalendarSyncDuration) {
-		this.puserCalendarSyncDuration = puserCalendarSyncDuration;
+	public void setPuserGooglecalendarId(String puserGooglecalendarId) {
+		this.puserGooglecalendarId = puserGooglecalendarId;
 	}
 	
 	@Transient

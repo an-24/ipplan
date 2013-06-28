@@ -94,15 +94,6 @@ public class OAuthService extends HttpServlet {
 
 	public boolean validateToken(OAuthToken token) throws Exception {
 		
-		@SuppressWarnings("unused")
-		class TokenInfoResponse {
-			String issued_to;
-			String audience;
-			String scope;
-			Integer expires_in;
-			String access_type;
-		}
-		
 		HttpURLConnection conn = newConnection(Utils.GOOGLE_TOKENINFO_URL+"?access_token="+token.getValue());
 		try {
 		    conn.setRequestMethod("GET");
@@ -113,7 +104,7 @@ public class OAuthService extends HttpServlet {
 			String resp = readResponse(conn);
 			Gson gson = new Gson();
 			TokenInfoResponse info = gson.fromJson(resp,TokenInfoResponse.class);
-			if(info.expires_in!=null && info.expires_in>0) 
+			if(info!=null && info.expires_in!=null && info.expires_in>0) 
 				return true;
 			
 		} finally {
@@ -160,4 +151,11 @@ public class OAuthService extends HttpServlet {
 		return sb.toString();		
 	}
 	
+	class TokenInfoResponse {
+		String issued_to;
+		String audience;
+		String scope;
+		Integer expires_in;
+		String access_type;
+	}
 }

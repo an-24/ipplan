@@ -39,6 +39,8 @@ public class Task implements java.io.Serializable,DataBridge<TaskWrapper> {
 	private Integer taskWarningUnit;
 	private String taskPlace;
 	private int taskExecuted = 0;
+	private Date taskLastupdate;
+	
 
 	public Task() {
 	}
@@ -175,6 +177,16 @@ public class Task implements java.io.Serializable,DataBridge<TaskWrapper> {
 		this.taskExecuted = taskExecuted;
 	}
 
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "TASK_LASTUPDATE", nullable = true, length = 19)
+	public Date getTaskLastupdate() {
+		return taskLastupdate;
+	}
+
+	public void setTaskLastupdate(Date taskLastupdate) {
+		this.taskLastupdate = taskLastupdate;
+	}
+
 	@Override
 	public TaskWrapper toClient() {
 		TaskWrapper wrap = new TaskWrapper();
@@ -227,6 +239,7 @@ public class Task implements java.io.Serializable,DataBridge<TaskWrapper> {
 			getCalendar().fetch(deep);
 		}
 	}
+
 
 
 }

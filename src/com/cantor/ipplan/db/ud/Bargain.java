@@ -58,6 +58,7 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 	private Integer bargainHead;
 	private Date bargainCreated;
 	private int bargainVisible = 1;
+	private String bargainNote;
 
 	private Set<Bargaincosts> bargaincostses = new HashSet<Bargaincosts>(0);
 	private Set<Bargain> bargains = new HashSet<Bargain>(0);
@@ -294,6 +295,14 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		this.bargainVisible = bargainVisible;
 	}
 	
+	@Column(name = "BARGAIN_NOTE", length = 460)
+	public String getBargainNote() {
+		return this.bargainNote;
+	}
+
+	public void setBargainNote(String bargainNote) {
+		this.bargainNote = bargainNote;
+	}
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "bargain", cascade = CascadeType.ALL, orphanRemoval=true)
 	public Set<Bargaincosts> getBargaincostses() {

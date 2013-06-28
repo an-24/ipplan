@@ -495,7 +495,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		lPaymentCost.setValue(bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts/100.0);
 		eFine.setValue(bw.bargainFine);
 		lMargin.setValue(bargain.getMargin()/100.0);
-		lTax.setValue(bargain.bargainTax/100.0);
+		lTax.setValue(bargain.bargainTax!=null?bargain.bargainTax/100.0:null);
 		lProfit.setValue(bargain.getProfit()/100.0);
 		// дельты
 		if(bw.bargainVer>0) {

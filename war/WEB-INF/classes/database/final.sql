@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     24.06.2013 10:00:48                          */
+/* Created on:     27.06.2013 15:49:55                          */
 /*==============================================================*/
 
 
@@ -51,6 +51,7 @@ bargain_tax          INTEGER,
 bargain_head         INTEGER,
 bargain_created      TIMESTAMP                      not null,
 bargain_visible      INTEGER                        default 1 not null,
+bargain_note         VARCHAR(460),
 constraint PK_BARGAIN primary key (bargain_id),
 constraint AK_KEY_2_BARGAIN unique (root_bargain_id, bargain_ver)
 );
@@ -152,6 +153,7 @@ puser_contact_lastsync TIMESTAMP,
 puser_calendar_lastsync TIMESTAMP,
 puser_contact_sync_duration INTEGER                        default 0 not null,
 puser_calendar_sync_duration INTEGER                        default 0 not null,
+puser_googlecalendar_id VARCHAR(250),
 constraint PK_PUSER primary key (puser_id)
 );
 
@@ -181,6 +183,7 @@ task_warning_duration INTEGER,
 task_warning_unit    INTEGER,
 task_place           VARCHAR(200),
 task_executed        INTEGER                        default 0 not null,
+task_lastupdate      TIMESTAMP,
 constraint PK_TASK primary key (task_id)
 );
 

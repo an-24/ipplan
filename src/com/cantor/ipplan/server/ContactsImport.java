@@ -11,7 +11,6 @@ import com.google.gdata.data.DateTime;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.contacts.ContactFeed;
 import com.google.gdata.util.AuthenticationException;
-import com.google.gdata.util.ContentType;
 
 public class ContactsImport {
 	

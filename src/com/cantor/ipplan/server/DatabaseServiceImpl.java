@@ -55,6 +55,7 @@ import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.extensions.AdditionalName;
 import com.google.gdata.data.extensions.Email;
+import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.FamilyName;
 import com.google.gdata.data.extensions.FullName;
 import com.google.gdata.data.extensions.GivenName;
@@ -63,6 +64,9 @@ import com.google.gdata.data.extensions.OrgName;
 import com.google.gdata.data.extensions.OrgTitle;
 import com.google.gdata.data.extensions.Organization;
 import com.google.gdata.data.extensions.PhoneNumber;
+import com.google.gdata.data.calendar.CalendarEntry;
+import com.google.gdata.data.calendar.CalendarEventEntry;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 @SuppressWarnings("serial")
@@ -411,13 +415,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 						cal = new Calendar(newverb==null?b:newverb);
 						session.save(cal);
 					}	
-					// сохраняем список задач
-					for (TaskWrapper tw : bargain.tasks) {
-						Task t = new Task();
-						t.fromClient(tw);
-						t.setCalendar(cal); // нужно в случае, когда cal создается заново
-						session.save(t);
-					}
+					saveTaskBargain(bargain, session, cal);
 				}
 				
 				// если не сбрасываем, то читаем вновь добавленный объект, тчобы возвратить 
@@ -462,6 +460,18 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		session.close();
     	}
 		
+	}
+
+	private void saveTaskBargain(BargainWrapper bargain, Session session,
+			Calendar cal) {
+		// сохраняем список задач
+		for (TaskWrapper tw : bargain.tasks) {
+			Task t = new Task();
+			t.fromClient(tw);
+			t.setTaskLastupdate(new Date());
+			t.setCalendar(cal); // нужно в случае, когда cal создается заново
+			session.save(t);
+		}
 	}
 
 	private void clearTaskBargain(Session sess, int bargainId) {
@@ -942,7 +952,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 				pi.setExportAllCount(count);
 				pi.setExportUpdate(updateCount);
 				pi.setExportInsert(insertСount);
-				Ipplan.info("Ipplan->Google update="+updateCount+" insert="+insertСount);
+				Ipplan.info("Ipplan->Google Contacts update="+updateCount+" insert="+insertСount);
 				// фиксируем дату синхронизации
 				PUserIdent user = getUser();
 				session.update(user);
@@ -1217,6 +1227,12 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
    		Query q = sess.createQuery(hsq);
    		return q.list();
 	}
+
+	private List<Task> getTasksToGoogle(Session sess) {
+   		String hsq = "from Task t where (t.taskLastupdate is not null)";
+   		Query q = sess.createQuery(hsq);
+   		return q.list();
+	}
 	
 	@Override
 	public void setContactsAutoSync(int durationClass) throws Exception {
@@ -1297,9 +1313,107 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	}
 
 	@Override
-	public  ImportExportProcessInfo syncCalendar() {
-		// TODO Auto-generated method stub
-		return null;
+	public  ImportExportProcessInfo syncCalendar() throws Exception {
+		checkAccess();
+		
+		OAuthToken token = getToken();
+		if(!token.exists())
+			return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
+		
+		if(token.isExpired()) 
+			if(token.canRefresh())
+				return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_EXPIRED); else
+				return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
+		
+
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+
+    	Date currdt = new Date();
+    	ImportExportProcessInfo pi = new ImportExportProcessInfo();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				PUserIdent user = getUser();
+				CalendarImport importer = new CalendarImport(token,getUser().getPuserGooglecalendarId());
+				// здесь требуется сессия, т.к. у user меняется calendarId
+				CalendarEntry cal = importer.getCalendar();
+				if(importer.getLastError()==CalendarImport.CALENDAR_CREATED) {
+					session.update(user);
+					// отсечем имя хоста http://www.google.com/calendar/feeds/default/calendars/*****@group.calendar.google.com
+					String id = cal.getId();
+					id = id.substring(id.lastIndexOf("/")+1);
+					user.setPuserGooglecalendarId(id);
+					tx.commit();
+					tx = session.beginTransaction();
+				}
+				importer.setCurrentCalendar(cal);
+	    		//------------------------
+	    		// Ipplan->Google 
+	    		//------------------------
+				int insertСount = 0;
+				int updateCount = 0;
+				int count = 0;
+				List<CalendarEventEntry> entrys = importer.getAllEntrys(cal);
+				if(importer.getLastError()==ContactsImport.NO_AUTH_TOKEN) {
+					saveToken(null);
+					return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
+				}	
+				// делаем hash для поиска
+				HashMap<String, CalendarEventEntry> map = new HashMap<String, CalendarEventEntry>();
+				for (CalendarEventEntry entry : entrys) {
+					List<ExtendedProperty> eplist = entry.getExtendedProperty();
+					for (ExtendedProperty prop : eplist) {
+						if(prop.getName().equals(CalendarImport.EXT_GC_CALENDAR_ID)) {
+							map.put(prop.getValue(),entry);
+							break;
+						}	
+					}
+				}	
+				List<Task> tasks = getTasksToGoogle(session);
+				for (Task task : tasks) {
+					Bargain bargain = task.getCalendar().getBargain();
+					CalendarEventEntry entry = map.get(new Integer(task.getTaskId()).toString());
+					if(entry==null) {
+						if(bargain.getBargainHead()!=0) {
+							importer.addCalendarEvent(task,user);
+							insertСount++;
+						}
+					} else {
+						// удаляем события, которые не в head версии
+						if(bargain.getBargainHead()==0) 
+							importer.deleteCalendarEvent(entry);
+						 else importer.updateCalendarEvent(entry,task,user);
+						map.remove(task.getTaskId());
+						updateCount++;
+					}
+					task.setTaskLastupdate(null);
+					count++;
+				}
+				// зачищаем задачи, которые оказалиьс не привязаны
+				for (CalendarEventEntry entry : map.values()) {
+					importer.deleteCalendarEvent(entry);
+				}
+				
+				
+				pi.setExportAllCount(count);
+				pi.setExportUpdate(updateCount);
+				pi.setExportInsert(insertСount);
+				Ipplan.info("Ipplan->Google Calendar update="+updateCount+" insert="+insertСount);
+				// фиксируем дату синхронизации
+				session.update(user);
+				user.setPuserContactLastsync(currdt);
+				
+				tx.commit();
+		    	return pi;
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    		
+    	} finally {
+    		session.close();
+    	}
 	}
 
 	@Override
@@ -1617,6 +1731,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			try {
 				Task t = new Task(); 
 				t.fromClient(task);
+				t.setTaskLastupdate(new Date());
 				// проеряем на наличие календаря
 				int rootbargainId = t.getCalendar().getBargain().getBargainId();
 				Calendar cal = (Calendar) session.get(Calendar.class, rootbargainId);
@@ -1644,6 +1759,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			try {
 				Task t = (Task) session.load(Task.class, task.taskId); 
 				t.fromClient(task);	
+				t.setTaskLastupdate(new Date());
 				tx.commit();
 				return t.toClient();
 			} catch (Exception e) {
@@ -1665,6 +1781,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 			try {
 				Task t = (Task) session.load(Task.class, id);
 				t.setTaskExecuted(1);
+				t.setTaskLastupdate(new Date());
 				tx.commit();
 			} catch (Exception e) {
 				tx.rollback();
