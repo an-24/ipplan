@@ -3,8 +3,12 @@ package com.cantor.ipplan.client;
 import java.util.Date;
 import java.util.List;
 
-import com.cantor.ipplan.client.CellTable.ChangeCheckListEvent;
-import com.cantor.ipplan.client.Slider.ChangeEvent;
+import com.cantor.ipplan.client.widgets.CellTable;
+import com.cantor.ipplan.client.widgets.CheckBox;
+import com.cantor.ipplan.client.widgets.RadioButton;
+import com.cantor.ipplan.client.widgets.Slider;
+import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
+import com.cantor.ipplan.client.widgets.Slider.ChangeEvent;
 import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
@@ -31,13 +35,13 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 public class FormMain extends Form {

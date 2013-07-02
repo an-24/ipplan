@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ import com.cantor.ipplan.db.ud.PUserIdent;
 import com.cantor.ipplan.db.ud.Status;
 import com.cantor.ipplan.db.ud.Task;
 import com.cantor.ipplan.db.ud.Tasktype;
+import com.cantor.ipplan.shared.BargainShortInfo;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CostsWrapper;
@@ -298,6 +300,9 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 				BargainWrapper bw = b.toClient();
 				bw.attention = b.makeAttention();
 				fillTaskList(b.getBargainId(), session, bw);
+				// timeline
+				fillTimeline(b.getRootBargain().getBargainId(), session, bw);
+				
 				bwl.add(bw);
 			}
 			return bwl;
@@ -312,15 +317,30 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	Session session = sessionFactory.openSession();
     	try {
     		Bargain b = (Bargain) session.load(Bargain.class, id);
-    		putTempBargain(b);
+    		putOrReplaceTempBargain(b);
     		BargainWrapper bw = b.toClient();
     		bw.attention = b.makeAttention();
     		// получаем tasks
 			fillTaskList(id, session, bw);
+			// timeline
+			fillTimeline(b.getRootBargain().getBargainId(), session, bw);
+			
     		return bw;
     	} finally {
     		session.close();
     	}
+	}
+
+
+	private void fillTimeline(int id, Session sess, BargainWrapper bw) {
+		Query q = sess.createQuery("from Bargain b where b.rootBargain.bargainId=:id order by b.bargainVer");
+		q.setParameter("id", id);
+		List<Bargain> list = q.list();
+		for (Bargain b : list) {
+			BargainShortInfo bsi = new BargainShortInfo(b.toClient());
+			bw.timeline.add(bsi);
+		}
+		
 	}
 
 	private void fillTaskList(int id, Session sess, BargainWrapper bw) {
@@ -377,16 +397,10 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 					session.update(b);
 					b.fetch(true);
 					// проверяем на новую версию
-					newverb = new Bargain();
-					newverb.fromClient(bargain);
-					/*
-					 * Определяем нужна ли новая версия. Условие создания новой версии:
-					 * - изменения в данных сделки
-					 * - root не содержится в списке ранее сохраненных
-					 *   (из этого списка root-сделки удаляются в dropTemporalyBargain) 
-					 */
-					if(newverb.equals(b) || 
-					   getSavedBargainChain().containsKey(b.getRootBargain().getBargainId())) newverb = null;
+					if(isNewVersionInner(session,bargain,b)) {
+						newverb = new Bargain();
+						newverb.fromClient(bargain);
+					}
 				}	
 				if(newverb==null) b.fromClient(bargain);else {
 					newverb.fromClient(bargain);
@@ -428,6 +442,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 						bargain.attention = newverb.makeAttention();
 					}
 	    			fillTaskList(b.getBargainId(), session, bargain);
+	    			fillTimeline(b.getRootBargain().getBargainId(), session, bargain);
 				}	
 				
 				b.saveCompleted();
@@ -597,6 +612,21 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	private void putTempBargain(Bargain b) {
 		HashMap<Integer, Bargain> bl =  getTempBargains();
 		bl.put(b.getId(),b);
+	}
+
+	private void putOrReplaceTempBargain(Bargain b) {
+		// удаляем все у которых такой же root
+		int rootId = b.getRootBargain().getId();
+		HashMap<Integer, Bargain> bl =  getTempBargains();
+		
+		List<Bargain> list = new ArrayList<Bargain>();
+		list.addAll(bl.values());
+		for (Bargain btest : list) {
+			if(btest.getRootBargain().getId()==rootId)
+				bl.remove(btest.getId());
+		}
+		// вставляем как и раньше 
+		putTempBargain(b);
 	}
 
 	private HashMap<Integer, Bargain> getTempBargains() {
@@ -1658,6 +1688,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		if(b!=null) {
     			BargainWrapper bw = b.toClient();
     			fillTaskList(b.getBargainId(), session, bw);
+    			fillTimeline(b.getRootBargain().getBargainId(), session, bw);
     			return bw;
     		}else return null;
     	} finally {
@@ -1679,6 +1710,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     		if(b!=null) {
     			BargainWrapper bw = b.toClient();
     			fillTaskList(b.getBargainId(), session, bw);
+    			fillTimeline(b.getRootBargain().getBargainId(), session, bw);
     			return bw;
     		}else return null;
     	} finally {
@@ -1812,6 +1844,42 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	} finally {
     		session.close();
     	}
+	}
+
+	@Override
+	public boolean isNewVersionBargain(BargainWrapper bargain) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Bargain b = (Bargain) session.get(Bargain.class, bargain.bargainId);
+			if(b==null) return true; else {
+				session.update(b);
+				b.fetch(true);
+			}	
+    		return isNewVersionInner(session,bargain,b);
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	private boolean isNewVersionInner(Session sess, BargainWrapper bargain,
+			Bargain b) {
+		// проверяем на новую версию
+		Bargain newverb = new Bargain();
+		newverb.fromClient(bargain);
+		/*
+		 * Определяем нужна ли новая версия. Условие создания новой версии:
+		 * - изменения в данных сделки
+		 * - root не содержится в списке ранее сохраненных
+		 *   (из этого списка root-сделки удаляются в dropTemporalyBargain)
+		 * - изменился статус   
+		 */
+		if(newverb.equals(b) || 
+		   getSavedBargainChain().containsKey(b.getRootBargain().getBargainId()) &&
+		   newverb.getStatus().getId()==b.getStatus().getId() ) newverb = null;
+		
+		return newverb!=null;
 	}
 
 

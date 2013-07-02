@@ -1,8 +1,9 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
 
 import java.text.ParseException;
 
+import com.cantor.ipplan.client.HasInplaceEdit;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.BlurEvent;

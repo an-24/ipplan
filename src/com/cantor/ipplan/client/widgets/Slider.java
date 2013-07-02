@@ -1,11 +1,11 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import com.cantor.ipplan.client.Slider.PointValue;
+import com.cantor.ipplan.client.widgets.Slider.PointValue;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;

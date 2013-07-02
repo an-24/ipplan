@@ -1,7 +1,11 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.cantor.ipplan.client.DatabaseServiceAsync;
+import com.cantor.ipplan.client.HasInplaceEdit;
+import com.cantor.ipplan.client.Ipplan;
 import com.cantor.ipplan.shared.CostsWrapper;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;

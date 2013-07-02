@@ -2,6 +2,11 @@ package com.cantor.ipplan.client;
 
 import java.util.Date;
 
+import com.cantor.ipplan.client.widgets.CellTable;
+import com.cantor.ipplan.client.widgets.CheckBox;
+import com.cantor.ipplan.client.widgets.ComboBox;
+import com.cantor.ipplan.client.widgets.GridPager;
+import com.cantor.ipplan.client.widgets.RadioButton;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.PaymentsWrapper;
 import com.cantor.ipplan.shared.SyncWrapper;
@@ -25,14 +30,14 @@ import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 

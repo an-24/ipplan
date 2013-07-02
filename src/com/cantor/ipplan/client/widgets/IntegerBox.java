@@ -1,4 +1,4 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
 public class IntegerBox extends com.google.gwt.user.client.ui.IntegerBox {
 

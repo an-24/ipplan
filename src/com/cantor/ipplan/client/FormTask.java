@@ -4,6 +4,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import com.cantor.ipplan.client.widgets.CheckBox;
+import com.cantor.ipplan.client.widgets.ComboBox;
+import com.cantor.ipplan.client.widgets.DatePicker;
+import com.cantor.ipplan.client.widgets.IntegerBox;
+import com.cantor.ipplan.client.widgets.TextBox;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.TaskWrapper;
@@ -13,7 +18,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.datepicker.client.DateBox;
 

@@ -1,4 +1,4 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.SimplePager;

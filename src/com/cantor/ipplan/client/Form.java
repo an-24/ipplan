@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.cantor.ipplan.client.widgets.Balloon;
+import com.cantor.ipplan.client.widgets.CellTable;
 import com.cantor.ipplan.shared.SortedColumn;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.CheckboxCell;

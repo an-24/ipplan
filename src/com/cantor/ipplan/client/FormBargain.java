@@ -7,9 +7,17 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.cantor.ipplan.client.CellTable.ChangeCheckListEvent;
-import com.cantor.ipplan.client.StatusBox.StatusChangeEventListiner;
+import com.cantor.ipplan.client.widgets.CellTable;
+import com.cantor.ipplan.client.widgets.CurrencyBox;
+import com.cantor.ipplan.client.widgets.CustomerBox;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.RadioButton;
+import com.cantor.ipplan.client.widgets.StatusBox;
+import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
+import com.cantor.ipplan.client.widgets.StatusBox.StatusChangeEventListiner;
+import com.cantor.ipplan.shared.BargainShortInfo;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
@@ -21,6 +29,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
@@ -29,6 +39,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -49,12 +61,14 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.TextArea;
+import com.cantor.ipplan.client.widgets.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 @SuppressWarnings("rawtypes")
@@ -67,6 +81,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private Button btnNext;
 	private Button btnSave;
 	
+	private TextArea taNote;
 	private DateBox dbStart;
 	private DateBox dbFinish;
 	private Label lAttention;
@@ -74,28 +89,20 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private CustomerBox eCustomer;
 	
 	private CurrencyBox eRevenue;
-	private NumberLabel<Double> lDeltaRevenue;
 	private CurrencyBox ePrePayment;
 	private NumberLabel<Double> lPaymentCost;
-	private NumberLabel<Double> lDeltaMargin;
-	private NumberLabel<Double> lDeltaCosts;
 	private CurrencyBox eFine;
-	private NumberLabel<Double> lDeltaFine;
 	private NumberLabel<Double> lTax;
-	private NumberLabel<Double> lDeltaTax;
 	private NumberLabel<Double> lMargin;
 	private NumberLabel<Double> lProfit;
-	private NumberLabel<Double> lDeltaProfit;
 	private MainTabPanel tabPanel;
 	//private int index;
 	private Label lTitle;
-	private List<Integer> errorList = new ArrayList<Integer>();
+	private Map<FlexTable,List<Integer>> errorList = new HashMap<FlexTable, List<Integer>>();
 	private Label lVersion;
 	private Label lDateCreated;
 
 	private Button btnCosts;
-
-	private Label lAttentionPrePayment;
 
 	private VerticalPanel pCustomer;
 
@@ -103,12 +110,20 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 	private CellTable<TaskWrapper> tableTasks;
 
+	private ScrollPanel spTimeline;
+
+	private HTML wafter;
+
+	private HTML wbefore;
+
+	private BargainFragment bargainFragment;
+
 	public FormBargain(final BargainWrapper b) {
 		super();
 		setCellPadding(4);
 		//setSize("740px", "");
-		getColumnFormatter().setWidth(0, "450px");
-		getColumnFormatter().setWidth(1, "272px");
+		getColumnFormatter().setWidth(0, "560px");
+		getColumnFormatter().setWidth(1, "220px");
 		//getElement().getStyle().setTableLayout(TableLayout.FIXED);
 		setStyleName("FormBargain");
 		addStyleName("tableBorderCollapse");
@@ -124,19 +139,71 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER);
 
 		
+		// TIMELINE -----------------------------
+		HorizontalPanel spTimelineContainer = new HorizontalPanel();
+		Style stylecell = spTimelineContainer.getElement().getStyle();
+		stylecell.setPosition(Position.RELATIVE);
+		//stylecell.setWidth(100, Unit.PC);
+		spTimeline = new ScrollPanel();
+		spTimeline.setStyleName("simplebox");
+		stylecell = spTimeline.getElement().getStyle(); 
+		stylecell.setOverflow(Overflow.HIDDEN);
+		spTimeline.setWidth("732px");
+		spTimeline.setHeight("auto");
+		Element container = (Element) spTimeline.getElement().getFirstChild();
+		//container.getStyle().setOverflow(Overflow.HIDDEN);
+		//container.getStyle().setPosition(Position.STATIC);
+		stylecell.setPaddingLeft(20, Unit.PX);
+		stylecell.setPaddingRight(20, Unit.PX);
+		HorizontalPanel hp = new HorizontalPanel();
+		spTimeline.setWidget(hp);
+		
+		
+		wbefore = new HTML("&nbsp;");
+		wbefore.setStyleName("timeline-scroll-left");
+		wbefore.addMouseDownHandler(new MouseDownHandler() {
+			@Override
+			public void onMouseDown(MouseDownEvent event) {
+				ScrollAnimation anim = new ScrollAnimation(spTimeline,-149,0);
+				anim.run(800);
+				event.preventDefault();
+				event.stopPropagation();
+			}
+		});
+		spTimelineContainer.add(wbefore);
+		spTimelineContainer.add(spTimeline);
+		
+		wafter = new HTML("&nbsp;");
+		wafter.setStyleName("timeline-scroll-right");
+		wafter.addMouseDownHandler(new MouseDownHandler() {
+			@Override
+			public void onMouseDown(MouseDownEvent event) {
+				ScrollAnimation anim = new ScrollAnimation(spTimeline,149,0);
+				anim.run(800);
+				event.preventDefault();
+				event.stopPropagation();
+			}
+		});
+		spTimelineContainer.add(wafter);
+		
+		
+		setWidget(1, 0, spTimelineContainer);
+	    getFlexCellFormatter().setColSpan(1, 0, 2);
+		
         // BARGAIN -----------------
 		SimplePanel spBargain = new SimplePanel();
 		spBargain.setStyleName("simplebox");
-		setWidget(1, 0, spBargain);
-		spBargain.setWidget(new BargainFragment());
+		setWidget(2, 0, spBargain);
+		bargainFragment = new BargainFragment();
+		spBargain.setWidget(bargainFragment);
 		
 
 		//TASK ----------
 		SimplePanel sp = new SimplePanel();
 		sp.setStyleName("simplebox");
-		sp.setWidth("256px");
+		sp.setWidth("193px");
 		//getFlexCellFormatter().setRowSpan(1, 2, 13);
-		setWidget(1, 1, sp);
+		setWidget(2, 1, sp);
 		
 		VerticalPanel vp =  new VerticalPanel();
 		l = new Label("Задачи");
@@ -226,10 +293,10 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			}
 		});
 		
-		setWidget(2, 0, ph);
-		getFlexCellFormatter().setColSpan(2, 0, 2);
-		getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		getCellFormatter().setVerticalAlignment(2, 0, HasVerticalAlignment.ALIGN_MIDDLE);
+		setWidget(3, 0, ph);
+		getFlexCellFormatter().setColSpan(3, 0, 2);
+		getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		getCellFormatter().setVerticalAlignment(3, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 
 		new Timer(){
 			@Override
@@ -244,7 +311,11 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	}
 
 	protected void reload() {
-		dbservice.editBargain(bargain.bargainId, new AsyncCallback<BargainWrapper>() {
+		load(bargain.bargainId);
+	}
+
+	protected void load(int id) {
+		dbservice.editBargain(id, new AsyncCallback<BargainWrapper>() {
 			@Override
 			public void onSuccess(BargainWrapper result) {
 				if(result!=null) loadBargain(result);
@@ -256,7 +327,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		});
 		
 	}
-
+	
 	private void prepareTaskData() {
 		// раставляем checks
 		List<TaskWrapper> list = tableTasks.getProvider().getList();
@@ -386,6 +457,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		eFine.addValueChangeHandler(this);
 		eCustomer.addValueChangeHandler(this);
 		eStatus.addValueChangeHandler(this);
+		taNote.addValueChangeHandler(this);
 		
 		initButtonClose();
 	}
@@ -465,9 +537,11 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 	private void loadBargain(BargainWrapper result) {
 		loadCounter++;
+		resetErrors();
 		bargain = result;
 		refreshTitle();				
 		bargainToFormField(bargain);
+
 		if(eStatus.isLocked()) eStatus.lock(false);
 		eStatus.refreshStatus();
 		// task
@@ -497,16 +571,51 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		lMargin.setValue(bargain.getMargin()/100.0);
 		lTax.setValue(bargain.bargainTax!=null?bargain.bargainTax/100.0:null);
 		lProfit.setValue(bargain.getProfit()/100.0);
-		// дельты
-		if(bw.bargainVer>0) {
-			lDeltaRevenue.setValue((bw.bargainRevenue-bw.rootBargain.bargainRevenue)/100.0);
-			lDeltaCosts.setValue((intValue(bw.bargainCosts)-intValue(bw.rootBargain.bargainCosts))/100.0);
-			lDeltaMargin.setValue((bw.getMargin()-bw.rootBargain.getMargin())/100.0);
-			lDeltaFine.setValue((intValue(bw.bargainFine)-intValue(bw.rootBargain.bargainFine))/100.0);
-			lDeltaTax.setValue((bw.bargainTax-bw.rootBargain.bargainTax)/100.0);
-			lDeltaProfit.setValue((bw.getProfit()-bw.rootBargain.getProfit())/100.0);
-		}	
 		
+		if(bargain.bargainNote!=null) {
+			taNote.setValue(bargain.bargainNote);
+			taNote.setVisible(true);
+		} else
+			taNote.setVisible(false);
+		// timeline
+		boolean tmvisible = !bw.isNew() && bw.timeline.size()>1;
+		spTimeline.setVisible(tmvisible);
+		wbefore.setVisible(tmvisible);
+		wafter.setVisible(tmvisible);
+		if(tmvisible) {
+			Widget selectBox = null;
+			HorizontalPanel hp = (HorizontalPanel) spTimeline.getWidget();
+			hp.clear();
+			BargainShortInfo prev=null;
+			
+			for (final BargainShortInfo bsi : bw.timeline) {
+				StringBuilder tmsb = new StringBuilder();
+				tmsb.append("<div class=\"timeline-item");
+				if(bsi.bargainVer==bargain.bargainVer) tmsb.append(" timeline-item-selected");
+				tmsb.append("\">").append("<span class=\"date\">")
+					.append(DateTimeFormat.getMediumDateFormat().format(bsi.bargainCreated))
+					.append("</span>");
+				tmsb.append("<span class=\"ver\">").append(", версия ").append(bsi.bargainVer+1).append("</span>");
+				tmsb.append("<div class=\"note\">").append(bsi.bargainNote==null?"":bsi.bargainNote).append("</div>");
+				if(prev!=null && prev.status.statusId!=bsi.status.statusId)
+					tmsb.append("<div class=\"statusbox-in-grid\" style=\"background-color:"+StatusWrapper.getBackgroundColor(bsi.status.statusId)+";")
+						.append("color:"+StatusWrapper.getTextColor(bsi.status.statusId)+";")
+						.append("\">").append(bsi.status.statusName)
+						.append("</div>");
+				tmsb.append("</div>");
+				HTML w = new HTML(tmsb.toString());
+				if(bsi.bargainVer==bargain.bargainVer) selectBox = w;
+				w.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						load(bsi.bargainId);
+					}
+				});
+				hp.add(w);
+				prev = bsi;
+			}
+			if(selectBox!=null) selectBox.getElement().scrollIntoView();
+		}
 		// tasks
 		tableTasks.setRowCount(bargain.tasks.size());
 	}
@@ -525,21 +634,22 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		bw.bargainRevenue = eRevenue.getValue();
 		bw.bargainPrepayment = ePrePayment.getValue();
 		bw.bargainFine = eFine.getValue();
+		bw.bargainNote = taNote.getValue().isEmpty()?null:taNote.getValue();
 	}
 
 	private void validate() {
 		int offs =0;
 		// ! обязательно по порядку сверху вниз
 		if(dbFinish.getValue().getTime() - dbStart.getValue().getTime()<0) {
-			showError(3,"Дата окончания не может быть меньше даты начала");
+			showError(bargainFragment,dbFinish,"Дата окончания не может быть меньше даты начала");
 			offs++;
 		}	
 		if(eCustomer.getCustomer()==null) {
-			showError(5+offs,"Необходимо определить клиента");
+			showError(bargainFragment,eCustomer,"Необходимо определить клиента");
 			offs++;
 		}	
 		if(eRevenue.getValue()==null) {
-			showError(6+offs,"Необходимо определить плановую выручку");
+			showError(bargainFragment,eRevenue,"Необходимо определить плановую выручку");
 			offs++;
 		}
 		
@@ -576,13 +686,6 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		}
 		int prePay = bargain.bargainPrepayment==null?0:bargain.bargainPrepayment;
 		int cost = bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts;
-		if(cost>prePay) {
-			lAttentionPrePayment.setText("(аванс не покрывает расходы)");
-			lAttentionPrePayment.addStyleName("Attention3");
-		} else {
-			lAttentionPrePayment.setText("");
-			lAttentionPrePayment.removeStyleName("Attention3");
-		}
 			
 	}
 
@@ -683,7 +786,46 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			setAttention();
 		};
 		
+		checkNewVersion();
+		
 		refreshTitle();
+	}
+
+	private void checkNewVersion() {
+		formFieldToBargain(bargain);		
+		dbservice.isNewVersionBargain(bargain, new AsyncCallback<Boolean>() {
+			@Override
+			public void onSuccess(Boolean result) {
+				if(result) { 
+					startNote();
+					Form.toast(taNote, "Будет создана новая версия. Здесь можно ввести комментарий");
+				} else {
+					if(!taNote.isVisible()) startNote();
+				}
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				// since
+			}
+		});
+		
+	}
+
+	protected void startNote() {
+		int h = 0;
+		if(taNote.isVisible()) h = taNote.getOffsetHeight();
+						  else {
+							  taNote.setHeight("0px");
+							  taNote.setVisible(true);
+							  h = 60;
+						  }
+		
+		new BlinkAnimation(taNote,h, new NotifyHandler<Widget>() {
+			@Override
+			public void onNotify(Widget c) {
+				taNote.setValue("");
+			}
+		}).run(800);
 	}
 
 	private void showInfoCustomer() {
@@ -808,22 +950,37 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		return dbservice;
 	}
 
-	public void showError(int beforeRow,String message) {
-		int rowError = insertRow(beforeRow);
+	public void showError(FlexTable table, Widget w,String message) {
+		for (int r = 0, len = table.getRowCount(); r < len; r++) 
+			for (int c = 0, len1 = table.getCellCount(r); c < len1; c++) { 
+				if(w==table.getWidget(r, c))
+					showError(table,r+1,message);
+		}
+	}
+	
+	public void showError(FlexTable table, int beforeRow,String message) {
+		int rowError = table.insertRow(beforeRow);
 		Label l = new Label(message);
 		l.setStyleName("errorHint");
-		getCellFormatter().setHorizontalAlignment(rowError, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		getCellFormatter().setVerticalAlignment(rowError, 0, HasVerticalAlignment.ALIGN_MIDDLE);
-		setWidget(rowError, 0, l);
-		getFlexCellFormatter().setColSpan(rowError, 0, 3);
-		errorList.add(rowError);
+		table.getCellFormatter().setHorizontalAlignment(rowError, 0, HasHorizontalAlignment.ALIGN_CENTER);
+		table.getCellFormatter().setVerticalAlignment(rowError, 0, HasVerticalAlignment.ALIGN_MIDDLE);
+		table.setWidget(rowError, 0, l);
+		table.getFlexCellFormatter().setColSpan(rowError, 0, 3);
+		List<Integer> le = errorList.get(table);
+		if(le==null) {
+			le = new ArrayList<Integer>();
+			errorList.put(table,le);
+		}
+		le.add(rowError);
 	}
 
 	private void resetErrors() {
-		int offs = 0;
-		for (int row : errorList) { 
-			removeRow(row+offs);
-			offs--;
+		for (FlexTable table : errorList.keySet()) { 
+			int offs = 0;
+			for (int row : errorList.get(table) ) { 
+				table.removeRow(row+offs);
+				offs--;
+			}
 		}	
 		errorList.clear();
 	}
@@ -848,6 +1005,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 
 		BargainFragment() {
 			addStyleName("tableBorderCollapse");
+			getColumnFormatter().setWidth(1, "265px");
 			
 			int col = 0, row = 0;
 			
@@ -955,6 +1113,19 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			});
 			setWidget(row, col+2, btnNext);
 			getCellFormatter().setHorizontalAlignment(row, col+2, HasHorizontalAlignment.ALIGN_RIGHT);
+
+			row++;
+			
+			getFlexCellFormatter().setColSpan(row, col+0, 3);
+			getCellFormatter().setHorizontalAlignment(row, col+0, HasHorizontalAlignment.ALIGN_CENTER);
+			taNote = new TextArea();
+			taNote.setWidth("100%");
+			taNote.addStyleName("boxing");
+			taNote.getElement().setAttribute("placeholder", "введите комментарии к новой версии");
+
+			taNote.setVisibleLines(3);
+			taNote.setVisible(false);
+			setWidget(row, col+0, taNote);
 			
 			row++;
 			
@@ -1040,19 +1211,16 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			setWidget(row, col+0, l);
 
 			eRevenue = new CurrencyBox();
-			eRevenue.setWidth("130px");
+			eRevenue.setWidth("100px");
 			setWidget(row, col+1, eRevenue);
 			
-			lDeltaRevenue = newDeltaNumberLabel(0); 
-			setWidget(row, col+2, lDeltaRevenue);
-
-			row++;
-			
-			l = new Label("Аванс");
-			setWidget(row, col+0, l);
-
+			HorizontalPanel hp = new HorizontalPanel();
+			hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+			l = new Label("Аванс ");
+			l.getElement().getStyle().setMarginRight(5, Unit.PX);
+			hp.add(l);
 			ePrePayment = new CurrencyBox();
-			ePrePayment.setWidth("130px");
+			ePrePayment.setWidth("100px");
 			ePrePayment.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
@@ -1060,11 +1228,18 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 					setAttention();
 				}
 			});
-			setWidget(row, col+1, ePrePayment);
+			hp.add(ePrePayment);
+			getFlexCellFormatter().setHorizontalAlignment(row, col+2, HasHorizontalAlignment.ALIGN_RIGHT);
+			setWidget(row, col+2, hp);
+			
+			
 			
 			row++;
 
-			l = new Label("Расходы,");
+			hp = new HorizontalPanel();
+			hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+			
+			l = new Label("Расходы");
 			setWidget(row, col+0, l);
 
 			btnCosts = new Button();
@@ -1091,23 +1266,16 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 					formCost.center();
 				}
 			});
-			setWidget(row, col+1, btnCosts);
-			btnCosts.setWidth("140px");
-			
-			lDeltaCosts = newDeltaNumberLabel(0); 
-			setWidget(row, col+2, lDeltaCosts);
-			
-			row++;
-
-			l = new Label("из них оплачено");
-			setWidget(row, col+0, l);
+			btnCosts.setWidth("110px");
+			hp.add(btnCosts);
+			hp.add(new Label(", из них оплачено"));
+			setWidget(row, col+1, hp);
 			
 			lPaymentCost = newNumberLabel();
-			lPaymentCost.setWidth("130px");
-			setWidget(row, col+1, lPaymentCost);
-			
-			lAttentionPrePayment = new Label("");
-			setWidget(row, col+2, lAttentionPrePayment);
+			lPaymentCost.setWidth("100px");
+			setWidget(row, col+2, lPaymentCost);
+			getFlexCellFormatter().setHorizontalAlignment(row, col+2, HasHorizontalAlignment.ALIGN_RIGHT);
+//			getFlexCellFormatter().setColSpan(row, col+1, 2);
 			
 			row++;
 			
@@ -1115,35 +1283,33 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			setWidget(row, col+0, l);
 			
 			lMargin = newNumberLabel();
-			lMargin.setWidth("130px");
+			lMargin.setWidth("100px");
 			setWidget(row, col+1, lMargin);
 
-			lDeltaMargin = newDeltaNumberLabel(0); 
-			setWidget(row, col+2, lDeltaMargin);
-			
-			row++;
-			
+			HorizontalPanel hp1 = new HorizontalPanel();
+			hp1.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 			l = new Label("Штрафы, пени");
-			setWidget(row, col+0, l);
+			l.getElement().getStyle().setMarginRight(5, Unit.PX);
+			hp1.add(l);
 			
 			eFine = new CurrencyBox();
-			eFine.setWidth("130px");
-			setWidget(row, col+1, eFine);
+			eFine.setWidth("56px");
+			hp1.add(eFine);
+			setWidget(row, col+2, hp1);
 
-			lDeltaFine = newDeltaNumberLabel(0);
-			setWidget(row, col+2, lDeltaFine);
-			
 			row++;
 			
+			hp = new HorizontalPanel();
+			hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 			l = new Label("Налог");
-			setWidget(row, col+0, l);
+			l.getElement().getStyle().setMarginRight(5, Unit.PX);
+			hp.add(l);
 			
 			lTax = newNumberLabel();
-			lTax.setWidth("130px");
-			setWidget(row, col+1, lTax);
-			
-			lDeltaTax = newDeltaNumberLabel(0);
-			setWidget(row, col+2, lDeltaTax);
+			lTax.setWidth("100px");
+			hp.add(lTax);
+			setWidget(row, col+2, hp);
+			getRowFormatter().getElement(row).getStyle().setHeight(40, Unit.PX);
 			
 			row++;
 			
@@ -1153,18 +1319,21 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			
 			row++;
 			
+			hp = new HorizontalPanel();
+			hp.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 			l = new Label("Прибыль");
-			setWidget(row, col+0, l);
+			l.getElement().getStyle().setMarginRight(5, Unit.PX);
 			l.addStyleName("bold-text");
+			hp.add(l);
 			
 			lProfit = newNumberLabel();
-			lProfit.setWidth("130px");
-			setWidget(row, col+1, lProfit);
+			lProfit.setWidth("100px");
 			lProfit.addStyleName("bold-text");
-			
-			lDeltaProfit = newDeltaNumberLabel(0);
-			setWidget(row, col+2, lDeltaProfit);
-			lDeltaProfit.addStyleName("bold-text");
+			hp.add(lProfit);
+
+			getFlexCellFormatter().setColSpan(row, col+1, 2);
+			getFlexCellFormatter().setHorizontalAlignment(row, col+1, HasHorizontalAlignment.ALIGN_RIGHT);
+			setWidget(row, col+1, hp);
 			
 		}
 	}

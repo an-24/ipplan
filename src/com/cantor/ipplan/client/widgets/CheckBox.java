@@ -1,23 +1,25 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 
-public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
+public class CheckBox extends com.google.gwt.user.client.ui.CheckBox {
 
-	public RadioButton(String name) {
-		super(name);
+
+	public CheckBox() {
+		super();
+		setKeyEvents();
+	}
+
+	public CheckBox(String label) {
+		super(label);
 		setKeyEvents();
 	}
 	
-	public RadioButton(String name, String label) {
-		super(name,label);
-		setKeyEvents();
-	}
-
+	
+	
 	private void setKeyEvents() {
 		DOM.sinkEvents(getElement(), Event.ONKEYDOWN);
 		addKeyDownHandler(new KeyDownHandler() {
@@ -28,7 +30,7 @@ public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 			}
 		});
 	}
-	
+
 	@Override
 	public int getTabIndex() {
 		return getElement().getTabIndex();
@@ -39,11 +41,4 @@ public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 		getElement().setTabIndex(index);
     }
 	
-	public Element getLabelElement() {
-		return (Element) getElement().getChild(1);
-	}
-
-	public Element getInputElement() {
-		return (Element) getElement().getChild(0);
-	}
 }

@@ -373,6 +373,8 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		
 		wrap.isnew = newState;
 		if(dirty) wrap.modify();
+		
+		wrap.bargainNote = bargainNote;
 
 		return wrap;
 	}
@@ -429,6 +431,8 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		
 		newState = wrap.isnew;
 		dirty = wrap.isDirty(); 
+
+		bargainNote = wrap.bargainNote;
 	}
 
 	@Override
@@ -540,7 +544,11 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			Bargaincosts d = findCostById(c.getCosts().getCostsId());
 			if(d==null) return false;
 			if(!d.equals(c)) return false;
-		}	
+		}
+		// bargainNote исключаем, т.к. это есть 
+		// комментарий к новой версии, т.е. это постоянный носитель изменений 
+		
+		
 		return true;
 		
 	}

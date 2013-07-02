@@ -3,8 +3,13 @@ package com.cantor.ipplan.client;
 
 import java.util.List;
 
-import com.cantor.ipplan.client.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.client.InplaceEditor.DisplayValueFormatter;
+import com.cantor.ipplan.client.widgets.CellTable;
+import com.cantor.ipplan.client.widgets.CostItemBox;
+import com.cantor.ipplan.client.widgets.CurrencyBox;
+import com.cantor.ipplan.client.widgets.GridPager;
+import com.cantor.ipplan.client.widgets.TextBox;
+import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.BargaincostsWrapper;
 import com.cantor.ipplan.shared.CostsWrapper;
@@ -22,7 +27,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 
 public class FormCost extends Dialog {

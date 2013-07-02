@@ -1,10 +1,10 @@
 package com.cantor.ipplan.client;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.cantor.ipplan.client.widgets.CellTable;
 import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
@@ -16,10 +16,9 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
@@ -196,12 +195,12 @@ public class TabMain extends FlexTable {
 		tableWorkStats.setCellSpacing(5);
 		tableWorkStats.setCellPadding(5);
 		setWidget(2, 0, tableWorkStats);
-		tableWorkStats.setWidth("380px");
+		//tableWorkStats.setWidth("380px");
 		tableWorkStats.addStyleName("tableBorderCollapse");
 
 		Label l11 = new Label("на общую сумму");
 		tableWorkStats.setWidget(0, 0, l11);
-		tableWorkStats.getCellFormatter().setWidth(0, 0, "300px");
+		tableWorkStats.getCellFormatter().setWidth(0, 0, "220px");
 		
 		lRevenue = newNumberLabel();
 		tableWorkStats.setWidget(0, 1, lRevenue);
@@ -349,35 +348,45 @@ public class TabMain extends FlexTable {
 				if(bt!=null) {
 					int c =bt.getCount();
 					divPrimaryContact.setWidth(String.valueOf(c*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					divPrimaryContact.setVisible(true);
 					((Label)tableSalesStats.getWidget(0, 0)).setText("Первичный контакт ("+c+")");
 					call+=c;
-				}
+				} else
+					divPrimaryContact.setVisible(false);
 				bt = list.get(StatusWrapper.TALK);
 				if(bt!=null) {
 					int c =bt.getCount();
 					divTalk.setWidth(String.valueOf(c*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					divTalk.setVisible(true);
 					((Label)tableSalesStats.getWidget(1, 0)).setText("Переговоры ("+c+")");
 					call+=c;
-				};
+				} else
+					divTalk.setVisible(false);
 				bt = list.get(StatusWrapper.DECISION_MAKING);
 				if(bt!=null) {
 					int c =bt.getCount();
 					divDecMake.setWidth(String.valueOf(c*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					divDecMake.setVisible(true);
 					((Label)tableSalesStats.getWidget(2, 0)).setText("Принимают решение ("+c+")");
 					call+=c;
-				}
+				} else
+					divDecMake.setVisible(false);
 				bt = list.get(StatusWrapper.RECONCILIATION_AGREEMENT);
 				if(bt!=null) {
 					int c =bt.getCount();
 					divAgreement.setWidth(String.valueOf(c*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					divAgreement.setVisible(true);
 					((Label)tableSalesStats.getWidget(3, 0)).setText("Согласование договора ("+c+")");
 					call+=c;
-				}
+				} else
+					divAgreement.setVisible(false);
 				bt = list.get(StatusWrapper.EXECUTION);
-				if(bt!=null && cmax>0) {
+				if(bt!=null && bt.getCount()>0 && cmax>0) {
 					divExecution.setWidth(String.valueOf(bt.getCount()*1.0/cmax*SALES_BOX_MAXWIDTH)+"px");
+					divExecution.setVisible(true);
 					((Label)tableSalesStats.getWidget(4, 0)).setText("Заключено сделок ("+bt.getCount()+")");
-				};
+				} else
+					divExecution.setVisible(false);
 				tableSalesStats.setWidget(4, 1, divExecution);
 					
 				lSalesCaption.setText("Ход продаж ("+call+" "+Utils.getNumberPadeg(new String[]{"сделка","сделки","сделок"},call)+")");

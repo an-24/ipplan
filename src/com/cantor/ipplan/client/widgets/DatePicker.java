@@ -1,4 +1,4 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

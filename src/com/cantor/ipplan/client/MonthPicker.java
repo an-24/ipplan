@@ -2,6 +2,7 @@ package com.cantor.ipplan.client;
 
 import java.util.Date;
 
+import com.cantor.ipplan.client.widgets.DatePicker;
 import com.google.gwt.user.client.ui.FocusListener;
 import com.google.gwt.user.client.ui.HasFocus;
 import com.google.gwt.user.client.ui.KeyboardListener;

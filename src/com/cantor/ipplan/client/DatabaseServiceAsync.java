@@ -56,4 +56,6 @@ public interface DatabaseServiceAsync {
 	void deleteTask(int id, AsyncCallback<Boolean> callback);
 	void addTask(TaskWrapper task, AsyncCallback<TaskWrapper> callback);
 	void updateTask(TaskWrapper task, AsyncCallback<TaskWrapper> callback);
+	void isNewVersionBargain(BargainWrapper bargain,
+			AsyncCallback<Boolean> callback);
 }

@@ -14,17 +14,15 @@ import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DialogBox.Caption;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 
@@ -82,7 +80,8 @@ public class Dialog extends DialogBox {
 		
 		HorizontalPanel p = new HorizontalPanel();
 		p.setSpacing(10);
-		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		p.setWidth("100%");
+//		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		pm.add(p);
 		
@@ -112,7 +111,9 @@ public class Dialog extends DialogBox {
 			});
 			buttonOk.addStyleName("mainCommand");
 			p.add(buttonOk);
+			p.setCellHorizontalAlignment(buttonOk, HasHorizontalAlignment.ALIGN_RIGHT);
 			p.add(buttonCancel);
+			p.setCellHorizontalAlignment(buttonCancel, HasHorizontalAlignment.ALIGN_LEFT);
 		}
 		
 		getElement().getStyle().setProperty("width","auto");

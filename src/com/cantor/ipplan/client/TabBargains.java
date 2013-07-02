@@ -5,8 +5,13 @@ import java.util.Date;
 import java.util.List;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.cantor.ipplan.client.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.client.OAuth2.EventOnCloseWindow;
+import com.cantor.ipplan.client.widgets.CellTable;
+import com.cantor.ipplan.client.widgets.CheckBox;
+import com.cantor.ipplan.client.widgets.DropdownButton;
+import com.cantor.ipplan.client.widgets.GridPager;
+import com.cantor.ipplan.client.widgets.TextBox;
+import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.Utils;
@@ -19,7 +24,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ToggleButton;
@@ -133,6 +138,7 @@ public class TabBargains extends FlexTable {
 		p.add(cmd);
 		
 		setWidget(row, 0, p);
+		getFlexCellFormatter().setColSpan(row, 0, 2);
 		
 		row++;
 		
@@ -183,7 +189,7 @@ public class TabBargains extends FlexTable {
 		// не больше 120-2 иначе Jaybird не умеет обрезать параметры и FB валится с ошибкой
 		// arithmetic exception, numeric overflow, or string truncation string right truncation
 		form.tbFindBargain.setMaxLength(110);
-		form.tbFindBargain.setWidth("231px");
+		form.tbFindBargain.setWidth("215px");
 		form.tbFindBargain.addKeyDownHandler(new KeyDownHandler() {
 			@Override
 			public void onKeyDown(KeyDownEvent event) {

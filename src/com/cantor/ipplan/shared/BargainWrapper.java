@@ -1,7 +1,9 @@
 package com.cantor.ipplan.shared;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.cantor.ipplan.db.ud.Bargain;
@@ -30,13 +32,17 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public Integer bargainHead;
 	public Date bargainCreated;
 	public CalendarWrapper calendar;
+	public String bargainNote;
+	
 	public Set<BargaincostsWrapper> bargaincostses = new HashSet<BargaincostsWrapper>(0);
 	public Set<TaskWrapper> tasks = new HashSet<TaskWrapper>(0);
 	public Set<AgreedWrapper> agreeds = new HashSet<AgreedWrapper>(0);
+	public List<BargainShortInfo> timeline = new ArrayList<BargainShortInfo>(0);
 	
 	public Attention attention;
 	public boolean isnew;
 	private boolean dirty=false;
+	
 	
 	public BargainWrapper(){
 		super();

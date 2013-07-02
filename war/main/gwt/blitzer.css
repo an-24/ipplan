@@ -13,7 +13,7 @@
  */
 
 body, table td, select, button {
-  font-family: Calibri,'Arial Unicode MS', Arial, sans-serif;
+  font-family: Geneva, Calibri,'Arial Unicode MS', Arial, sans-serif;
   font-size: small;
 }
 pre {
@@ -38,16 +38,12 @@ select {
 }
 
 
-input:focus{ 
+input:focus,
+button:focus,
+select:focus,
+textarea:focus { 
   outline: none; 
 }
-button:focus{
-  outline: none; 
-}
-
-select:focus {
-  outline: none; 
-}	
 
 /**
  * The reference theme can be used to determine when this style sheet has
@@ -1584,7 +1580,7 @@ td.datePickerMonth {
   min-width:20px;
   min-height:16px;
   background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -224px -192px transparent;
-  margin-right:10px;
+  margin-right:8px;
 }
 
 .gwt-StatusBox-pause:hover {
@@ -1599,7 +1595,7 @@ td.datePickerMonth {
   min-width:20px;
   min-height:16px;
   background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -46px -192px transparent;
-  margin-left:10px;
+  margin-left:8px;
 }
 
 .gwt-StatusBox-next:hover {

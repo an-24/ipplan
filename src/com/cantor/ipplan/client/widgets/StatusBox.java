@@ -1,4 +1,4 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.google.gwt.dom.client.Style.Clear;

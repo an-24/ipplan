@@ -376,3 +376,74 @@ img#apploader {
 .delete-icon:hover {
    background:url(../images/sprite-cc0000.png) no-repeat -31px 0px;
 }
+
+.timeline-item {
+   width:135px;
+   height:80px;
+   margin-right: 5px;
+   padding:5px;
+   overflow: hidden;
+}
+
+.timeline-item:hover {
+   color: #cc0000;
+}
+
+.timeline-item-selected {
+   background-color: #FFFFF0;
+   border: 1px solid #D8DCDF;
+   border-radius: 6px;
+}
+
+.timeline-item .date {
+  font-weight: bold;
+}
+
+.timeline-item .note {
+  padding-top: 4px;
+  font-size: 0.9em;
+  overflow:hidden;
+  height: 3.8em;
+}
+
+.timeline-item .statusbox-in-grid {
+  position: absolute;
+  bottom: 2px;
+}
+
+
+.timeline-scroll-left {
+  background: url(../images/sprite-004276.png) no-repeat -140px 0px transparent;
+  position: absolute;
+  left:0px;
+  width:20px;
+  height:20px;
+  z-index:888;
+  top: 50%;
+  margin-top: -10px;
+}
+
+.timeline-scroll-left:hover {
+  background: url(../images/sprite-cc0000.png) no-repeat -140px 0px transparent;
+}
+
+.timeline-scroll-right {
+  background: url(../images/sprite-004276.png) no-repeat -108px 0px transparent;
+  position: absolute;
+  right:0px;
+  width:20px;
+  height:20px;
+  z-index:888;
+  top: 50%;
+  margin-top: -10px;
+}
+
+.timeline-scroll-right:hover {
+  background: url(../images/sprite-cc0000.png) no-repeat -108px 0px transparent;
+}
+
+.boxing {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}

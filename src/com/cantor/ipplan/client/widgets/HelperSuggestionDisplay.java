@@ -1,4 +1,4 @@
-package com.cantor.ipplan.client;
+package com.cantor.ipplan.client.widgets;
 
 import java.util.Collection;
 
@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.SuggestBox.SuggestionCallback;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 public class HelperSuggestionDisplay extends DefaultSuggestionDisplay {
-	HelperSuggestionDisplay() {
+	public HelperSuggestionDisplay() {
 		super();
 	}
     public PopupPanel getPopupPanel() {
