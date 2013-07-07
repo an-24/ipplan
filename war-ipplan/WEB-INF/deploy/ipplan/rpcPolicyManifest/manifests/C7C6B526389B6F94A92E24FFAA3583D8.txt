@@ -1,0 +1,2 @@
+serviceClass: com.cantor.ipplan.client.LoginService
+path: 527DFFC03EFFF5A8D25A2201B2D35082.gwt.rpc

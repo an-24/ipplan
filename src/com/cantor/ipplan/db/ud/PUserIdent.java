@@ -34,6 +34,7 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	
 	private int puserId;
 	private PUserIdent owner;
+	private String puserEmail;
 	private String puserLogin;
 	private int puserTaxtype;
 	private String puserGoogleToken;
@@ -45,6 +46,7 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	private int puserContactSyncDuration;
 	private int puserCalendarSyncDuration;
 	private String puserGooglecalendarId;
+
 
 
 	public PUserIdent() {
@@ -84,6 +86,15 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 
 	public void setOwner(PUserIdent puser) {
 		this.owner = puser;
+	}
+
+	@Column(name = "PUSER_EMAIL", unique = true, nullable = false, length = 320)
+	public String getPuserEmail() {
+		return this.puserEmail;
+	}
+
+	public void setPuserEmail(String puserEmail) {
+		this.puserEmail = puserEmail;
 	}
 
 	@Column(name = "PUSER_LOGIN", nullable = false, length = 60)
@@ -198,7 +209,8 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	public PUserWrapper toClient() {
 		PUserWrapper wrap = new PUserWrapper();
 		wrap.puserId = puserId;
-		wrap.puserEmail = puserLogin;
+		wrap.puserEmail = puserEmail;
+		wrap.puserLogin = puserLogin;
 		wrap.puserTaxtype = puserTaxtype;
 		wrap.owner = owner==null?null:owner.toClient();
 		wrap.puserContactSyncDuration = puserContactSyncDuration;
@@ -214,6 +226,7 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 			owner.fromClient(data.owner); 
 		}
 		puserLogin = data.puserLogin;
+		puserEmail = data.puserEmail;
 		puserTaxtype = data.puserTaxtype;
 		puserContactSyncDuration = data.puserContactSyncDuration;
 		puserCalendarSyncDuration = data.puserCalendarSyncDuration; 

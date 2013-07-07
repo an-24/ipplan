@@ -18,7 +18,7 @@ public class StatusWrapper extends ClonableObject implements java.io.Serializabl
 	public static final int SUSPENDED = 50;
 	public static final int COMPLETION = 60;
 	public static final int CLOSE_OK = 100;
-	public static final int CLOSE_FAIL = 99;
+	public static final int CLOSE_FAULT = 99;
 	
 	public int statusId;
 	public int puser_owner_id;
@@ -34,16 +34,16 @@ public class StatusWrapper extends ClonableObject implements java.io.Serializabl
 
 	static public int[] getNextState(int state, boolean skipSuspended) {
 		switch (state) {
-			case PRIMARY_CONTACT: return new int[]{TALK,CLOSE_FAIL}; 
-			case TALK: return new int[]{DECISION_MAKING,CLOSE_FAIL}; 
-			case DECISION_MAKING: return new int[]{RECONCILIATION_AGREEMENT,CLOSE_FAIL};
+			case PRIMARY_CONTACT: return new int[]{TALK,CLOSE_FAULT}; 
+			case TALK: return new int[]{DECISION_MAKING,CLOSE_FAULT}; 
+			case DECISION_MAKING: return new int[]{RECONCILIATION_AGREEMENT,CLOSE_FAULT};
 			case RECONCILIATION_AGREEMENT: return new int[]{EXECUTION};
-			case EXECUTION: if(skipSuspended) return new int[]{COMPLETION,CLOSE_FAIL}; 
-										else  return new int[]{SUSPENDED,COMPLETION,CLOSE_FAIL};  
-			case SUSPENDED: return new int[]{EXECUTION,COMPLETION,CLOSE_FAIL};
-			case COMPLETION: return new int[]{CLOSE_OK,CLOSE_FAIL};
+			case EXECUTION: if(skipSuspended) return new int[]{COMPLETION,CLOSE_FAULT}; 
+										else  return new int[]{SUSPENDED,COMPLETION,CLOSE_FAULT};  
+			case SUSPENDED: return new int[]{EXECUTION,COMPLETION,CLOSE_FAULT};
+			case COMPLETION: return new int[]{CLOSE_OK,CLOSE_FAULT};
 			case CLOSE_OK: 
-			case CLOSE_FAIL: return new int[0];
+			case CLOSE_FAULT: return new int[0];
 		}
 		return null;
 	}
@@ -89,11 +89,11 @@ public class StatusWrapper extends ClonableObject implements java.io.Serializabl
 			case TALK: return "#FFFACD"; 
 			case DECISION_MAKING: return "#F0FFF0";
 			case RECONCILIATION_AGREEMENT: return "#ADD8E6";
-			case CLOSE_OK:
-			case COMPLETION:
-			case EXECUTION: return "#3CB371";
+			case CLOSE_OK: return "#7CFC00";
+			case COMPLETION:return "#3CB371";
+			case EXECUTION: return "#004276";
 			case SUSPENDED: return "#FF9900";
-			case CLOSE_FAIL: return "#AA0000";
+			case CLOSE_FAULT: return "#AA0000";
 			
 		}
 		return null;
@@ -105,12 +105,14 @@ public class StatusWrapper extends ClonableObject implements java.io.Serializabl
 			case TALK: 
 			case DECISION_MAKING:
 			case SUSPENDED:
-			case RECONCILIATION_AGREEMENT: return "black";
-			
 			case CLOSE_OK:
+			case RECONCILIATION_AGREEMENT: 
+				return "black";
+			
 			case COMPLETION:
-			case CLOSE_FAIL:
-			case EXECUTION: return "white";
+			case CLOSE_FAULT:
+			case EXECUTION:
+					return "white";
 			
 		}
 		return null;

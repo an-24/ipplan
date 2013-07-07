@@ -98,7 +98,7 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
 		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
     	Session session = sessionFactory.openSession();
     	try {
-			HttpSession sess = this.getThreadLocalRequest().getSession();
+    		HttpSession sess = this.getThreadLocalRequest().getSession();
 			if (sess.isNew()) return null;
 			PUser u = (PUser) sess.getAttribute("user");
 			if(u==null) return null; else {
@@ -110,6 +110,11 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     	} finally {
     		session.close();
     	}
+	}
+
+	private HttpSession findSession(String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -236,5 +241,6 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     		session.close();
     	}
 	}
+
 
 }

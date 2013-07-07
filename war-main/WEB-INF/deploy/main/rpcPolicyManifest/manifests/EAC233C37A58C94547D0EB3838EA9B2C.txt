@@ -1,0 +1,2 @@
+serviceClass: com.cantor.ipplan.client.DatabaseService
+path: CF5652B800510C9C3801C15DA07BBCD9.gwt.rpc

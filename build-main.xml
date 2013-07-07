@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ipplan" basedir="." default="default">
+    <target name="default" depends="buildwar,deploy"></target>
+    <target name="buildwar">
+        <war basedir="war-main" destfile="main.war" webxml="war-main/WEB-INF/web.xml">
+            <exclude name="WEB-INF/**" />
+            <webinf dir="war-main/WEB-INF/">
+                <include name="**/*.jar" />
+            </webinf>
+        </war>
+    </target>
+    <target name="deploy">
+               <copy file="main.war" todir="." />
+    </target>
+</project>

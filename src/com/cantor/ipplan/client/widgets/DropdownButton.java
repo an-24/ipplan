@@ -58,5 +58,11 @@ public class DropdownButton extends Button {
 		return menu;
 	}
 	
+	public void setText(String txt) {
+		SafeHtmlBuilder builder = new SafeHtmlBuilder();
+		builder.appendHtmlConstant("<div>"+txt+"<span class=\"gwt-DropdownButton-dropbtn\">"+"</span></div>");
+		setHTML(builder.toSafeHtml());
+	}
+	
 
 }

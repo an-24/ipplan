@@ -2,6 +2,7 @@ package com.cantor.ipplan.client;
 
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -9,6 +10,7 @@ public class UserData extends Ipplan {
 
 	protected PUserWrapper user;
 	private DatabaseServiceAsync dbservice;
+	//protected String sessionId;
 	
 	static {
     	tokenForms.put("main", FormMain.class);
@@ -35,7 +37,8 @@ public class UserData extends Ipplan {
 	}
 
 
-	public void refreshForm(Class type) {
+	@SuppressWarnings("rawtypes")
+	public void refreshForm(Class type, String session_id) {
 		if(user==null) return;
 		// пробуем определить номер вкладки у main
 		int numTab = 0;
@@ -85,11 +88,12 @@ public class UserData extends Ipplan {
 
 
 
-	private void openDatabase(String sessId) {
+	private void openDatabase(final String sessId) {
 		DatabaseServiceAsync service = getDataBaseService();
 		service.open(sessId, new AsyncCallback<PUserWrapper>() {
 			public void onSuccess(PUserWrapper result) {
 				UserData.this.user = result;
+				Cookies.setCookie("sid", sessId);
 				History.newItem(INIT_TOKEN);
 			}
 			public void onFailure(Throwable caught) {

@@ -6,3 +6,6 @@ gwt-unitCache
 /war/ipplan/*
 /brandbook/Thumbs.db
 tmp
+bin
+
+lib

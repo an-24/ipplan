@@ -10,6 +10,7 @@ import com.cantor.ipplan.client.widgets.CellTable;
 import com.cantor.ipplan.client.widgets.CheckBox;
 import com.cantor.ipplan.client.widgets.DropdownButton;
 import com.cantor.ipplan.client.widgets.GridPager;
+import com.cantor.ipplan.client.widgets.MonthPicker;
 import com.cantor.ipplan.client.widgets.TextBox;
 import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.shared.BargainWrapper;
@@ -30,7 +31,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.core.client.Scheduler;
 
-public class TabBargains extends FlexTable {
+public class TabBargains extends InplaceForm {
 
 	private FormMain form;
 	private DatabaseServiceAsync dbservice;
@@ -152,6 +153,7 @@ public class TabBargains extends FlexTable {
 		form.filterBargainDate.setTabIndex(0);
 		th.add(form.filterBargainDate);
 		form.filterBargainAllUsers = new CheckBox("Сделки подчиненных");
+		form.filterBargainAllUsers.setValue(true);
 		th.add(form.filterBargainAllUsers);
 		setWidget(row, 0, th);
 		getFlexCellFormatter().setColSpan(row, 0, 2);

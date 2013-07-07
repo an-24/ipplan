@@ -191,8 +191,9 @@ public class FormCustomer extends Dialog  implements ValueChangeHandler {
 		form.center();
 	}
 
-	public static void add(final DatabaseServiceAsync dbservice, final NotifyHandler<CustomerWrapper> competed) {
+	public static void add(final DatabaseServiceAsync dbservice, String stroke, final NotifyHandler<CustomerWrapper> competed) {
 		final FormCustomer form = new FormCustomer(null);
+		form.setName(stroke);
 		form.setExternalHandler(
 				new ClickHandler() {
 				@Override

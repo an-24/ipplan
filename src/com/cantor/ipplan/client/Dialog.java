@@ -62,7 +62,7 @@ public class Dialog extends DialogBox {
 		
 		VerticalPanel pm = new VerticalPanel();
 		pm.setWidth("100%");
-		pm.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		//pm.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		pm.add(table);
 		
 		FormPanel f = new FormPanel();
@@ -81,7 +81,7 @@ public class Dialog extends DialogBox {
 		HorizontalPanel p = new HorizontalPanel();
 		p.setSpacing(10);
 		p.setWidth("100%");
-//		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		p.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		p.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		pm.add(p);
 		

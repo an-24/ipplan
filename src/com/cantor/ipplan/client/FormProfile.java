@@ -46,7 +46,6 @@ public class FormProfile extends Form {
 	private TextBox tbEmail;
 	private TextBox tbName;
 	private FlexTable Tabl1;
-	private int rowError=-1;
 	private FlexTable currentTab;
 	private TabPanel tabPanel;
 	private Button btnSave;
@@ -358,7 +357,7 @@ public class FormProfile extends Form {
 				profService.setUserData(u, rbOwnerOk.isChecked()?1:rbOwnerCancel.isChecked()?-1:0,new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
 						toast(btnSave,"Общие данные успешно изменены");
-						getMain().refreshForm(FormProfile.class);
+						getMain().refreshForm(FormProfile.class,null);
 					}
 					
 					public void onFailure(Throwable caught) {

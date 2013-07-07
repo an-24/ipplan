@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.cantor.ipplan.client.widgets.CellTable;
 import com.cantor.ipplan.client.widgets.CheckBox;
+import com.cantor.ipplan.client.widgets.MonthPicker;
 import com.cantor.ipplan.client.widgets.RadioButton;
 import com.cantor.ipplan.client.widgets.Slider;
 import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
@@ -29,13 +30,16 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -84,7 +88,7 @@ public class FormMain extends Form {
 	public ToggleButton allBtn;
 
 
-	public FormMain(Ipplan main, RootPanel root, PUserWrapper usr, int numTab) {
+	public FormMain(UserData main, RootPanel root, PUserWrapper usr, int numTab) {
 		super(main, root);
 		user =usr;
 		currentForm = this;
@@ -99,10 +103,48 @@ public class FormMain extends Form {
 		p0.setSize("800px", "812px");
 		
 		HorizontalPanel p1 = new HorizontalPanel();
+		p1.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		p0.add(p1);
 		
 		lUserName = new Label("");
+		lUserName.addStyleName("link");
+		lUserName.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				getDataBaseService().getConfig("IpplanHost", new AsyncCallback<String>() {
+					@Override
+					public void onSuccess(String result) {
+						Window.Location.assign(result+"#profile,session="+Cookies.getCookie("sid"));
+					}
+					@Override
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+					}
+				});
+			}
+		});
 		p1.add(lUserName);
+		
+		Button btn = new Button("Выйти");
+		btn.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				getDataBaseService().getConfig("IpplanHost", new AsyncCallback<String>() {
+					@Override
+					public void onSuccess(String result) {
+						Window.Location.assign(result+"#login");
+					}
+					@Override
+					public void onFailure(Throwable caught) {
+						Ipplan.showError(caught);
+					}
+				});
+			}
+		});
+		p1.add(btn);
+		p1.setCellHorizontalAlignment(btn, HasHorizontalAlignment.ALIGN_RIGHT);
+		
 		
 		tabPanel = new MainTabPanel();
 		p0.add(tabPanel);
@@ -119,7 +161,7 @@ public class FormMain extends Form {
 		FlexTable tab3 = new TabCustomers(this,getDataBaseService());
 		tabPanel.add(tab3, "Клиенты", false);
 		
-		FlexTable tab4 = new TabAnalytical(this,getDataBaseService());
+		FlexTable tab4 = new TabAnalytical(this);
 		tabPanel.add(tab4, "Анализ", false);
 		
 		currentTabId = numTab;
@@ -365,7 +407,7 @@ public class FormMain extends Form {
 				}
 			}); else
 			// add	
-			FormCustomer.add(dbservice, new NotifyHandler<CustomerWrapper>() {
+			FormCustomer.add(dbservice, "", new NotifyHandler<CustomerWrapper>() {
 				@Override
 				public void onNotify(CustomerWrapper newc) {
 					tableCustomer.getProvider().getList().add(newc);
@@ -401,127 +443,14 @@ public class FormMain extends Form {
 	}
 
 	protected void addNewBargain() throws Exception {
-		
-		Label l;
-		final long weekTime = 7 * 24 * 60 * 60 * 1000; // 7 d * 24 h * 60 min * 60 s * 1000 millis
-		
-		final Dialog dialog = new Dialog("Создание новой сделки");
-		FlexTable table = dialog.getContent();
-		//table.setWidget(0,0,new Label("Наименование сделки"));
-		final TextBox tbBargainName = new TextBox();
-		tbBargainName.getElement().setAttribute("placeholder", "Введите наименование сделки");
-		tbBargainName.setWidth("400px");
-		table.setWidget(0, 0, tbBargainName);
-		tbBargainName.setName("bargainName");
-		tbBargainName.getElement().setAttribute("autocomplete", "on");
-		table.getFlexCellFormatter().setColSpan(0, 0, 2);
-
-		final RadioButton rb1 = new RadioButton("status","Начать с продажи");
-		table.setWidget(1, 0, rb1);
-		table.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		final RadioButton rb2 = new RadioButton("status","Осталось только исполнить");
-		table.setWidget(1, 1, rb2);
-		table.getCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
-		rb1.setValue(true);
-
-		VerticalPanel p1 = new VerticalPanel();
-		l = new Label("Начать");
-		p1.add(l);
-		l.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		final DateBox dbstart = new DateBox();
-		dbstart.setFormat(Ipplan.DEFAULT_DATE_FORMAT);
-		dbstart.setValue(new Date());
-		p1.add(dbstart);
-		p1.setWidth("100%");
-		table.setWidget(2, 0, p1);
-		p1.setCellHorizontalAlignment(dbstart, HasHorizontalAlignment.ALIGN_CENTER);
-
-		
-		VerticalPanel p2 = new VerticalPanel();
-		l = new Label("Закончить");
-		p2.add(l);
-		l.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		final DateBox dbfinish = new DateBox();
-		dbfinish.setFormat(Ipplan.DEFAULT_DATE_FORMAT);
-		p2.add(dbfinish);
-		p2.setWidth("100%");
-		table.setWidget(2, 1, p2);
-		p2.setCellHorizontalAlignment(dbfinish, HasHorizontalAlignment.ALIGN_CENTER);
-		
-		table.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		table.getCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_CENTER);
-		
-		VerticalPanel p3 = new VerticalPanel();
-		p3.setSpacing(6);
-		Slider s = new Slider();
-		s.setWidth("300px");
-		s.setMin(1., "1 неделя");
-		s.setMax(12., "3 месяца");
-		s.setValues(new Double[]{2.0,3.0,4.0,5.,6.,7.,8.,9.,10.,11.}, 
-				    new String[]{"2 недели","3 недели","месяц", "1 месяц, 1 неделя","1 месяц, 2 недели","1 месяц, 3 недели", "2 месяца",
-							     "2 месяца, 1 неделя", "2 месяца, 2 недели", "2 месяца, 3 недели"});
-		final Label lduration = new Label("");
-		p3.add(lduration);
-		lduration.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		s.setChangePositionEvent(new ChangeEvent() {
-			@Override
-			public void onChangePosition(double value, String label) {
-				lduration.setText(label);
-				Date start = dbstart.getValue();
-				dbfinish.setValue(new Date(start.getTime()+Math.round(value)*weekTime));
-			}
-
-			@Override
-			public void onDragPosition(double value, String label) {
-				lduration.setText(label);
-			}
-		});
-		s.setPosition(s.getMin()+2);
-		p3.add(s);
-		p3.setCellHorizontalAlignment(s, HasHorizontalAlignment.ALIGN_CENTER);
-		table.setWidget(3, 0, p3);
-		table.getFlexCellFormatter().setColSpan(3, 0, 2);
-		table.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		table.getCellFormatter().getElement(3, 0).getStyle().setPaddingTop(0, Unit.PX);
-		table.getCellFormatter().getElement(2, 0).getStyle().setPaddingBottom(0, Unit.PX);
-		table.getCellFormatter().getElement(2, 1).getStyle().setPaddingBottom(0, Unit.PX);
-		
-		
-		dialog.getButtonOk().setText("Создать");
-		dialog.setButtonOkClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				dialog.cancel();
-				dialog.resetErrors();
-				if(tbBargainName.getText().isEmpty()) {
-					dialog.showError(tbBargainName, "Наименование сделки не может быть пустым");
-					return;
-				}
-				if(dbstart.getValue().after(dbfinish.getValue())) {
-					dialog.showError(dbstart, "Дата начала должна быть меньше даты окончания");
-					return;
-				}
-				
-				DatabaseServiceAsync db = getDataBaseService();
-				db.newBargain(tbBargainName.getText(), rb1.getValue()?StatusWrapper.PRIMARY_CONTACT:StatusWrapper.EXECUTION,
-						dbstart.getValue(),dbfinish.getValue(),
-					new AsyncCallback<BargainWrapper>() {
+		final Dialog dialog = new FormNewBargain("Создание новой сделки", getDataBaseService(),
+				new NotifyHandler<BargainWrapper>() {
 					@Override
-					public void onSuccess(BargainWrapper result) {
-						tabPanel.add(result);
-						tabPanel.selectBargain(result);
-						dialog.hide();
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						Ipplan.showError(caught);
+					public void onNotify(BargainWrapper c) {
+						tabPanel.add(c);
+						tabPanel.selectBargain(c);
 					}
 				});
-			}
-		});
-			
-		dialog.setFirstFocusedWidget(tbBargainName);
 		dialog.center();
 		
 	}

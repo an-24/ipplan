@@ -13,7 +13,7 @@ CREATE GENERATOR NewRecordId;
 SET GENERATOR NewRecordId TO 0;
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     27.06.2013 15:49:55                          */
+/* Created on:     05.07.2013 11:28:23                          */
 /*==============================================================*/
 
 
@@ -143,7 +143,8 @@ constraint PK_CUSTOMER primary key (customer_id)
 create table puser (
 puser_id             INTEGER                        not null,
 owner_puser_id       INTEGER,
-puser_login          VARCHAR(320)                   not null,
+puser_login          VARCHAR(60)                    not null,
+puser_email          VARCHAR(320)                   not null,
 puser_taxtype        INTEGER                        not null,
 puser_google_token   VARCHAR(100),
 puser_google_refresh_token VARCHAR(100),
@@ -154,7 +155,8 @@ puser_calendar_lastsync TIMESTAMP,
 puser_contact_sync_duration INTEGER                        default 0 not null,
 puser_calendar_sync_duration INTEGER                        default 0 not null,
 puser_googlecalendar_id VARCHAR(250),
-constraint PK_PUSER primary key (puser_id)
+constraint PK_PUSER primary key (puser_id),
+constraint AK_KEY_2_PUSER unique (puser_email)
 );
 
 /*==============================================================*/

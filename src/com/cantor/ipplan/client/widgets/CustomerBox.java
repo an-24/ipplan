@@ -131,7 +131,7 @@ public class CustomerBox extends SuggestBox {
 	}
 	
 	private void addCustomer() {
-		FormCustomer.add(dbservice, new NotifyHandler<CustomerWrapper>() {
+		FormCustomer.add(dbservice, getText(), new NotifyHandler<CustomerWrapper>() {
 			@Override
 			public void onNotify(CustomerWrapper c) {
 				setCustomer(c,true);

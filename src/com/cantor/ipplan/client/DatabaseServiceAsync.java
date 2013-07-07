@@ -58,4 +58,5 @@ public interface DatabaseServiceAsync {
 	void updateTask(TaskWrapper task, AsyncCallback<TaskWrapper> callback);
 	void isNewVersionBargain(BargainWrapper bargain,
 			AsyncCallback<Boolean> callback);
+	void getConfig(String name, AsyncCallback<String> callback);
 }

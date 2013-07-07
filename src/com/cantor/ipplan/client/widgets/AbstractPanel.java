@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -20,7 +21,7 @@ public abstract class AbstractPanel extends ComplexPanel  implements HasAlignmen
 	public AbstractPanel() {
 		setElement(getRoot());
 	}
-Di
+
 	private Element getRoot() {
 		if(rootDiv==null) {
 			rootDiv = DOM.createDiv();
@@ -130,6 +131,8 @@ Di
 	public void setSpacing(int spacing) {
 		this.spacing = spacing;
 		DOM.setStyleAttribute(getRoot(), "borderSpacing", spacing+"px");
+		if(spacing>0) 
+			DOM.setStyleAttribute(getRoot(), "borderCollapse", "separate");
 	}
 	
 	protected void setCellHorizontalAlignment(Element td,

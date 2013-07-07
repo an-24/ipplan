@@ -31,6 +31,9 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("database")
 public interface DatabaseService extends RemoteService {
+	
+	public String getConfig(String name) throws Exception;
+	
 	public PUserWrapper open(String sessId) throws Exception;
 	public PUserWrapper isLogged();
 	public BargainTotals[] getTotals() throws Exception;

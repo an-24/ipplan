@@ -101,8 +101,8 @@ public class StatusBox extends FocusWidget implements HasValueChangeHandlers<Sta
 
 	public void refreshStatus() {
 		setFinish(false);
-		getElement().removeClassName("Attention3");
-		getElement().removeClassName("Attention2");
+		//getElement().removeClassName("Attention3");
+		//getElement().removeClassName("Attention2");
 		getElement().removeClassName("gwt-StatusBox-suspend");
 		
 		if(status!=null) {
@@ -122,19 +122,30 @@ public class StatusBox extends FocusWidget implements HasValueChangeHandlers<Sta
 			} else
 				if(!isLocked()) setFinish(true);
 			// attention
-			if(this.status.statusId==StatusWrapper.CLOSE_FAIL)
+			/*
+			if(this.status.statusId==StatusWrapper.CLOSE_FAULT)
 				getElement().addClassName("Attention3");
 			if(this.status.statusId==StatusWrapper.SUSPENDED) {
 				getElement().addClassName("Attention2");
-				if(!isLocked()) getElement().addClassName("gwt-StatusBox-suspend");
 			}
+			*/
+			if(this.status.statusId==StatusWrapper.SUSPENDED && !isLocked()) 
+				getElement().addClassName("gwt-StatusBox-suspend");
 			// продажи приостановить Нельзя!
-			if(this.status.statusId<StatusWrapper.EXECUTION) {
+			if(this.status.statusId<StatusWrapper.EXECUTION && !isLocked()) {
 				divPause.getStyle().setVisibility(Visibility.HIDDEN);
 			} else
 				divPause.getStyle().setVisibility(Visibility.VISIBLE);
 			
-			
+			getElement().getStyle().setBackgroundColor(StatusWrapper.getBackgroundColor(status.statusId));
+			getElement().getStyle().setColor(StatusWrapper.getTextColor(status.statusId));
+			if(status.statusId==StatusWrapper.EXECUTION) {
+				divNext.setClassName("gwt-StatusBox-next-inv");
+				divPause.setClassName("gwt-StatusBox-pause-inv");
+			} else {
+				divNext.setClassName("gwt-StatusBox-next");
+				divPause.setClassName("gwt-StatusBox-pause");
+			};
 		} else  {
 			divStatusName.setInnerText("<неизвестен>");
 			divNext.setTitle("");

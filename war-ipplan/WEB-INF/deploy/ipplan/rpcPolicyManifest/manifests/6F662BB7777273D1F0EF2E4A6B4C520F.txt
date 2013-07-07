@@ -1,0 +1,2 @@
+serviceClass: com.cantor.ipplan.client.ProfileService
+path: 2261418A6D4EA857E9672FE33D0E1D6A.gwt.rpc

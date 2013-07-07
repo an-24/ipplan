@@ -71,10 +71,19 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	}
 	
 	public void showForm(String token) {
-		refreshForm(tokenForms.get(token));
+		String id =  null;
+		int n = token.indexOf(',');
+		if(n>=0) {
+			String addParam = token.substring(n+1);
+			token = token.substring(0, n);
+			if(addParam.startsWith("session")) {
+				id = addParam.split("=")[1];
+			}
+		}
+		refreshForm(tokenForms.get(token),id);
 	}
 	
-	public void refreshForm(final Class type) {
+	public void refreshForm(final Class type, String session_id) {
 	};
 	
 	public static void log(Level l, String message) {

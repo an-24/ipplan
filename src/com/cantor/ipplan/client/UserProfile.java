@@ -2,6 +2,7 @@ package com.cantor.ipplan.client;
 
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -22,7 +23,7 @@ public class UserProfile extends Ipplan {
 		this.user = user;
 	}
     
-	public void refreshForm(final Class type) {
+	public void refreshForm(final Class type,final String sessionId) {
 		//unknown form
 		if(type==null) {
 			getRootInHTML().clear();
@@ -35,21 +36,30 @@ public class UserProfile extends Ipplan {
 			// check login user
 			if(this.user==null) {
 				LoginServiceAsync service = GWT.create(LoginService.class);
+				// нужно подменить сессию
+				if(sessionId!=null)
+					Cookies.setCookie("JSESSIONID", sessionId);
+					
 				service.isLogged(new AsyncCallback<PUserWrapper>() {
 					@Override
 					public void onSuccess(PUserWrapper user) {
 						if(user==null) {
 							History.newItem(INIT_TOKEN);
 						} else {
+							// перегрузим стр, чтобы  сессия в url не торчала
+							if(sessionId!=null) {
+								History.newItem("profile");
+								return;
+							}	
 							setUser(user);
-							refreshForm(type);
+							refreshForm(type,null);
 						}
 					}
 					@Override
 					public void onFailure(Throwable caught) {
 						showError(caught);
 					}
-				});
+				}); 
 			} else 
 			// profile
 			if(type==FormProfile.class) {

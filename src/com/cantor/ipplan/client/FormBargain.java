@@ -1,22 +1,21 @@
 package com.cantor.ipplan.client;
 
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.cantor.ipplan.client.widgets.CellTable;
+import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.client.widgets.CurrencyBox;
 import com.cantor.ipplan.client.widgets.CustomerBox;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.cantor.ipplan.client.widgets.RadioButton;
 import com.cantor.ipplan.client.widgets.StatusBox;
-import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.client.widgets.StatusBox.StatusChangeEventListiner;
+import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.cantor.ipplan.shared.BargainShortInfo;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
@@ -67,12 +66,11 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.TextArea;
-import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 @SuppressWarnings("rawtypes")
-public class FormBargain extends FlexTable implements ValueChangeHandler{
+public class FormBargain extends InplaceForm implements ValueChangeHandler{
 
 	private DatabaseServiceAsync dbservice;
 	
@@ -98,24 +96,15 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	private MainTabPanel tabPanel;
 	//private int index;
 	private Label lTitle;
-	private Map<FlexTable,List<Integer>> errorList = new HashMap<FlexTable, List<Integer>>();
 	private Label lVersion;
 	private Label lDateCreated;
-
 	private Button btnCosts;
-
 	private VerticalPanel pCustomer;
-
 	private int loadCounter = 0;
-
 	private CellTable<TaskWrapper> tableTasks;
-
 	private ScrollPanel spTimeline;
-
 	private HTML wafter;
-
 	private HTML wbefore;
-
 	private BargainFragment bargainFragment;
 
 	public FormBargain(final BargainWrapper b) {
@@ -488,12 +477,12 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	protected void save(final boolean closed) {
 		save(closed,null);
 	}
-	
+
 	protected void save(final boolean closed, final NotifyHandler<BargainWrapper> external) {
 		
 		resetErrors();
 		validate();
-		if(errorList.size()>0) return;
+		if(existErrors()) return;
 		formFieldToBargain(bargain);
 		
 		DatabaseServiceAsync db = getDataBaseService();
@@ -553,7 +542,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	}
 
 	protected void bargainToFormField(BargainWrapper bw) {
-		lTitle.setText(bargain.getFullName());
+		lTitle.setText(bw.getFullName());
 		lVersion.setText("Версия "+(bw.bargainVer+1));
 		lDateCreated.setText(DateTimeFormat.getMediumDateFormat().format(bw.bargainCreated));
 		dbStart.setValue(bw.bargainStart);
@@ -566,58 +555,58 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		eRevenue.setValue(bw.bargainRevenue);
 		ePrePayment.setValue(bw.bargainPrepayment);
 		btnCosts.setText(getTotalCostDisplay());
-		lPaymentCost.setValue(bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts/100.0);
+		lPaymentCost.setValue(bw.bargainPaymentCosts==null?0:bw.bargainPaymentCosts/100.0);
 		eFine.setValue(bw.bargainFine);
-		lMargin.setValue(bargain.getMargin()/100.0);
-		lTax.setValue(bargain.bargainTax!=null?bargain.bargainTax/100.0:null);
-		lProfit.setValue(bargain.getProfit()/100.0);
+		lMargin.setValue(bw.getMargin()/100.0);
+		lTax.setValue(bw.bargainTax!=null?bw.bargainTax/100.0:0);
+		lProfit.setValue(bw.getProfit()/100.0);
 		
-		if(bargain.bargainNote!=null) {
-			taNote.setValue(bargain.bargainNote);
-			taNote.setVisible(true);
-		} else
-			taNote.setVisible(false);
+		taNote.setValue(bw.bargainNote!=null?bw.bargainNote:"");
+		taNote.getElement().setAttribute("placeholder", "введите комментарий");
+		
 		// timeline
 		boolean tmvisible = !bw.isNew() && bw.timeline.size()>1;
 		spTimeline.setVisible(tmvisible);
 		wbefore.setVisible(tmvisible);
 		wafter.setVisible(tmvisible);
-		if(tmvisible) {
-			Widget selectBox = null;
-			HorizontalPanel hp = (HorizontalPanel) spTimeline.getWidget();
-			hp.clear();
-			BargainShortInfo prev=null;
-			
-			for (final BargainShortInfo bsi : bw.timeline) {
-				StringBuilder tmsb = new StringBuilder();
-				tmsb.append("<div class=\"timeline-item");
-				if(bsi.bargainVer==bargain.bargainVer) tmsb.append(" timeline-item-selected");
-				tmsb.append("\">").append("<span class=\"date\">")
-					.append(DateTimeFormat.getMediumDateFormat().format(bsi.bargainCreated))
-					.append("</span>");
-				tmsb.append("<span class=\"ver\">").append(", версия ").append(bsi.bargainVer+1).append("</span>");
-				tmsb.append("<div class=\"note\">").append(bsi.bargainNote==null?"":bsi.bargainNote).append("</div>");
-				if(prev!=null && prev.status.statusId!=bsi.status.statusId)
-					tmsb.append("<div class=\"statusbox-in-grid\" style=\"background-color:"+StatusWrapper.getBackgroundColor(bsi.status.statusId)+";")
-						.append("color:"+StatusWrapper.getTextColor(bsi.status.statusId)+";")
-						.append("\">").append(bsi.status.statusName)
-						.append("</div>");
-				tmsb.append("</div>");
-				HTML w = new HTML(tmsb.toString());
-				if(bsi.bargainVer==bargain.bargainVer) selectBox = w;
-				w.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						load(bsi.bargainId);
-					}
-				});
-				hp.add(w);
-				prev = bsi;
-			}
-			if(selectBox!=null) selectBox.getElement().scrollIntoView();
-		}
+		if(tmvisible) fillTimeline(bw);
 		// tasks
-		tableTasks.setRowCount(bargain.tasks.size());
+		tableTasks.setRowCount(bw.tasks.size());
+	}
+
+	private void fillTimeline(BargainWrapper bw) {
+		Widget selectBox = null;
+		HorizontalPanel hp = (HorizontalPanel) spTimeline.getWidget();
+		hp.clear();
+		BargainShortInfo prev=null;
+		
+		for (final BargainShortInfo bsi : bw.timeline) {
+			StringBuilder tmsb = new StringBuilder();
+			tmsb.append("<div class=\"timeline-item");
+			if(bsi.bargainVer==bw.bargainVer) tmsb.append(" timeline-item-selected");
+			tmsb.append("\">").append("<span class=\"date\">")
+				.append(DateTimeFormat.getMediumDateFormat().format(bsi.bargainCreated))
+				.append("</span>");
+			tmsb.append("<span class=\"ver\">").append(", версия ").append(bsi.bargainVer+1).append("</span>");
+			tmsb.append("<div class=\"note\">").append(bsi.bargainNote==null?"":bsi.bargainNote).append("</div>");
+			if((prev!=null && prev.status.statusId!=bsi.status.statusId) || prev==null)
+				tmsb.append("<div class=\"statusbox-in-grid\" style=\"background-color:"+StatusWrapper.getBackgroundColor(bsi.status.statusId)+";")
+					.append("color:"+StatusWrapper.getTextColor(bsi.status.statusId)+";")
+					.append("\">").append(bsi.status.statusName)
+					.append("</div>");
+			tmsb.append("</div>");
+			HTML w = new HTML(tmsb.toString());
+			if(bsi.bargainVer==bw.bargainVer) selectBox = w;
+			w.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					load(bsi.bargainId);
+				}
+			});
+			hp.add(w);
+			prev = bsi;
+		}
+		if(selectBox!=null) selectBox.getElement().scrollIntoView();
 	}
 	
 	private int intValue(Integer v) {
@@ -645,7 +634,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			offs++;
 		}	
 		if(eCustomer.getCustomer()==null) {
-			showError(bargainFragment,eCustomer,"Необходимо определить клиента");
+			showError(bargainFragment,pCustomer,"Необходимо определить клиента");
 			offs++;
 		}	
 		if(eRevenue.getValue()==null) {
@@ -717,7 +706,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			if(st.statusId!=StatusWrapper.SUSPENDED) {
 				RadioButton rb = new RadioButton("gr", st.statusName);
 				
-				if(st.statusId==StatusWrapper.CLOSE_FAIL)
+				if(st.statusId==StatusWrapper.CLOSE_FAULT)
 					rb.getLabelElement().addClassName("Attention3");
 				
 				list.put(rb,st);
@@ -750,6 +739,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		
 		if(loadCounter>0) return;
 		
+		boolean oldDirty = bargain.isDirty();
 		bargain.modify();
 		
 		// обновляем в объекте
@@ -786,7 +776,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			setAttention();
 		};
 		
-		checkNewVersion();
+		if(!oldDirty) checkNewVersion();
 		
 		refreshTitle();
 	}
@@ -799,9 +789,7 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 				if(result) { 
 					startNote();
 					Form.toast(taNote, "Будет создана новая версия. Здесь можно ввести комментарий");
-				} else {
-					if(!taNote.isVisible()) startNote();
-				}
+				};
 			}
 			@Override
 			public void onFailure(Throwable caught) {
@@ -812,18 +800,12 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 	}
 
 	protected void startNote() {
-		int h = 0;
-		if(taNote.isVisible()) h = taNote.getOffsetHeight();
-						  else {
-							  taNote.setHeight("0px");
-							  taNote.setVisible(true);
-							  h = 60;
-						  }
-		
+		int h = taNote.getOffsetHeight();
 		new BlinkAnimation(taNote,h, new NotifyHandler<Widget>() {
 			@Override
 			public void onNotify(Widget c) {
 				taNote.setValue("");
+				taNote.getElement().setAttribute("placeholder", "введите комментарий для новой версии");
 			}
 		}).run(800);
 	}
@@ -948,41 +930,6 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 		if(dbservice!=null) return dbservice; 
 		dbservice = GWT.create(DatabaseService.class);
 		return dbservice;
-	}
-
-	public void showError(FlexTable table, Widget w,String message) {
-		for (int r = 0, len = table.getRowCount(); r < len; r++) 
-			for (int c = 0, len1 = table.getCellCount(r); c < len1; c++) { 
-				if(w==table.getWidget(r, c))
-					showError(table,r+1,message);
-		}
-	}
-	
-	public void showError(FlexTable table, int beforeRow,String message) {
-		int rowError = table.insertRow(beforeRow);
-		Label l = new Label(message);
-		l.setStyleName("errorHint");
-		table.getCellFormatter().setHorizontalAlignment(rowError, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		table.getCellFormatter().setVerticalAlignment(rowError, 0, HasVerticalAlignment.ALIGN_MIDDLE);
-		table.setWidget(rowError, 0, l);
-		table.getFlexCellFormatter().setColSpan(rowError, 0, 3);
-		List<Integer> le = errorList.get(table);
-		if(le==null) {
-			le = new ArrayList<Integer>();
-			errorList.put(table,le);
-		}
-		le.add(rowError);
-	}
-
-	private void resetErrors() {
-		for (FlexTable table : errorList.keySet()) { 
-			int offs = 0;
-			for (int row : errorList.get(table) ) { 
-				table.removeRow(row+offs);
-				offs--;
-			}
-		}	
-		errorList.clear();
 	}
 
 	private void setTaskExecuted(TaskWrapper task, boolean value) {
@@ -1121,10 +1068,8 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			taNote = new TextArea();
 			taNote.setWidth("100%");
 			taNote.addStyleName("boxing");
-			taNote.getElement().setAttribute("placeholder", "введите комментарии к новой версии");
 
 			taNote.setVisibleLines(3);
-			taNote.setVisible(false);
 			setWidget(row, col+0, taNote);
 			
 			row++;
@@ -1178,8 +1123,9 @@ public class FormBargain extends FlexTable implements ValueChangeHandler{
 			getFlexCellFormatter().setColSpan(row, col+1, 2);
 
 			pCustomer = new VerticalPanel();
-			pCustomer.addStyleName("bpad10");
-			pCustomer.addStyleName("tpad10");
+			pCustomer.getElement().getStyle().setMarginBottom(5, Unit.PX);
+			//pCustomer.addStyleName("bpad10");
+			//pCustomer.addStyleName("tpad10");
 			//p.getElement().getStyle().setMargin(-10., Unit.PX);
 			
 			eCustomer = new CustomerBox(getDataBaseService());

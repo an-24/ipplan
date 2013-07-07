@@ -2,6 +2,7 @@ package com.cantor.ipplan.client.widgets;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
 import com.google.gwt.user.client.ui.PushButton;
@@ -47,13 +48,13 @@ public class DatePicker extends com.google.gwt.user.datepicker.client.DatePicker
 
 
 		public void setModel(CalendarModel model) {
-		        this.model = model;
+			this.model = model;
 		}
 
 
 
 		public void setPicker(DatePicker picker) {
-		        this.picker = picker;
+			this.picker = picker;
 		}
 
 
@@ -135,9 +136,9 @@ public class DatePicker extends com.google.gwt.user.datepicker.client.DatePicker
 		  }
 
 		  public void addMonths(int numMonths) {
-		            model.shiftCurrentMonth(numMonths);
-		            picker.refreshComponents();
-		          }
+			  model.shiftCurrentMonth(numMonths);
+		      picker.refreshComponents();
+		  }
 
 
 	}

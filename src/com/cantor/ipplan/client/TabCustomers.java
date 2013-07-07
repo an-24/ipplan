@@ -27,7 +27,7 @@ import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuItem;
 
-public class TabCustomers extends FlexTable {
+public class TabCustomers extends InplaceForm {
 
 	private FormMain form;
 	private DatabaseServiceAsync dbservice;

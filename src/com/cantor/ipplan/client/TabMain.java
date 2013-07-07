@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.NumberLabel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class TabMain extends FlexTable {
+public class TabMain extends InplaceForm {
 	
 	protected static final int SALES_BOX_MAXWIDTH = 160;
 	private FormMain form;

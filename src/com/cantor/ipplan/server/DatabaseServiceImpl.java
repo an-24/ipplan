@@ -6,7 +6,6 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -23,10 +22,6 @@ import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
-import org.hibernate.service.ServiceRegistry;
 import org.hibernate.transform.Transformers;
 
 import com.cantor.ipplan.client.DatabaseService;
@@ -53,6 +48,8 @@ import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.TaskWrapper;
 import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
+import com.google.gdata.data.calendar.CalendarEntry;
+import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.extensions.AdditionalName;
@@ -66,26 +63,19 @@ import com.google.gdata.data.extensions.OrgName;
 import com.google.gdata.data.extensions.OrgTitle;
 import com.google.gdata.data.extensions.Organization;
 import com.google.gdata.data.extensions.PhoneNumber;
-import com.google.gdata.data.calendar.CalendarEntry;
-import com.google.gdata.data.calendar.CalendarEventEntry;
-
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 @SuppressWarnings("serial")
-public class DatabaseServiceImpl extends RemoteServiceServlet implements DatabaseService {
+public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseService {
 
-	private boolean newDBFlag = false;
-	private HttpSession session =  null;
-	
 	public DatabaseServiceImpl() {
 		super();
 	}
 	
 	public DatabaseServiceImpl(HttpSession session) {
-		this();
-		this.session = session;
+		super(session);
 	}
-	
+
+
 	@Override
 	public void init(final ServletConfig config) throws ServletException {
 		super.init(config);
@@ -103,10 +93,6 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		}
 	}
 	
-	private HttpSession getSession() {
-		return session==null?getThreadLocalRequest().getSession():session;
-	}
-	
 
 	//TODO при смене email нужно синхронизировать данные по id пользователя
 	/**
@@ -118,19 +104,22 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 	@Override
 	public PUserWrapper open(String sessId) throws Exception {
 		PUserWrapper uw = checkAccess(sessId);
-		setLoginUser(uw);
+		//setLoginUser(uw);
 		
 		SessionFactory sessionFactory = getSessionFactory();
 		if(sessionFactory==null) {
 			String url = openOrCreateStore(uw.puserDbname,uw.puserEmail);
 			createSessionFactory(url);
 			PUserIdent user = makeUser(uw);
+			setLoginUser(user.toClient());
 			HttpSession sess = this.getSession();
 			sess.setAttribute("userId", user.getId());
+/*			
 			// с сервера авторизации приходит
 			// не полностью заполненный профиль пользователя
 			// нужно слить
 			mergeUserData(uw,user);
+*/			
 		}
 		
 		return uw;
@@ -230,11 +219,11 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
       	          "b.status_id \"statusId\""+
       			  "from bargain b "+
       			  "where b.bargain_head=1 AND b.bargain_visible=1 AND EXTRACT(YEAR from bargain_start)=:year AND "+
-      			  "b.status_id in ("+StatusWrapper.PRIMARY_CONTACT+','+StatusWrapper.TALK+','+StatusWrapper.DECISION_MAKING+','+StatusWrapper.RECONCILIATION_AGREEMENT+") "+
-      			  "group by b.status_id "+
-      			  "order by b.status_id";
+      			  "b.status_id in ("+StatusWrapper.PRIMARY_CONTACT+','+StatusWrapper.TALK+','+StatusWrapper.DECISION_MAKING+','+StatusWrapper.RECONCILIATION_AGREEMENT+") ";
       		if(usrid != PUserIdent.USER_ROOT_ID)
       			sql+=" AND b.puser_id="+usrid;
+      		sql+=" group by b.status_id "+
+      			 " order by b.status_id";
       		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
         	q.setParameter("year", 1900+new Date().getYear());
         	List<BargainTotals> listSales = q.list();
@@ -243,7 +232,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
         	      "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
         	      "from bargain b "+
         	      "where b.bargain_visible=1 AND b.bargain_head=1 AND EXTRACT(YEAR from bargain_start)=:year AND "+
-        	      "b.status_id>"+StatusWrapper.RECONCILIATION_AGREEMENT+" AND b.status_id<>"+StatusWrapper.CLOSE_FAIL+" AND "+
+        	      "b.status_id>"+StatusWrapper.RECONCILIATION_AGREEMENT+" AND b.status_id<>"+StatusWrapper.CLOSE_FAULT+" AND "+
         	      StatusWrapper.PRIMARY_CONTACT+"=(select min(b1.status_id) from bargain b1 where b1.root_bargain_id=b.root_bargain_id)";
       		if(usrid != PUserIdent.USER_ROOT_ID)
       			sql+=" AND b.puser_id="+usrid;
@@ -593,6 +582,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     	try {
     		Bargain b = new Bargain();
     		b.setBargainCreated(new Date());
+    		b.setRootBargain(b);
     		b.setBargainName(name);
     		b.setBargainHead(1);
     		b.setPuser(new PUserIdent(getLoginUser()));
@@ -663,12 +653,6 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		return u;
 	}
 	
-	private void checkAccess() throws Exception {
-		if(isLogged()==null)
-			throw new Exception("Доступ запрещен");
-	}
-
-
 	private synchronized String openOrCreateStore(String name, String userEmail) throws Exception {
 		String dir = getServletContext().getInitParameter("storeLocation");
 		if(dir==null)
@@ -691,7 +675,6 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 				Utils.copyFile(new File(root,"config.xml"), cfg); else
 				throw new Exception("Не могу создать файл config.xml");
 			
-			newDBFlag  = true;
 		} else {
 			dbName = getCurrentDBName(root, name);
 		}
@@ -717,53 +700,24 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		}
 	}
 
-	private void createSessionFactory(String url) throws Exception {
-		SessionFactory sessionFactory = getSessionFactory();
-		if(sessionFactory==null) {
-			// конфигурируем hibername
-	    	Configuration cfg = new Configuration().configure();
-	    	cfg.setProperty(Environment.CONNECTION_PROVIDER, "com.cantor.ipplan.server.UserDataPoolConnection");
-	    	ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build(); 
-	    	UserDataPoolConnection pool = (UserDataPoolConnection) serviceRegistry.getService(org.hibernate.engine.jdbc.connections.spi.ConnectionProvider.class);
-	    	pool.setPool(url);
-	    	sessionFactory = cfg.buildSessionFactory(serviceRegistry);
-	    	// устанавливаем в сессии
-	    	this.getSession().setAttribute("sessionFactory", sessionFactory);
-		}
-	}
-
-
-	private SessionFactory getSessionFactory() {
-		return (SessionFactory) this.getSession().getAttribute("sessionFactory");
-	}
-	
-	private PUserWrapper getLoginUser() {
-		HttpSession sess = this.getSession();
-		return (PUserWrapper) sess.getAttribute("loginUser");
-	}
-
-	private void setLoginUser(PUserWrapper u) {
-		HttpSession sess = this.getSession();
-		sess.setAttribute("loginUser",u);
-	}
-	
 	private PUserIdent makeUser(PUserWrapper u) throws Exception {
 		SessionFactory sessionFactory = getSessionFactory();
 		// проверка наличия пользователя
     	Session session = sessionFactory.openSession();
     	try {
     		PUserIdent user;
-    		Query q = session.createQuery("select u from PUserIdent u where u.puserLogin=:login");
-			q.setString("login", u.puserEmail);
+    		Query q = session.createQuery("select u from PUserIdent u where u.puserEmail=:email");
+			q.setString("email", u.puserEmail);
 			user =  (PUserIdent) q.uniqueResult();
     		if(user == null) {
     			// добавим
     			Transaction tx = session.beginTransaction();
     			try {
     				user = new PUserIdent();
-    				user.setPuserLogin(u.puserEmail);
+    				user.setPuserEmail(u.puserEmail);
+    				user.setPuserLogin(u.puserLogin);
     				user.setPuserTaxtype(u.puserTaxtype);
-    				if(newDBFlag) user.setPuserId(PUserIdent.USER_ROOT_ID); else {
+    				if(u.puserId==PUserIdent.USER_ROOT_ID) user.setPuserId(PUserIdent.USER_ROOT_ID); else {
     					PUserIdent own = (PUserIdent) session.get(PUserIdent.class, PUserIdent.USER_ROOT_ID);
     					if(own==null) user.setPuserId(PUserIdent.USER_ROOT_ID); else user.setOwner(own);
     				}
@@ -778,6 +732,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
     				throw e;
 				}
     		}
+    		user.fetch(true);
     		return user;
     	} finally {
     		session.close();
@@ -802,18 +757,13 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		session.save(s);
 		s = new Status(StatusWrapper.CLOSE_OK,user,"Закрыта успешно",0);
 		session.save(s);
-		s = new Status(StatusWrapper.CLOSE_FAIL,user,"Закрыта без результата",0);
+		s = new Status(StatusWrapper.CLOSE_FAULT,user,"Закрыта без результата",0);
 		session.save(s);
 		
 	}
 
 	private String getCurrentDBName(File root, String name) {
 		return root.getAbsolutePath()+File.separatorChar+name+File.separatorChar+"current.fdb";
-	}
-
-	private int getUserId() {
-		HttpSession sess = this.getSession();
-		return (Integer) sess.getAttribute("userId");
 	}
 	
 	private PUserIdent getUser() throws Exception {
@@ -1577,7 +1527,7 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 				String s="";
 					//в работе
 				if(stats[0]) 
-		    		s+=" not(b.status.statusId in ("+StatusWrapper.CLOSE_FAIL+","+
+		    		s+=" not(b.status.statusId in ("+StatusWrapper.CLOSE_FAULT+","+
 		    					StatusWrapper.CLOSE_OK+","+StatusWrapper.SUSPENDED+"))";
 					//выполненные
 				if(stats[1]) { 
@@ -1880,6 +1830,13 @@ public class DatabaseServiceImpl extends RemoteServiceServlet implements Databas
 		   newverb.getStatus().getId()==b.getStatus().getId() ) newverb = null;
 		
 		return newverb!=null;
+	}
+
+	@Override
+	public String getConfig(String name) throws Exception {
+		// вним! не давать доступ на прямую! В конексте могут быть секретные параметры
+		if(name.equals("IpplanHost")) return getServletContext().getInitParameter("IpplanHost");
+		return null;
 	}
 
 
