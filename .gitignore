@@ -9,3 +9,5 @@ tmp
 bin
 
 lib
+
+/src/database/err.log
