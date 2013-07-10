@@ -34,6 +34,7 @@ import com.cantor.ipplan.db.ud.Calendar;
 import com.cantor.ipplan.db.ud.Costs;
 import com.cantor.ipplan.db.ud.Customer;
 import com.cantor.ipplan.db.ud.PUserIdent;
+import com.cantor.ipplan.db.ud.Provider;
 import com.cantor.ipplan.db.ud.Status;
 import com.cantor.ipplan.db.ud.Task;
 import com.cantor.ipplan.db.ud.Tasktype;
@@ -42,12 +43,22 @@ import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
+import com.cantor.ipplan.shared.FileLink;
+import com.cantor.ipplan.shared.FileLinksWrapper;
 import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.cantor.ipplan.shared.SearchInfo;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.TaskWrapper;
 import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson.JacksonFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.Drive.Files;
+import com.google.api.services.drive.model.FileList;
 import com.google.gdata.data.calendar.CalendarEntry;
 import com.google.gdata.data.calendar.CalendarEventEntry;
 import com.google.gdata.data.contacts.Birthday;
@@ -457,6 +468,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 				return bargain;
 				
 			} catch (Exception e) {
+				Ipplan.error(e);
 				tx.rollback();
 				throw e;
 			}
@@ -1386,6 +1398,10 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 				
 				tx.commit();
 		    	return pi;
+			} catch (com.google.gdata.util.AuthenticationException e) {
+				tx.rollback();
+				return new ImportExportProcessInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
+				
 			} catch (Exception e) {
 				tx.rollback();
 				throw e;
@@ -1839,6 +1855,114 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 		return null;
 	}
 
+	@Override
+	public SearchInfo searchFile(int typeDrive, String searchStr) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+		
+			OAuthToken token = getTokenDrive(typeDrive,session);
+			if(!token.exists())
+				return new SearchInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
+			
+			if(token.isExpired()) 
+				if(token.canRefresh())
+					return new SearchInfo(ImportExportProcessInfo.TOKEN_EXPIRED); else
+					return new SearchInfo(ImportExportProcessInfo.TOKEN_NOTFOUND);
+			
+			SearchInfo info = new SearchInfo();
+			switch (typeDrive) {
+				case FileLinksWrapper.PROVIDER_GOOGLE_DRIVE: {
+						GoogleCredential credential = new GoogleCredential();
+						credential.setAccessToken(token.getValue());
+						Drive service = new Drive.Builder(new NetHttpTransport(),new JacksonFactory(),credential)
+								.setApplicationName("Ipplan")
+								.build();
+						
+						Files.List request = service.files().list();
+						
+						StringBuilder sb = new StringBuilder("mimeType != 'application/vnd.google-apps.folder' and trashed != true");
+						if(searchStr!=null && !searchStr.isEmpty()) 
+							sb.append(" and ").append("fullText contains '"+searchStr+"'");
+						request.setQ(sb.toString());
+					    do {
+					        try {
+					          FileList files = request.execute();
+					          
+					          for (com.google.api.services.drive.model.File file : files.getItems()) {
+					        	  FileLink link = new FileLink();
+					        	  link.name = file.getTitle();
+					        	  link.uri = file.getWebContentLink();
+					        	  link.iconUri = file.getIconLink(); 
+					        	  info.data.add(link);
+					          }
+					          
+					          request.setPageToken(files.getNextPageToken());
+					        } catch (Exception e) {
+					        	Ipplan.error(e);
+					        	request.setPageToken(null);
+					        }
+					      } while (request.getPageToken() != null &&
+					               request.getPageToken().length() > 0);
+						
+
+						
+
+					};
+					break;
+					
+				case FileLinksWrapper.PROVIDER_DROPBOX: {
+					// TODO Auto-generated method stub
+					};
+					break;
+	
+				default:
+					return null;
+			}
+			return info;	
+    	} finally {
+    		session.close();
+    	}
+	}
+
+	public OAuthToken getTokenDrive(int typedrive) {
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			return getTokenDrive(typedrive,session);
+    	} finally {
+    		session.close();
+    	}
+	}
+	
+	private OAuthToken getTokenDrive(int typedrive, Session sess) {
+		Provider provider = (Provider) sess.load(Provider.class, typedrive);
+		return new OAuthToken(provider.getProviderToken(),provider.getProviderRefreshToken(), 
+				provider.getProviderExpiresIn()==null?0:provider.getProviderExpiresIn(), provider.getProviderGranted());
+	}
+
+	public void saveTokenDrive(int typedrive, OAuthToken token) throws Exception {
+		checkAccess();
+		SessionFactory sessionFactory = getSessionFactory();
+    	Session session = sessionFactory.openSession();
+    	try {
+			Transaction tx = session.beginTransaction();
+			try {
+				Provider provider = (Provider) session.load(Provider.class, typedrive);
+				provider.setProviderToken(token==null?null:token.getValue());
+				provider.setProviderRefreshToken(token==null?null:token.getRefreshToken());
+				provider.setProviderExpiresIn(token==null?null:token.getExpiresIn());
+				provider.setProviderGranted(token==null?null:token.getGranted());
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				throw e;
+			}
+    	} finally {
+    		session.close();
+    	}
+	}
 
 
 }

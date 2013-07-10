@@ -29,6 +29,7 @@ import com.cantor.ipplan.core.IdGetter;
 import com.cantor.ipplan.shared.Attention;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.BargaincostsWrapper;
+import com.cantor.ipplan.shared.FileLinksWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 
 /**
@@ -63,6 +64,7 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 	private Set<Bargaincosts> bargaincostses = new HashSet<Bargaincosts>(0);
 	private Set<Bargain> bargains = new HashSet<Bargain>(0);
 	private Set<Agreed> agreeds = new HashSet<Agreed>(0);
+	private Set<Filelinks> filelinkses = new HashSet<Filelinks>(0);
 	
 	private boolean newState;
 	private boolean dirty;
@@ -331,6 +333,15 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		this.agreeds = agreeds;
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "bargain", cascade = CascadeType.ALL, orphanRemoval=true)
+	public Set<Filelinks> getFilelinkses() {
+		return this.filelinkses;
+	}
+
+	public void setFilelinkses(Set<Filelinks> filelinkses) {
+		this.filelinkses = filelinkses;
+	}
+
 	@Override
 	public BargainWrapper toClient() {
 		BargainWrapper wrap = new BargainWrapper();
@@ -369,7 +380,13 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			BargaincostsWrapper bcw = bc.toClient();
 			bcw.bargain = wrap;
 			wrap.bargaincostses.add(bcw);
-		}	
+		}
+		
+		wrap.flinks.clear();
+		for (Filelinks fl : filelinkses) {
+			FileLinksWrapper flw = fl.toClient();
+			wrap.flinks.add(flw);
+		}
 		
 		wrap.isnew = newState;
 		if(dirty) wrap.modify();
@@ -429,6 +446,16 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			costes.add(bc);
 		};
 		
+		Set<Filelinks> links = getFilelinkses();
+		links.clear();
+		for(FileLinksWrapper flw:wrap.flinks) {
+			Filelinks fl = new Filelinks();
+			fl.fromClient(flw);
+			fl.setBargain(this);
+			fl.setFilelinksId(0); // нужно, чтобы запись вновь была добавлена
+			links.add(fl);
+		}
+		
 		newState = wrap.isnew;
 		dirty = wrap.isDirty(); 
 
@@ -444,6 +471,7 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 		Hibernate.initialize(this.getStatus());
 		Hibernate.initialize(this.getBargaincostses());
 		Hibernate.initialize(this.getAgreeds());
+		Hibernate.initialize(this.getFilelinkses());
 		if(deep) {
 			if(this.getContract()!=null) this.getContract().fetch(deep);
 			if(this.getCustomer()!=null) this.getCustomer().fetch(deep);
@@ -452,6 +480,8 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			if(this.getStatus()!=null) this.getStatus().fetch(deep);
 			for (Bargaincosts bc : this.getBargaincostses()) 
 				bc.fetch(deep);
+			for (Filelinks fl : this.getFilelinkses())
+				fl.fetch(deep);
 		}
 	}
 
@@ -546,7 +576,10 @@ public class Bargain implements java.io.Serializable, DataBridge<BargainWrapper>
 			if(!d.equals(c)) return false;
 		}
 		// bargainNote исключаем, т.к. это есть 
-		// комментарий к новой версии, т.е. это постоянный носитель изменений 
+		// комментарий к новой версии, т.е. это постоянный носитель изменений
+		
+		// filelinks тоже исключаем
+		// ссылки не изменяют версию, т.е. изменяются у текущей
 		
 		
 		return true;

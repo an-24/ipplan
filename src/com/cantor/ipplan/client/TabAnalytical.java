@@ -47,7 +47,6 @@ import com.googlecode.gflot.client.Series;
 import com.googlecode.gflot.client.SeriesHandler;
 import com.googlecode.gflot.client.SimplePlot;
 import com.googlecode.gflot.client.Tick;
-import com.googlecode.gflot.client.jsni.JsonObject;
 import com.googlecode.gflot.client.options.AxisOptions;
 import com.googlecode.gflot.client.options.BarSeriesOptions;
 import com.googlecode.gflot.client.options.BarSeriesOptions.BarAlignment;

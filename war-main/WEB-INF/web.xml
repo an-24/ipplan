@@ -34,7 +34,14 @@
     <servlet-name>AnalyticalService</servlet-name>
     <servlet-class>com.cantor.ipplan.server.AnalyticalServiceImpl</servlet-class>
   </servlet>
+  
+  <servlet>
+    <servlet-name>uploadService</servlet-name>
+    <servlet-class>com.cantor.ipplan.server.UploadFile</servlet-class>
+  </servlet>
+  
 
+  <!-- Mapping -->
 
   <servlet-mapping>
     <servlet-name>DatabaseService</servlet-name>
@@ -49,6 +56,11 @@
   <servlet-mapping>
     <servlet-name>AnalyticalService</servlet-name>
     <url-pattern>/main/analytical/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>uploadService</servlet-name>
+    <url-pattern>/main/upload</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->

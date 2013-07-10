@@ -1,7 +1,5 @@
 package com.cantor.ipplan.shared;
 
-import com.cantor.ipplan.client.ClonableObject;
-
 @SuppressWarnings("serial")
 public class ContractWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable, Cloneable {
 

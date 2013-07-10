@@ -7,7 +7,7 @@ public class OAuthToken {
 	private String refresh_token = null;
 	private String token_type;
 	private int expires_in; // in second
-	private Date granted;  	
+	private Date granted; 
 	
 	public OAuthToken(){
 		

@@ -38,6 +38,7 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 	public Set<TaskWrapper> tasks = new HashSet<TaskWrapper>(0);
 	public Set<AgreedWrapper> agreeds = new HashSet<AgreedWrapper>(0);
 	public List<BargainShortInfo> timeline = new ArrayList<BargainShortInfo>(0);
+	public Set<FileLinksWrapper> flinks = new HashSet<FileLinksWrapper>(0);
 	
 	public Attention attention;
 	public boolean isnew;
@@ -163,6 +164,10 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 		wrap.tasks = new HashSet<TaskWrapper>(0);
 		for (TaskWrapper bcw : tasks) 
 			wrap.tasks.add(bcw.copy());
+		
+		wrap.flinks  = new HashSet<FileLinksWrapper>(0);
+		for (FileLinksWrapper flnk : flinks) 
+			wrap.flinks.add(flnk.copy());
 		
 		
 		wrap.isnew = isnew;

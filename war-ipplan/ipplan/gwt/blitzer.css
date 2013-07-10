@@ -358,7 +358,7 @@ a:hover {
 }
 
 .gwt-Close-Dialog:hover {
-  background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -225px -192px transparent;
+  background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -96px -209px transparent;
 }
 
 
@@ -1149,6 +1149,7 @@ a:hover {
   overflow: hidden;
 }
 
+
 .gwt-TabBar {
   background-color: #004276;
   padding-top: 6px;
@@ -1562,7 +1563,53 @@ td.datePickerMonth {
   border-color: #cc0000 !important;
 }
 
-.gwt-StatusBox {
+.gwt-FileBox-remove {
+  min-width:20px;
+  min-height:16px;
+  background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -95px -128px transparent;
+  margin-right:2px;
+  display:inline-block;
+  cursor: pointer;
+  float:left;
+}
+
+.gwt-FileBox-remove:hover {
+  background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -95px -128px transparent;
+}
+
+.gwt-FileBox-attach {
+  min-width:20px;
+  min-height:13px;
+  background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -158px -147px  transparent;
+  margin-right:2px;
+  display:inline-block;
+  cursor: pointer;
+}
+
+.gwt-FileBox-attach:hover {
+  background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -158px -147px  transparent;
+}
+
+.gwt-FileBox {
+  float:left;
+  padding: 4px 4px;
+  padding-right:8px;
+  white-space: nowrap;
+  max-width:170px;
+  margin:3px;
+  overflow:hidden;
+}
+
+.gwt-FileBox a{
+  float:none;
+  display:inline-block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width:148px;
+}
+
+.gwt-StatusBox,
+.gwt-FileBox {
   padding: 5px 4px;
   border: 1px solid #D8DCDF;
   border-radius: 6px;
@@ -1571,7 +1618,8 @@ td.datePickerMonth {
   display:inline-block;
 }
 
-.gwt-StatusBox:focus {
+.gwt-StatusBox:focus,
+.gwt-FileBox {
   border: 1px solid #939393;
   background-color: #f6f6f6;
 }
@@ -1583,9 +1631,21 @@ td.datePickerMonth {
   margin-right:8px;
 }
 
+.gwt-StatusBox-pause-inv {
+  min-width:20px;
+  min-height:16px;
+  background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -224px -192px transparent;
+  margin-right:8px;
+}
+
 .gwt-StatusBox-pause:hover {
   background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -224px -192px transparent;
 }
+
+.gwt-StatusBox-pause-inv:hover {
+  background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -224px -192px transparent;
+}
+
 
 .gwt-StatusBox div {
   float:left;
@@ -1598,7 +1658,18 @@ td.datePickerMonth {
   margin-left:8px;
 }
 
+.gwt-StatusBox-next-inv {
+  min-width:20px;
+  min-height:16px;
+  background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -46px -192px transparent;
+  margin-left:8px;
+}
+
 .gwt-StatusBox-next:hover {
+  background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -46px -192px transparent;
+}
+
+.gwt-StatusBox-next-inv:hover {
   background: url("images/ui-icons_cc0000_256x240.png") no-repeat scroll -46px -192px transparent;
 }
 
@@ -1612,6 +1683,10 @@ td.datePickerMonth {
 
 .gwt-StatusBox-lock div.gwt-StatusBox-pause {
   background: url("images/ui-icons_004276_256x240.png") no-repeat scroll 4px -64px transparent;
+}
+
+.gwt-StatusBox-lock div.gwt-StatusBox-pause-inv {
+  background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll 4px -64px transparent;
 }
 
 .gwt-StatusBox-lock div.gwt-StatusBox-pause:hover {
@@ -1700,6 +1775,21 @@ td.datePickerMonth {
     border-bottom: 1px solid silver;
     font-size: 1em;
 }
+
+.gwt-FileSearchBox-Suggestion {
+    width:300px;
+    padding: 2px 2px 2px 0px;
+}
+
+.gwt-FileSearchBox-Suggestion img {
+    float: left;
+    margin-right: 5px;
+    border: 1px solid silver;
+}
+
+.gwt-FileSearchBox-Suggestion div {
+}
+
 
 .gwt-MonthPicker {
   outline: none;

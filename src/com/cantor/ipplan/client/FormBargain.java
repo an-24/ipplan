@@ -11,6 +11,7 @@ import com.cantor.ipplan.client.widgets.CellTable;
 import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.client.widgets.CurrencyBox;
 import com.cantor.ipplan.client.widgets.CustomerBox;
+import com.cantor.ipplan.client.widgets.FileBox;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.cantor.ipplan.client.widgets.RadioButton;
 import com.cantor.ipplan.client.widgets.StatusBox;
@@ -19,6 +20,7 @@ import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.cantor.ipplan.shared.BargainShortInfo;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
+import com.cantor.ipplan.shared.FileLinksWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.TaskWrapper;
 import com.cantor.ipplan.shared.TasktypeWrapper;
@@ -28,6 +30,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
@@ -106,6 +109,8 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 	private HTML wafter;
 	private HTML wbefore;
 	private BargainFragment bargainFragment;
+	private HorizontalPanel pAttachFile;
+
 
 	public FormBargain(final BargainWrapper b) {
 		super();
@@ -123,6 +128,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		
 		lTitle = new Label();
 		lTitle.setStyleName("gwt-FormCaption");
+		lTitle.getElement().getStyle().setPadding(0, Unit.PX);
 		setWidget(0, 0, lTitle);
 		getFlexCellFormatter().setColSpan(0, 0, 2);
 		getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER);
@@ -572,6 +578,46 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		if(tmvisible) fillTimeline(bw);
 		// tasks
 		tableTasks.setRowCount(bw.tasks.size());
+		
+		//links
+		fillFilelinks(bw);
+		
+	}
+	
+	private void  fillFilelinks(final BargainWrapper bw) {
+		pAttachFile.clear();
+		
+		for (FileLinksWrapper flw : bw.flinks) {
+			FileBox box = new FileBox(flw);
+			box.setRemoveHandler(new NotifyHandler<FileLinksWrapper>() {
+				@Override
+				public void onNotify(FileLinksWrapper c) {
+					bw.flinks.remove(c);
+					fillFilelinks(bw);
+				}
+			});
+			pAttachFile.add(box);
+		}
+		FileBox addLinkBox = new FileBox(null);
+		pAttachFile.add(addLinkBox);
+		addLinkBox.setAttachHandler(new NotifyHandler<FileBox>() {
+			
+			@Override
+			public void onNotify(FileBox c) {
+				final FormFileLink dlg = new FormFileLink(getDataBaseService());
+				dlg.okExternalHandler = new ClickHandler() {
+					
+					@Override
+					public void onClick(ClickEvent event) {
+						bw.flinks.add(dlg.getFilelink());
+						fillFilelinks(bw);
+					}
+				};
+				dlg.center();
+			}
+		});
+		
+		
 	}
 
 	private void fillTimeline(BargainWrapper bw) {
@@ -850,9 +896,11 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 			sb.append("</div>");
 			
 			pCustomer.add(new HTML(sb.toString()));
+			
 			Label ledit = new Label("Изменить");
 			ledit.addStyleName("link");
 			ledit.getElement().getStyle().setFloat(Style.Float.RIGHT);
+			ledit.getElement().getStyle().setMarginTop(-16, Unit.PX);
 			ledit.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -1007,6 +1055,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 			
 			lVersion = new Label("Версия ");
 			lVersion.addStyleName("gwt-FormSubCaption");
+			lVersion.getElement().getStyle().setPadding(2, Unit.PX);
 			p.add(lVersion);
 			
 			lDateCreated = new Label();
@@ -1069,8 +1118,17 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 			taNote.setWidth("100%");
 			taNote.addStyleName("boxing");
 
-			taNote.setVisibleLines(3);
+			taNote.setVisibleLines(2);
 			setWidget(row, col+0, taNote);
+			
+			row++;
+			
+			pAttachFile = new HorizontalPanel();
+			pAttachFile.getElement().getStyle().setDisplay(Display.BLOCK);
+			pAttachFile.setDisplayCell("block");
+			//pAttachFile.setSpacing(2);
+			getFlexCellFormatter().setColSpan(row, col+0, 3);
+			setWidget(row, col+0, pAttachFile);
 			
 			row++;
 			

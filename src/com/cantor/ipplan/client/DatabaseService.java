@@ -23,6 +23,7 @@ import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.cantor.ipplan.shared.SearchInfo;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.TaskWrapper;
 import com.cantor.ipplan.shared.TasktypeWrapper;
@@ -73,4 +74,6 @@ public interface DatabaseService extends RemoteService {
 	public void setContactsAutoSync(int duration) throws Exception;
 	public void setCalendarAutoSync(int duration) throws Exception;
 	public ImportExportProcessInfo syncCalendar() throws Exception;
+	
+	public SearchInfo searchFile(int typeDrive, String searchStr) throws Exception;
 }

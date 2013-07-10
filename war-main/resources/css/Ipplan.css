@@ -303,12 +303,11 @@ img#apploader {
 .customer-info {
     width:300px;
     padding: 2px 2px 2px 0px;
-    height: 61px;
 }
 
 .customer-info img {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     float: left;
     margin-right: 5px;
     border: 1px solid silver;
@@ -453,4 +452,20 @@ img#apploader {
   border: 1px solid #939393;
   border-radius:2px;
   margin-top: 1px;
+}
+
+.DecoratedFileUpload .gwt-Button {
+  font-size: 1em !important;
+}
+
+.GWTUpld .upld-status .filename {
+  text-overflow: ellipsis;
+  width: 178px;
+}
+
+.GWTUpld .upld-status {
+  border: 1px solid #939393;
+  border-radius:4px;
+  padding:4px;
+  font-weight:normal !important;
 }

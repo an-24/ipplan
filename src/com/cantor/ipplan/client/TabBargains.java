@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.FlexTable;
 import com.cantor.ipplan.client.OAuth2.EventOnCloseWindow;
 import com.cantor.ipplan.client.widgets.CellTable;
 import com.cantor.ipplan.client.widgets.CheckBox;

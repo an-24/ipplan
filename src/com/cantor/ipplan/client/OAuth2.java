@@ -11,6 +11,7 @@ public class OAuth2 {
 	private String redirectURI = null;
 	private Window window = null;
 	private EventOnCloseWindow closeEvent;
+	private String state;
 	
 	public OAuth2(String providerURI, String clientId, String scope) {
 		this(providerURI,clientId,scope,null);
@@ -23,6 +24,10 @@ public class OAuth2 {
 		this.scope = scope;
 		this.redirectURI = redirectURI;
 		register();
+	}
+	
+	public void setState(String state) {
+		this.state = state;
 	}
 	
 	public void login(EventOnCloseWindow cb) {
@@ -46,6 +51,8 @@ public class OAuth2 {
     		.append("&").append("scope").append("=").append(encode(scope))
     		.append("&").append("redirect_uri").append("=").append(redirectURI==null?"https://localhost":encode(redirectURI))
     		.append("&").append("approval_prompt=force");
+		if(state!=null)
+			sb.append("&").append("state").append("=").append(encode(state));
 		if(offline) sb.append("&").append("access_type=offline");
 		return sb.toString();
 	}
@@ -80,7 +87,7 @@ public class OAuth2 {
 		});	
     }
     
-    static interface EventOnCloseWindow {
+    public static interface EventOnCloseWindow {
     	public void onCloseWindow();
     }
     

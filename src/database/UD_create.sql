@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     05.07.2013 11:28:23                          */
+/* Created on:     08.07.2013 10:03:22                          */
 /*==============================================================*/
 
 
@@ -121,8 +121,39 @@ customer_birthday    TIMESTAMP,
 customer_photo       VARCHAR(8190),
 customer_lastupdate  TIMESTAMP,
 customer_visible     INTEGER                        default 1 not null,
+customer_IMs         VARCHAR(256),
 constraint PK_CUSTOMER primary key (customer_id)
 );
+
+/*==============================================================*/
+/* Table: filelinks                                             */
+/*==============================================================*/
+create table filelinks (
+filelinks_id         INTEGER                        not null,
+bargain_id           INTEGER                        not null,
+provider_id          INTEGER                        not null,
+filelinks_name       VARCHAR(120)                   not null,
+filelinks_uri        VARCHAR(320)                   not null,
+constraint PK_FILELINKS primary key (filelinks_id)
+);
+
+/*==============================================================*/
+/* Table: provider                                              */
+/*==============================================================*/
+create table provider (
+provider_id          INTEGER                        not null,
+provider_name        VARCHAR(60)                    not null,
+provider_token       VARCHAR(100),
+provider_refresh_token VARCHAR(100),
+provider_expires_in  INTEGER,
+provider_granted     TIMESTAMP,
+constraint PK_PROVIDER primary key (provider_id),
+constraint AK_KEY_2_PROVIDER unique (provider_name)
+);
+
+insert into provider(provider_id,provider_name) values(1,'Google Disk');
+insert into provider(provider_id,provider_name) values(2,'Dropbox');
+commit;
 
 /*==============================================================*/
 /* Table: puser                                                 */
@@ -239,6 +270,16 @@ alter table calendar
 alter table contract
    add constraint FK_CONTRACT_REFERENCE_CUSTOMER foreign key (customer_id)
       references customer (customer_id);
+
+alter table filelinks
+   add constraint FK_FILELINK_REFERENCE_BARGAIN foreign key (bargain_id)
+      references bargain (bargain_id)
+      on delete cascade
+      on update cascade;
+
+alter table filelinks
+   add constraint FK_FILELINK_REFERENCE_PROVIDER foreign key (provider_id)
+      references provider (provider_id);
 
 alter table puser
    add constraint FK_PUSER_REFERENCE_PUSER foreign key (owner_puser_id)

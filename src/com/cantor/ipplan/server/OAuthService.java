@@ -25,6 +25,7 @@ public class OAuthService extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	         throws IOException,ServletException {
 		String code = request.getParameter("code");
+		String state = request.getParameter("state");
 		PrintWriter writer = response.getWriter();
 		writer.append("<html><head><script type=\"text/javascript\">");
 		// exchange code on token
@@ -51,7 +52,16 @@ public class OAuthService extends HttpServlet {
 					OAuthToken token = gson.fromJson(resp,OAuthToken.class);
 					if(token!=null && token.exists()) {
 						token.setGranted(new Date());
-						new DatabaseServiceImpl(request.getSession()).saveToken(token);
+						
+						DatabaseServiceImpl dbservice = new DatabaseServiceImpl(request.getSession());
+						// проверка на token для drive
+						if(state!=null && state.startsWith("drive")) {
+							int tdisk = new Integer(state.split("=")[1]);
+							dbservice.saveTokenDrive(tdisk, token);
+						} else
+						// иначе для других сервисов	
+							dbservice.saveToken(token);
+						
 						writer.append("window.opener.doLogin();");
 					}
 				} finally {

@@ -1,9 +1,6 @@
 package com.cantor.ipplan.shared;
 
-import java.util.Arrays;
 import java.util.Date;
-
-import com.cantor.ipplan.client.ClonableObject;
 import com.cantor.ipplan.client.Ipplan;
 
 

@@ -1,8 +1,11 @@
 package com.cantor.ipplan.client.widgets;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 
@@ -45,5 +48,23 @@ public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 
 	public Element getInputElement() {
 		return (Element) getElement().getChild(0);
+	}
+
+	public void click() {
+		setValue(true);
+		this.fireEvent(new GwtEvent<ClickHandler>(){
+
+			@Override
+			protected void dispatch(ClickHandler handler) {
+				handler.onClick(null);
+			}
+
+			@Override
+			public com.google.gwt.event.shared.GwtEvent.Type<ClickHandler> getAssociatedType() {
+				return ClickEvent.getType();
+			}
+			
+		});
+		
 	}
 }

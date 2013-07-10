@@ -9,6 +9,7 @@ import com.cantor.ipplan.shared.CostsWrapper;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.cantor.ipplan.shared.ImportExportProcessInfo;
 import com.cantor.ipplan.shared.PUserWrapper;
+import com.cantor.ipplan.shared.SearchInfo;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.TaskWrapper;
 import com.cantor.ipplan.shared.TasktypeWrapper;
@@ -59,4 +60,6 @@ public interface DatabaseServiceAsync {
 	void isNewVersionBargain(BargainWrapper bargain,
 			AsyncCallback<Boolean> callback);
 	void getConfig(String name, AsyncCallback<String> callback);
+	void searchFile(int typeDrive, String searchStr,
+			AsyncCallback<SearchInfo> callback);
 }

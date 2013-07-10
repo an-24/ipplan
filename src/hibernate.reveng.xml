@@ -16,4 +16,6 @@
   <table-filter match-name="MESSAGES"/>
   <table-filter match-name="TASK"/>
   <table-filter match-name="TASKTYPE"/>
+  <table-filter match-name="FILELINKS"/>
+  <table-filter match-name="PROVIDER"/>
 </hibernate-reverse-engineering>
