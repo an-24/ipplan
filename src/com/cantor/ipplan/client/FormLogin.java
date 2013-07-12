@@ -28,12 +28,11 @@ import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineHyperlink;
 
-public class FormLogin extends Form implements ValueChangeHandler {
+public class FormLogin extends Form implements ValueChangeHandler<String> {
 
 	private TextBox tbLogin;
 	private PasswordTextBox tbPassword;
 	private FlexTable flexTable;
-	private int rowError =  -1;
 	private LoginServiceAsync service = null;
 
 	public FormLogin(Ipplan main, RootPanel root) {
@@ -136,7 +135,7 @@ public class FormLogin extends Form implements ValueChangeHandler {
 							showError(flexTable, tbPassword, "Неверный пароль или имя пользователя");
 						} else {
 							((UserProfile)getMain()).setUser(result);
-							History.newItem("profile");
+							History.newItem("enter");
 						}
 					}
 					
@@ -178,7 +177,7 @@ public class FormLogin extends Form implements ValueChangeHandler {
 	}
 	
 	@Override
-	public void onValueChange(ValueChangeEvent event) {
+	public void onValueChange(ValueChangeEvent<String> event) {
 		resetErrors();
 	}
 	

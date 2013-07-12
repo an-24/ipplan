@@ -8,10 +8,15 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class VerticalPanel extends AbstractPanel {
 
+	public VerticalPanel() {
+		super();
+		setDisplayCell("table-row");
+	}
+
 	@Override
 	protected Element createAlignedDiv() {
 	    Element td = DOM.createDiv();
-		DOM.setStyleAttribute(td, "display", "table-row");
+		DOM.setStyleAttribute(td, "display", getDisplayCell());
 		DOM.setStyleAttribute(td, "textAlign", horzAlign.getTextAlignString());
 		DOM.setStyleAttribute(td, "verticalAlign", vertAlign.getVerticalAlignString());
 	    return td;

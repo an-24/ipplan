@@ -1,2 +1,0 @@
-serviceClass: com.cantor.ipplan.client.AnalyticalService
-path: 323B3514290F17CD6F26A6FF1B1CE0E4.gwt.rpc

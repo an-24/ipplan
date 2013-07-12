@@ -10,24 +10,17 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name="com.google.gwt.logging.Logging"/>
   <inherits name="com.google.gwt.i18n.I18N"/>
+  <extend-property name="locale" values="ru"/>
+  <set-property-fallback name="locale" value="ru"/>
   <inherits name="gwtupload.GWTUpload"/>
-  
   <inherits name="com.googlecode.gflot.GFlot" />
   <set-property name="gflot.load.flot.canvas" value="ENABLED" />
   <set-property name="gflot.load.canvas2image" value="ENABLED" />
-    
   <set-property name="gwt.logging.popupHandler" value="DISABLED" />
-  <extend-property name="locale" values="ru"/>
-  <set-property-fallback name="locale" value="ru"/>
+
+  <set-property name="user.agent" value="ie8,ie9,gecko1_8,safari,opera"/>
   
-  <!-- Inherit the default GWT style sheet.  You can change       -->
-  <!-- the theme of your GWT application by uncommenting          -->
-  <!-- any one of the following lines.                            -->
   <inherits name="com.cantor.ipplan.theme.blitzer.Blitzer"/>
-  <!-- <inherits name='com.google.gwt.user.theme.clean.Clean'/> -->
-  <!-- <inherits name='com.google.gwt.user.theme.standard.Standard'/> -->
-  <!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
-  <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 
   <!-- Other module inherits                                      -->
 

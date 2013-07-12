@@ -10,7 +10,6 @@ import com.cantor.ipplan.shared.CostsWrapper;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.HasBlurHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -39,7 +38,7 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 	private CostsWrapper cost =  null;
 	private Element btnPlace;
 	private DatabaseServiceAsync dbservice;
-	private Element outerDiv;
+	private Element outerDiv = null;
 
 	public CostItemBox(DatabaseServiceAsync dbservice) {
 		this(dbservice, new TextBox());
@@ -106,7 +105,8 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 	}
 	
 	public Element getStyleElement() {
-		return outerDiv;
+		if(outerDiv==null) return super.getStyleElement();
+					  else return outerDiv;
 	}
 
 
@@ -124,7 +124,7 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 		if(cost!=null) {
 			getElement().removeClassName("Customer-add");
 			getElement().addClassName("Customer-bind");
-			btnPlace.getStyle().setDisplay(Display.BLOCK);
+			btnPlace.getStyle().setDisplay(Display.INLINE_BLOCK);
 			btnPlace.setTitle("Очистить");
 		} else {
 			getElement().removeClassName("Customer-add");
@@ -169,7 +169,7 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 			
 			if(newtext.length()>3) {
 				box.getElement().addClassName("Customer-add");
-				box.btnPlace.getStyle().setDisplay(Display.BLOCK);
+				box.btnPlace.getStyle().setDisplay(Display.INLINE_BLOCK);
 				box.btnPlace.setTitle("Добавить");
 			} else {
 				box.getElement().removeClassName("Customer-add");
@@ -210,12 +210,12 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 		
 		@Override
 		public String getDisplayString() {
-			return cost.costsName;
+			return (cost!=null)?cost.costsName:"";
 		}
 
 		@Override
 		public String getReplacementString() {
-			return cost.costsName;
+			return (cost!=null)?cost.costsName:"";
 		}
 	}
 

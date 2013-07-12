@@ -1,15 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ipplan" basedir="." default="default">
-    <target name="default" depends="buildwar,deploy"></target>
-    <target name="buildwar">
-        <war basedir="war-main" destfile="main.war" webxml="war-main/WEB-INF/web.xml">
+    <target name="default" depends="define,copy,buildwar,deploy"></target>
+	<target name="define">
+		<property name="bin" value="bin"/>
+		<property name="src" value="src"/>
+		<property name="lib" value="lib"/>
+		<property name="distrib" value="war-main"/>
+		<property name="warname" value="main.war"/>
+		<property name="webxml" value="web-main.xml"/>
+	</target>	
+	
+	<target name="copy" depends="define">
+		<echo>copy classes...</echo>
+		<copy todir="${distrib}/WEB-INF/classes">
+			<fileset dir="${bin}"/>
+		</copy>
+		<copy todir="${distrib}/WEB-INF/lib">
+			<fileset dir="${lib}"/>
+		</copy>
+		<!-- так как build делается в ipplan то нужно скопировать -->
+		<delete dir="${distrib}/main"/>
+		<copydir dest="${distrib}/main" src="war-ipplan/main"/>
+		<delete dir="${distrib}/WEB-INF/deploy/main"/>
+		<copydir dest="${distrib}/WEB-INF/deploy/main" src="war-ipplan/WEB-INF/deploy/main"/>
+		<!-- ==================================================== -->
+	</target>
+    <target name="buildwar" depends="copy">
+		<echo>archive...</echo>
+        <war basedir="${distrib}" destfile="${warname}" webxml="${src}/deploy/test/${webxml}">
             <exclude name="WEB-INF/**" />
-            <webinf dir="war-main/WEB-INF/">
-                <include name="**/*.jar" />
+            <webinf dir="${distrib}/WEB-INF/">
+                <include name="lib/**/*.jar" />
+                <include name="classes/com/**/*.*" />
+                <include name="deploy/**/*.*" />
+                <include name="classes/hibernate.cfg.xml" />
             </webinf>
         </war>
     </target>
-    <target name="deploy">
-               <copy file="main.war" todir="." />
+    <target name="deploy" depends="buildwar">
+        <copy file="${warname}" todir="." />
     </target>
 </project>

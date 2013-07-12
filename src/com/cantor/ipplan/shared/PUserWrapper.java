@@ -61,4 +61,8 @@ public class PUserWrapper implements java.io.Serializable,com.google.gwt.user.cl
 		return (owner==null)?puserDbname:owner.puserDbname;
 	}
 	
+	public boolean canEnterService() {
+		return puserLock==0 && !(isDatabaseCreateNeeded() && !isAllowedCreateDatabase());		
+	}
+	
 }

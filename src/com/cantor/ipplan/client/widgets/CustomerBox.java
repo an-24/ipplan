@@ -9,9 +9,6 @@ import com.cantor.ipplan.client.Ipplan;
 import com.cantor.ipplan.client.NotifyHandler;
 import com.cantor.ipplan.shared.CustomerWrapper;
 import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -111,7 +108,7 @@ public class CustomerBox extends SuggestBox {
 		if(customer!=null) {
 			removeStyleName("Customer-add");	
 			addStyleName("Customer-bind");
-			btnPlace.getStyle().setDisplay(Display.BLOCK);
+			btnPlace.getStyle().setDisplay(Display.INLINE_BLOCK);
 			btnPlace.setTitle("Очистить");
 		} else {
 			removeStyleName("Customer-add");	
@@ -168,7 +165,7 @@ public class CustomerBox extends SuggestBox {
 			
 			if(newtext.length()>3) {
 				box.addStyleName("Customer-add");
-				box.btnPlace.getStyle().setDisplay(Display.BLOCK);
+				box.btnPlace.getStyle().setDisplay(Display.INLINE_BLOCK);
 				box.btnPlace.setTitle("Добавить");
 			} else {
 				box.removeStyleName("Customer-add");

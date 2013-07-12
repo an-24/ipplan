@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+              http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5"
+         xmlns="http://java.sun.com/xml/ns/javaee">
+
+  <!-- for node: Месторасположение хранилища -->
+  <context-param>
+    <param-name>storeLocation</param-name>
+    <param-value>d:\database\store</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>IpplanHost</param-name>
+    <param-value>http://127.0.0.1:8080/ipplan/Ipplan.html</param-value>
+  </context-param>
+
+  <!-- Servlets -->
+  <servlet>
+  	<servlet-name>DatabaseService</servlet-name>
+  	<servlet-class>com.cantor.ipplan.server.DatabaseServiceImpl</servlet-class>
+  	<!--  for node: Параметр для обратного вызова и подтверждения полномочий пользователя -->
+    <init-param>
+    	<param-name>loginCallBack</param-name>
+    	<param-value>http://127.0.0.1:8080/ipplan/ipplan/</param-value>
+    </init-param>
+  </servlet>
+  <servlet>
+    <servlet-name>OAuthService</servlet-name>
+    <servlet-class>com.cantor.ipplan.server.OAuthService</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>AnalyticalService</servlet-name>
+    <servlet-class>com.cantor.ipplan.server.AnalyticalServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet>
+    <servlet-name>uploadService</servlet-name>
+    <servlet-class>com.cantor.ipplan.server.UploadFile</servlet-class>
+  </servlet>
+  
+
+  <!-- Mapping -->
+
+  <servlet-mapping>
+    <servlet-name>DatabaseService</servlet-name>
+    <url-pattern>/main/database/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>OAuthService</servlet-name>
+    <url-pattern>/main/auth</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>AnalyticalService</servlet-name>
+    <url-pattern>/main/analytical/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>uploadService</servlet-name>
+    <url-pattern>/main/upload</url-pattern>
+  </servlet-mapping>
+  
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>Main.html</welcome-file>
+  </welcome-file-list>
+
+  <listener>
+    <listener-class>com.cantor.ipplan.server.IpplanSessionListener</listener-class>
+  </listener>
+  
+</web-app>

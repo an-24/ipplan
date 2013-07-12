@@ -11,3 +11,9 @@ bin
 lib
 
 /src/database/err.log
+
+/*.war
+/war-ipplan/WEB-INF/classes
+/war-ipplan/WEB-INF/deploy
+/war-main/WEB-INF/deploy
+/war-main/WEB-INF/classes

@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ipplan" basedir="." default="default">
-    <target name="default" depends="buildwar,deploy"></target>
-    <target name="buildwar">
-        <war basedir="war-ipplan" destfile="ipplan.war" webxml="war-ipplan/WEB-INF/web.xml">
+    <target name="default" depends="define,copy,buildwar,deploy"></target>
+	<target name="define">
+		<property name="bin" value="bin"/>
+		<property name="src" value="src"/>
+		<property name="lib" value="lib"/>
+		<property name="distrib" value="war-ipplan"/>
+		<property name="warname" value="ipplan.war"/>
+		<property name="webxml" value="web-ipplan.xml"/>
+	</target>	
+	
+	<target name="copy" depends="define">
+		<echo>copy classes...</echo>
+		<copy todir="${distrib}/WEB-INF/classes">
+			<fileset dir="${bin}"/>
+		</copy>
+		<copy todir="${distrib}/WEB-INF/lib">
+			<fileset dir="${lib}"/>
+		</copy>
+	</target>
+    <target name="buildwar" depends="copy">
+		<echo>archive...</echo>
+        <war basedir="${distrib}" destfile="${warname}" webxml="${src}/deploy/test/${webxml}">
             <exclude name="WEB-INF/**" />
-            <webinf dir="war-ipplan/WEB-INF/">
-                <include name="**/*.jar" />
+            <webinf dir="${distrib}/WEB-INF/">
+                <include name="lib/**/*.jar" />
+                <include name="classes/com/**/*.*" />
+                <include name="deploy/**/*.*" />
+                <include name="classes/hibernate.cfg.xml" />
             </webinf>
         </war>
     </target>
-    <target name="deploy">
-               <copy file="ipplan.war" todir="." />
+    <target name="deploy" depends="buildwar">
+        <copy file="${warname}" todir="." />
     </target>
 </project>

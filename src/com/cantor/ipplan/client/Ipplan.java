@@ -6,10 +6,10 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.cantor.ipplan.shared.HttpStatusText;
-import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -22,11 +22,9 @@ import com.google.gwt.user.client.rpc.StatusCodeException;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
-import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.datepicker.client.DateBox.DefaultFormat;
 
@@ -40,8 +38,14 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 
 	private static Logger rootLogger = Logger.getLogger("iPPlan");
 	static String INIT_TOKEN = "";
-    protected static Map<String, Class> tokenForms = new HashMap<String, Class>();
+    protected static Map<String, Class<? extends Form>> tokenForms = new HashMap<String, Class<? extends Form>>();
 	private static Stack<Dialog> activeDialogs = new Stack<Dialog>();
+	
+	private String lastFault;
+
+	static {
+    	tokenForms.put("error", FormError.class);
+    }
 	
     public Ipplan() {
     	super();
@@ -83,7 +87,11 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		refreshForm(tokenForms.get(token),id);
 	}
 	
-	public void refreshForm(final Class type, String session_id) {
+	public void refreshForm(final Class<? extends Form> type, String session_id) {
+		if(type==FormError.class) {
+			new FormError(lastFault).show();
+		}
+		
 	};
 	
 	public static void log(Level l, String message) {
@@ -117,7 +125,7 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	private static Dialog configEventBox(String errtext) {
 		Button closeButton = null;
 		Label textToServerLabel = null;
-		final Dialog eventBox = new Dialog("Сообщение сервера",true);
+		final Dialog eventBox = new Dialog("Сообщение об ошибке",true);
 		closeButton = new Button("Закрыть");
 		closeButton.getElement().setId("closeButton");
 
@@ -127,7 +135,7 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		VerticalPanel dialogVPanel = new VerticalPanel();
 		dialogVPanel.setWidth("500px");
 		dialogVPanel.addStyleName("dialogVPanel");
-		dialogVPanel.add(new HTML("<b>С сервера пришло сообщение:</b>"));
+		dialogVPanel.add(new HTML("<b>Возникла ошибка:</b>"));
 		dialogVPanel.add(textToServerLabel);
 		dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
 		dialogVPanel.add(closeButton);
@@ -141,15 +149,6 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		textToServerLabel.setText(errtext);
 		closeButton.setFocus(true);
 		return eventBox;
-	}
-
-	private static DialogBox configEventBox(String errtext, ClickHandler click) {
-		DialogBox eventBox = configEventBox(errtext);
-		VerticalPanel panel = (VerticalPanel) eventBox.getWidget();
-		Button closeButton = (Button) panel.getWidget(2);
-		closeButton.addClickHandler(click);
-		return eventBox;
-		
 	}
 
 	private static Dialog configContinueConfirmationBox(String text,ClickHandler ok) {

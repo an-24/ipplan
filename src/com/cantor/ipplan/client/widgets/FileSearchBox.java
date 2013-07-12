@@ -67,6 +67,7 @@ public class FileSearchBox extends SuggestBox {
 					
 					btnPlace = DOM.createDiv();
 					div.appendChild(btnPlace);
+					btnPlace.setTitle("Очистить");
 					
 					Event.setEventListener(btnPlace, new EventListener() {
 						@Override
@@ -89,6 +90,7 @@ public class FileSearchBox extends SuggestBox {
 		this.filelink = filelink;
 		if(filelink==null) setText("");else
 			   			   setText(filelink.name);
+		refreshShow();
 	}
 
 
@@ -119,9 +121,14 @@ public class FileSearchBox extends SuggestBox {
 	}
 	
 	protected void refreshShow() {
-		addStyleName("Customer-bind");
-		btnPlace.getStyle().setDisplay(Display.BLOCK);
-		btnPlace.setTitle("Очистить");
+		if(filelink!= null) {
+			addStyleName("Customer-bind");
+			btnPlace.getStyle().setDisplay(Display.INLINE_BLOCK);
+		} else {
+			removeStyleName("Customer-bind");
+			btnPlace.getStyle().setDisplay(Display.NONE);
+		}
+			
 	}
 
 	private void clickBoxButton() {

@@ -6,13 +6,16 @@ import com.cantor.ipplan.client.widgets.CellTable;
 import com.cantor.ipplan.client.widgets.CheckBox;
 import com.cantor.ipplan.client.widgets.ComboBox;
 import com.cantor.ipplan.client.widgets.GridPager;
+import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.cantor.ipplan.client.widgets.RadioButton;
+import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.cantor.ipplan.shared.PUserWrapper;
 import com.cantor.ipplan.shared.PaymentsWrapper;
 import com.cantor.ipplan.shared.SyncWrapper;
 import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -30,15 +33,12 @@ import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
-import com.cantor.ipplan.client.widgets.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 
 public class FormProfile extends Form {
@@ -57,7 +57,7 @@ public class FormProfile extends Form {
 	private CellTable<SyncWrapper> syncGrid;
 	private CellTable<PaymentsWrapper> payGrid;
 
-	private LoginServiceAsync loginService = null;
+	//private LoginServiceAsync loginService = null;
 	private ProfileServiceAsync profService = null;
 	
 	
@@ -83,7 +83,7 @@ public class FormProfile extends Form {
 		Button btnExit = new Button("Выйти");
 		btnExit.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				if(loginService==null) loginService = GWT.create(LoginService.class);
+				LoginServiceAsync loginService = GWT.create(LoginService.class);
 				loginService.logout(new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
 						com.google.gwt.user.client.Window.Location.reload();
@@ -113,6 +113,7 @@ public class FormProfile extends Form {
 		p3.add(l2);
 		p3.setCellVerticalAlignment(l2, HasVerticalAlignment.ALIGN_MIDDLE);
 		
+		@SuppressWarnings("deprecation")
 		Label lbLastaccess = new Label(DateTimeFormat.getMediumDateTimeFormat().format(user.puserLastaccess));
 		p3.add(lbLastaccess);
 		p3.setCellVerticalAlignment(lbLastaccess, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -128,33 +129,24 @@ public class FormProfile extends Form {
 		} else
 			pMessage.setVisible(false);
 		
-		VerticalPanel p2 = new VerticalPanel();
-		p0.add(p2);
-		p2.setSize("100%", "45px");
 
 		String sTmp = "Открыть базу данных";
 		if(user.isDatabaseCreateNeeded()) sTmp = "Создать базу данных";
 		Button btnOpenDB = new Button(sTmp);
+		btnOpenDB.addStyleName("mainCommand");
+		
 		btnOpenDB.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				if(loginService==null) loginService = GWT.create(LoginService.class);
-				loginService.openDatabase(new AsyncCallback<String>() {
-					public void onSuccess(String result) {
-						Window.Location.assign(result);
-					}
-					public void onFailure(Throwable caught) {
-						Ipplan.showError(caught);
-					}
-				});
+				enterService();
 			}
 		});
-		btnOpenDB.setEnabled(user.puserLock==0);
-		if(user.isDatabaseCreateNeeded() && !user.isAllowedCreateDatabase())
-			btnOpenDB.setEnabled(false);
-		p2.add(btnOpenDB);
-		btnOpenDB.setWidth("204px");
-		p2.setCellVerticalAlignment(btnOpenDB, HasVerticalAlignment.ALIGN_MIDDLE);
-		p2.setCellHorizontalAlignment(btnOpenDB, HasHorizontalAlignment.ALIGN_CENTER);
+		btnOpenDB.setEnabled(user.canEnterService());
+		
+		p0.add(btnOpenDB, "table-cell");
+		p0.getCellElement(btnOpenDB).getStyle().setPaddingTop(6, Unit.PX);
+		p0.getCellElement(btnOpenDB).getStyle().setPaddingBottom(6, Unit.PX);
+		p0.setCellVerticalAlignment(btnOpenDB, HasVerticalAlignment.ALIGN_MIDDLE);
+		p0.setCellHorizontalAlignment(btnOpenDB, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		tabPanel = new TabPanel();
 		tabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
@@ -180,6 +172,7 @@ public class FormProfile extends Form {
 		Label label = new Label("Дата создания");
 		Tabl1.setWidget(0, 0, label);
 		
+		@SuppressWarnings("deprecation")
 		Label lDateCreated = new Label(DateTimeFormat.getMediumDateFormat().format(user.puserCreated));
 		lDateCreated.setStyleName("gwt-TextBox");
 		Tabl1.setWidget(0, 1, lDateCreated);
@@ -243,11 +236,11 @@ public class FormProfile extends Form {
 		final CheckBox cbBoss = new CheckBox("Босс-аккаунт");
 		cbBoss.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				btnAdd.setEnabled(cbBoss.isChecked());
-				btnDelete.setEnabled(cbBoss.isChecked() && lbChildren.getItemCount()>0);
+				btnAdd.setEnabled(cbBoss.getValue());
+				btnDelete.setEnabled(cbBoss.getValue() && lbChildren.getItemCount()>0);
 			}
 		});
-		cbBoss.setChecked(user.puserBoss!=0);
+		cbBoss.setValue(user.puserBoss!=0);
 		Tabl1.setWidget(5, 1, cbBoss);
 		
 		
@@ -350,11 +343,11 @@ public class FormProfile extends Form {
 				u.puserTarif =cbTarif.getSelectedIndex();
 				u.children.addAll(user.children);
 				u.lastSystemMessage = FormProfile.this.user.lastSystemMessage;
-				if(rbOwnerOk.isChecked()) 
+				if(rbOwnerOk.getValue()) 
 					u.owner = FormProfile.this.user.lastSystemMessage.sender;
 				
 				if(profService==null) profService = GWT.create(ProfileService.class);
-				profService.setUserData(u, rbOwnerOk.isChecked()?1:rbOwnerCancel.isChecked()?-1:0,new AsyncCallback<Void>() {
+				profService.setUserData(u, rbOwnerOk.getValue()?1:rbOwnerCancel.getValue()?-1:0,new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
 						toast(btnSave,"Общие данные успешно изменены");
 						getMain().refreshForm(FormProfile.class,null);
@@ -477,7 +470,7 @@ public class FormProfile extends Form {
 					showError(currentTab, tbRepeatPassword, "Вам не удалось повторить пароль");
 					return;
 				};
-				if(loginService==null) loginService = GWT.create(LoginService.class);
+				LoginServiceAsync loginService = GWT.create(LoginService.class);
 				loginService.changePassword(tbNewPassword.getText(), new AsyncCallback<Void>() {
 					public void onSuccess(Void result) {
 						tbNewPassword.setText("");
@@ -516,6 +509,7 @@ public class FormProfile extends Form {
 		c1.setSortable(true);
 		syncGrid.setColumnWidth(c1, "200px");
 		
+		@SuppressWarnings("deprecation")
 		Column<SyncWrapper, Date> c2 = new Column<SyncWrapper, Date>(new DateCell(DateTimeFormat.getMediumDateTimeFormat())) {
 			@Override
 			public Date getValue(SyncWrapper object) {
@@ -546,7 +540,6 @@ public class FormProfile extends Form {
 	}
 
 	protected void showAddChildDialog() {
-		Label textToServerLabel = null;
 		final Dialog dialog = new Dialog("Добавить подчиненного");
 		FlexTable table = dialog.getContent();
 		
@@ -634,16 +627,16 @@ public class FormProfile extends Form {
 		return null;
 	}
 
-	private int getWidgetRow(Widget widget, FlexTable table) {
-	    for (int row = 0; row < table.getRowCount(); row++) {
-	      for (int col = 0; col < table.getCellCount(row); col++) {
-	        Widget w = table.getWidget(row, col);
-	        if (w == widget) {
-	          return row;
-	        }
-	      }
-	    };
-		return -1;
+	public static void enterService() {
+		LoginServiceAsync loginService = GWT.create(LoginService.class);
+		loginService.openDatabase(new AsyncCallback<String>() {
+			public void onSuccess(String result) {
+				Window.Location.assign(result);
+			}
+			public void onFailure(Throwable caught) {
+				Ipplan.showError(caught);
+			}
+		});
 	};
 	
 };

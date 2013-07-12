@@ -199,6 +199,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		sp.setWidth("193px");
 		//getFlexCellFormatter().setRowSpan(1, 2, 13);
 		setWidget(2, 1, sp);
+		getCellFormatter().getElement(2,1).getStyle().setHeight(100, Unit.PCT);
 		
 		VerticalPanel vp =  new VerticalPanel();
 		l = new Label("Задачи");

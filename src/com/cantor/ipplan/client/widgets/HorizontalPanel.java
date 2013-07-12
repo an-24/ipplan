@@ -9,12 +9,16 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class HorizontalPanel extends AbstractPanel {
 
-	private String displayCell = "table-cell";
+
+	public HorizontalPanel() {
+		super();
+		setDisplayCell("table-cell");
+	}
 	
 	@Override
 	protected Element createAlignedDiv() {
 	    Element td = DOM.createDiv();
-		DOM.setStyleAttribute(td, "display", displayCell);
+		DOM.setStyleAttribute(td, "display", getDisplayCell());
 		DOM.setStyleAttribute(td, "textAlign", horzAlign.getTextAlignString());
 		DOM.setStyleAttribute(td, "verticalAlign", vertAlign.getVerticalAlignString());
 	    return td;
@@ -40,11 +44,4 @@ public class HorizontalPanel extends AbstractPanel {
 		super.setCellVerticalAlignment(w,align);
 	}
 
-	public String getDisplayCell() {
-		return displayCell;
-	}
-
-	public void setDisplayCell(String displayCell) {
-		this.displayCell = displayCell;
-	}
 }

@@ -6,7 +6,6 @@ import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -17,6 +16,7 @@ public abstract class AbstractPanel extends ComplexPanel  implements HasAlignmen
 	protected VerticalAlignmentConstant vertAlign = ALIGN_TOP;
 	private int spacing = 0;
 	private Element rootDiv;
+	private String displayCell;
 	
 	public AbstractPanel() {
 		setElement(getRoot());
@@ -30,26 +30,41 @@ public abstract class AbstractPanel extends ComplexPanel  implements HasAlignmen
 		return rootDiv;
 	}
 
+	public String getDisplayCell() {
+		return displayCell;
+	}
+
+	public void setDisplayCell(String displayCell) {
+		this.displayCell = displayCell;
+	}
+
 	@Override
-	  public void add(Widget w) {
+	public void add(Widget w) {
 	    Element td = createAlignedDiv();
 	    DOM.appendChild(getRoot(), td);
 	    add(w, td);
-	  }
+	}
 
-	  public HorizontalAlignmentConstant getHorizontalAlignment() {
+	public void add(Widget w, String display) {
+	    Element td = createAlignedDiv();
+	    td.getStyle().setProperty("display", display);
+	    DOM.appendChild(getRoot(), td);
+	    add(w, td);
+	}
+	
+	public HorizontalAlignmentConstant getHorizontalAlignment() {
 	    return horzAlign;
-	  }
+	}
 
-	  public VerticalAlignmentConstant getVerticalAlignment() {
+	public VerticalAlignmentConstant getVerticalAlignment() {
 	    return vertAlign;
-	  }
+	}
 
-	  public void insert(IsWidget w, int beforeIndex) {
+	public void insert(IsWidget w, int beforeIndex) {
 	    insert(asWidgetOrNull(w), beforeIndex);
-	  }
+	}
 
-	  public void insert(Widget w, int beforeIndex) {
+	public void insert(Widget w, int beforeIndex) {
 	    checkIndexBoundsForInsertion(beforeIndex);
 
 	    /*
@@ -63,10 +78,10 @@ public abstract class AbstractPanel extends ComplexPanel  implements HasAlignmen
 	    Element td = createAlignedDiv();
 	    DOM.insertChild(getRoot(), td, beforeIndex);
 	    insert(w, td, beforeIndex, false);
-	  }
+	}
 
-	  @Override
-	  public boolean remove(Widget w) {
+	@Override
+	public boolean remove(Widget w) {
 	    // Get the TD to be removed, before calling super.remove(), because
 	    // super.remove() will detach the child widget's element from its parent.
 	    Element td = DOM.getParent(w.getElement());
@@ -75,52 +90,52 @@ public abstract class AbstractPanel extends ComplexPanel  implements HasAlignmen
 	      DOM.removeChild(getRoot(), td);
 	    }
 	    return removed;
-	  }
+	}
 
-	  /**
-	   * Sets the default horizontal alignment to be used for widgets added to this
-	   * panel. It only applies to widgets added after this property is set.
-	   * 
-	   * @see HasHorizontalAlignment#setHorizontalAlignment(HasHorizontalAlignment.HorizontalAlignmentConstant)
-	   */
-	  public void setHorizontalAlignment(HorizontalAlignmentConstant align) {
+	/**
+	* Sets the default horizontal alignment to be used for widgets added to this
+	* panel. It only applies to widgets added after this property is set.
+	* 
+	* @see HasHorizontalAlignment#setHorizontalAlignment(HasHorizontalAlignment.HorizontalAlignmentConstant)
+	*/
+	public void setHorizontalAlignment(HorizontalAlignmentConstant align) {
 	    horzAlign = align;
-	  }
+	}
 
-	  /**
-	   * Sets the default vertical alignment to be used for widgets added to this
-	   * panel. It only applies to widgets added after this property is set.
-	   * 
-	   * @see HasVerticalAlignment#setVerticalAlignment(HasVerticalAlignment.VerticalAlignmentConstant)
-	   */
-	  public void setVerticalAlignment(VerticalAlignmentConstant align) {
+	/**
+	* Sets the default vertical alignment to be used for widgets added to this
+	* panel. It only applies to widgets added after this property is set.
+	* 
+	* @see HasVerticalAlignment#setVerticalAlignment(HasVerticalAlignment.VerticalAlignmentConstant)
+	*/
+	public void setVerticalAlignment(VerticalAlignmentConstant align) {
 	    vertAlign = align;
-	  }
+	}
 
 	  
-	  Element getWidgetTd(Widget w) {
-		    if (w.getParent() != this) {
-		      return null;
-		    }
-		    return DOM.getParent(w.getElement());
-	  }
+	Element getWidgetTd(Widget w) {
+	    if (w.getParent() != this) {
+	      return null;
+	    }
+	    return DOM.getParent(w.getElement());
+	}
 	  
-	  /**
-	   * <b>Affected Elements:</b>
-	   * <ul>
-	   * <li>-# = the cell at the given index.</li>
-	   * </ul>
-	   * 
-	   * @see UIObject#onEnsureDebugId(String)
-	   */
-	  @Override
-	  protected void onEnsureDebugId(String baseID) {
+	/**
+	* <b>Affected Elements:</b>
+	* <ul>
+	* <li>-# = the cell at the given index.</li>
+	* </ul>
+	* 
+	* @see UIObject#onEnsureDebugId(String)
+	*/
+	@Override
+	protected void onEnsureDebugId(String baseID) {
 	    super.onEnsureDebugId(baseID);
 	    int numChildren = getWidgetCount();
 	    for (int i = 0; i < numChildren; i++) {
 	      ensureDebugId(getWidgetTd(getWidget(i)), baseID, "" + i);
 	    }
-	  }
+	}
 
 	abstract protected Element createAlignedDiv(); 
 
@@ -226,27 +241,33 @@ public abstract class AbstractPanel extends ComplexPanel  implements HasAlignmen
 	public void setCellHeight(IsWidget w, String height) {
 	    this.setCellHeight(w.asWidget(), height);
 	}
-
-	  /**
-	   * Sets the width of the cell associated with the given widget, related to the
-	   * panel as a whole.
-	   * 
-	   * @param w the widget whose cell width is to be set
-	   * @param width the cell's width, in CSS units
-	   */
-	  public void setCellWidth(Widget w, String width) {
-	    Element td = getWidgetTd(w);
-	    if (td != null) {
+	
+	/**
+	* Sets the width of the cell associated with the given widget, related to the
+	* panel as a whole.
+	* 
+	* @param w the widget whose cell width is to be set
+	* @param width the cell's width, in CSS units
+	*/
+	public void setCellWidth(Widget w, String width) {
+		Element td = getWidgetTd(w);
+		if (td != null) {
 	      td.setPropertyString("width", width);
 	    }
-	  }
+	}
 	  
-	  /**
-	   * Overloaded version for IsWidget.
-	   * 
-	   * @see #setCellWidth(Widget,String)
-	   */
-	  public void setCellWidth(IsWidget w, String width) {
-	    this.setCellWidth(w.asWidget(), width);
-	  }
+	/**
+	* Overloaded version for IsWidget.
+	* 
+	* @see #setCellWidth(Widget,String)
+	*/
+	public void setCellWidth(IsWidget w, String width) {
+		this.setCellWidth(w.asWidget(), width);
+	}
+	
+	
+	public Element getCellElement(Widget w) {
+		return getWidgetTd(w);
+	}
+
 }

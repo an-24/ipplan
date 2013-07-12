@@ -39,6 +39,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.ToggleButton;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 import com.googlecode.gflot.client.DataPoint;
 import com.googlecode.gflot.client.PieDataPoint;
@@ -76,6 +77,7 @@ public class TabAnalytical extends InplaceForm {
 	private HorizontalPanel hpToggles;
 	private CheckBox cbAll;
 	private CheckBox cbExcludeSelf;
+	private boolean loaded;
 	
 	private static final int REPORT_SALES_DYN = 1;
 	private static final int REPORT_DISTR_STAFF = 2;
@@ -117,6 +119,7 @@ public class TabAnalytical extends InplaceForm {
 		return service;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void init() {
 		int col = 0, row = 0;
 
@@ -180,6 +183,7 @@ public class TabAnalytical extends InplaceForm {
 	public void setReportType(ReportInfo report) {
 		currentReport =  report.key;
 		dbTypeReport.setText(report.name);
+        loaded = true;
 		// формируем панель параметров
 		switch (currentReport) {
 			case REPORT_SALES_DYN: {
@@ -194,7 +198,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dStart =  event.getStart();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpStart);
@@ -204,7 +208,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dFinish =  event.getEnd();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpFinish);
@@ -282,7 +286,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dStart =  event.getStart();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpStart);
@@ -292,7 +296,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dFinish =  event.getEnd();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpFinish);
@@ -372,7 +376,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dStart =  event.getStart();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpStart);
@@ -382,7 +386,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dFinish =  event.getEnd();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpFinish);
@@ -405,7 +409,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dStart =  event.getStart();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpStart);
@@ -415,7 +419,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dFinish =  event.getEnd();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpFinish);
@@ -456,7 +460,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dStart =  event.getStart();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpStart);
@@ -466,7 +470,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dFinish =  event.getEnd();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpFinish);
@@ -544,7 +548,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dStart =  event.getStart();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpStart);
@@ -554,7 +558,7 @@ public class TabAnalytical extends InplaceForm {
 					@Override
 					public void onShowRange(ShowRangeEvent<Date> event) {
 						dFinish =  event.getEnd();
-						resetCurrentReport();
+						if(!loaded) resetCurrentReport();
 					}
 				});
 				hp.add(mpFinish);
@@ -586,14 +590,48 @@ public class TabAnalytical extends InplaceForm {
 		default:
 			break;
 		}
+        loaded = true;
 		refresh();
 	}
 	
 	protected void resetCurrentReport() {
         setWidget(PLOT_COORD_ROW, PLOT_COORD_COLUMN, null);
+        
+        if(!btnRefresh.getStyleName().contains("mainCommand")) {
+	        final BlinkAnimation anim = new BlinkAnimation(btnRefresh,btnRefresh.getOffsetHeight());
+	        anim.setStartNotify(new NotifyHandler<Widget>() {
+				
+				@Override
+				public void onNotify(Widget c) {
+					c.addStyleName("collapse-padding-v");
+				}
+			});
+	        
+	        anim.setHideNotify(new NotifyHandler<Widget>() {
+				@Override
+				public void onNotify(Widget c) {
+			        c.addStyleName("mainCommand");
+			        anim.setStartHeight(37);
+				}
+			});
+	        anim.setCompleteNotify(new NotifyHandler<Widget>() {
+				
+				@Override
+				public void onNotify(Widget c) {
+					c.setHeight("");
+					c.removeStyleName("collapse-padding-v");
+				}
+			});
+	        
+	        anim.run(700);
+        }
+        
 	}
 
 	protected void refresh() {
+        btnRefresh.removeStyleName("mainCommand");
+        btnRefresh.setHeight("");
+        
 		resetErrors();
 		switch (currentReport) {
 			
@@ -1065,7 +1103,6 @@ public class TabAnalytical extends InplaceForm {
 		default:
 			break;
 		}
-		
 	}
 
 	protected int getCountMonth() {

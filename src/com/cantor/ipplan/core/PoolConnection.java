@@ -19,6 +19,10 @@ public class PoolConnection implements ConnectionProvider {
 		Properties prop = new Properties();
 		prop.setProperty("user", "SYSDBA");
 		prop.setProperty("password", "masterkey");
+		//prop.setProperty("encoding", "UNICODE_FSS");
+		prop.setProperty("encoding", "UTF8");
+		//prop.setProperty("lc_ctype", "WIN1251");
+		//prop.setProperty("lc_ctype", "ISO8859_1");
 		pool = new ConnectionPool(new DriverManagerConnectionFactory("org.firebirdsql.jdbc.FBDriver",dbUrl,prop), 1, 4);
 	}
 	

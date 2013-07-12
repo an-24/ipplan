@@ -12,6 +12,7 @@ public class UserProfile extends Ipplan {
     static {
     	tokenForms.put("login", FormLogin.class);
     	tokenForms.put("profile", FormProfile.class);
+    	tokenForms.put("enter", FormLoginRoute.class);
     	INIT_TOKEN = "login";
     }
     
@@ -23,7 +24,7 @@ public class UserProfile extends Ipplan {
 		this.user = user;
 	}
     
-	public void refreshForm(final Class type,final String sessionId) {
+	public void refreshForm(final Class<? extends Form> type,final String sessionId) {
 		//unknown form
 		if(type==null) {
 			getRootInHTML().clear();
@@ -35,36 +36,44 @@ public class UserProfile extends Ipplan {
 		} else 
 			// check login user
 			if(this.user==null) {
-				LoginServiceAsync service = GWT.create(LoginService.class);
-				// нужно подменить сессию
-				if(sessionId!=null)
-					Cookies.setCookie("JSESSIONID", sessionId);
-					
-				service.isLogged(new AsyncCallback<PUserWrapper>() {
-					@Override
-					public void onSuccess(PUserWrapper user) {
-						if(user==null) {
-							History.newItem(INIT_TOKEN);
-						} else {
-							// перегрузим стр, чтобы  сессия в url не торчала
-							if(sessionId!=null) {
-								History.newItem("profile");
-								return;
-							}	
-							setUser(user);
-							refreshForm(type,null);
-						}
-					}
-					@Override
-					public void onFailure(Throwable caught) {
-						showError(caught);
-					}
-				}); 
+				obtainUser(type, sessionId); 
 			} else 
-			// profile
-			if(type==FormProfile.class) {
-				FormProfile f = new FormProfile(this, getRootInHTML(),this.user);
-				f.show();
-			};
+				// profile
+				if(type==FormProfile.class) {
+					FormProfile f = new FormProfile(this, getRootInHTML(),this.user);
+					f.show();
+				} else
+					if(type==FormLoginRoute.class) {
+						FormLoginRoute.route(this.user);
+					};
+	}
+
+	private void obtainUser(final Class<? extends Form> type,
+			final String sessionId) {
+		LoginServiceAsync service = GWT.create(LoginService.class);
+		// нужно подменить сессию
+		if(sessionId!=null)
+			Cookies.setCookie("JSESSIONID", sessionId);
+			
+		service.isLogged(new AsyncCallback<PUserWrapper>() {
+			@Override
+			public void onSuccess(PUserWrapper user) {
+				if(user==null) {
+					History.newItem(INIT_TOKEN);
+				} else {
+					// перегрузим стр, чтобы  сессия в url не торчала
+					if(sessionId!=null) {
+						History.newItem("profile");
+						return;
+					}	
+					setUser(user);
+					refreshForm(type,null);
+				}
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				showError(caught);
+			}
+		});
 	}
 }
