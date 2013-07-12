@@ -15,8 +15,10 @@ lib
 /*.war
 /war-ipplan/WEB-INF/classes
 /war-ipplan/WEB-INF/deploy
+/war-ipplan/WEB-INF/lib
 /war-main/WEB-INF/deploy
 /war-main/WEB-INF/classes
+/war-main/WEB-INF/lib
 /war-ipplan/ipplan
 /war-ipplan/main
 /war-main/main
