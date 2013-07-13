@@ -11,20 +11,34 @@
     <param-value>d:\database\store</param-value>
   </context-param>
 
+  <!-- используется для вовзрата в профиль пользователя -->
   <context-param>
     <param-name>IpplanHost</param-name>
     <param-value>http://127.0.0.1:8080/ipplan/Ipplan.html</param-value>
+  </context-param>
+
+  <!-- секретный ключ в Google Apis Console-->
+  <context-param>
+    <param-name>GoogleSecretKey</param-name>
+    <param-value>XABbXf5iX9vwBHMHSHAtGztQ</param-value>
+  </context-param>
+
+  <!-- Rediirect Uri в Google Apis Console-->
+  <context-param>
+    <param-name>GoogleRedirectUri</param-name>
+    <param-value>http://127.0.0.1:8889/main/auth</param-value>
+  </context-param>
+
+  <!--  for node: Параметр для обратного вызова и подтверждения полномочий пользователя -->
+  <context-param>
+    <param-name>loginCallBack</param-name>
+    <param-value>http://127.0.0.1:8080/ipplan/ipplan/</param-value>
   </context-param>
 
   <!-- Servlets -->
   <servlet>
   	<servlet-name>DatabaseService</servlet-name>
   	<servlet-class>com.cantor.ipplan.server.DatabaseServiceImpl</servlet-class>
-  	<!--  for node: Параметр для обратного вызова и подтверждения полномочий пользователя -->
-    <init-param>
-    	<param-name>loginCallBack</param-name>
-    	<param-value>http://127.0.0.1:8080/ipplan/ipplan/</param-value>
-    </init-param>
   </servlet>
   <servlet>
     <servlet-name>OAuthService</servlet-name>
@@ -39,7 +53,6 @@
     <servlet-name>uploadService</servlet-name>
     <servlet-class>com.cantor.ipplan.server.UploadFile</servlet-class>
   </servlet>
-  
 
   <!-- Mapping -->
 

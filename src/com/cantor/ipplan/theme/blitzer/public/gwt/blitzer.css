@@ -12,6 +12,11 @@
  *    }
  */
 
+body {
+  height:100%;
+  width:100%;
+}
+
 body, table td, select, button {
   font-family: Geneva, Calibri,'Arial Unicode MS', Arial, sans-serif;
   font-size: small;
@@ -195,6 +200,11 @@ a:hover {
   width: 20px;
   z-index: 888;
   background:white;
+}
+
+/* hack Opera */
+noindex:-o-prefocus,.gwt-ComboBox-button {
+  margin: -1px -4px -18px auto;
 }
 
 .gwt-ComboBox-button-img {
@@ -1718,6 +1728,13 @@ td.datePickerMonth {
     border:0px none;
     width: 100%;
     margin-left: -20px;
+    top: -4px;
+    position: relative;
+}
+
+/* hack Opera */
+noindex:-o-prefocus,.gwt-CustomerBox {
+    margin-left: -22px;
 }
 
 .container {
@@ -1753,6 +1770,8 @@ td.datePickerMonth {
     border:0px none;
     margin-left: -20px;
     width:100%;
+    top: -4px;
+    position: relative;
 }
 
 .gwt-CustomerBox-Suggestion {
@@ -1822,3 +1841,5 @@ td.datePickerMonth {
     margin-left: 5px;
     background: url(images/ui-icons_004276_256x240.png) no-repeat -64px -16px;
 }
+
+

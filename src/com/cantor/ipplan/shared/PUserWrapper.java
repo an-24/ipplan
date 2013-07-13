@@ -27,6 +27,7 @@ public class PUserWrapper implements java.io.Serializable,com.google.gwt.user.cl
 	public int puserTaxtype;
 	public int puserContactSyncDuration;
 	public int puserCalendarSyncDuration;
+	public int puserTaxvalue = 15; // default
 	
 	public PUserWrapper() {
 	}

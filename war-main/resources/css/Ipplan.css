@@ -221,6 +221,12 @@ h1 {
     width: 0; 
 }
 
+/* hack Opera */
+noindex:-o-prefocus,.errorHint:before {
+    top: -12px;
+}
+
+
 .errorHint:after {
     border-color: #FFFAFA transparent;
     border-style: solid;

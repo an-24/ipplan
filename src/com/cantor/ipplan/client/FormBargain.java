@@ -27,6 +27,7 @@ import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
@@ -43,6 +44,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.logical.shared.AttachEvent;
+import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -110,6 +113,10 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 	private HTML wbefore;
 	private BargainFragment bargainFragment;
 	private HorizontalPanel pAttachFile;
+
+	private SimplePanel spBargain;
+
+	private SimplePanel spTask;
 
 
 	public FormBargain(final BargainWrapper b) {
@@ -186,7 +193,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 	    getFlexCellFormatter().setColSpan(1, 0, 2);
 		
         // BARGAIN -----------------
-		SimplePanel spBargain = new SimplePanel();
+		spBargain = new SimplePanel();
 		spBargain.setStyleName("simplebox");
 		setWidget(2, 0, spBargain);
 		bargainFragment = new BargainFragment();
@@ -194,11 +201,12 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		
 
 		//TASK ----------
-		SimplePanel sp = new SimplePanel();
-		sp.setStyleName("simplebox");
-		sp.setWidth("193px");
+		spTask = new SimplePanel();
+		spTask.setStyleName("simplebox");
+		spTask.setWidth("193px");
+		
 		//getFlexCellFormatter().setRowSpan(1, 2, 13);
-		setWidget(2, 1, sp);
+		setWidget(2, 1, spTask);
 		getCellFormatter().getElement(2,1).getStyle().setHeight(100, Unit.PCT);
 		
 		VerticalPanel vp =  new VerticalPanel();
@@ -230,7 +238,6 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 			}
 		});
 		vp.add(ledit);
-		sp.setWidget(vp);
 		
 		tableTasks = new CellTable<TaskWrapper>(Integer.MAX_VALUE, (CellTable.Resources)GWT.create(TaskTableResources.class));
 		tableTasks.setSelectionModel(null);
@@ -239,6 +246,8 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		style.setPaddingTop(10, Unit.PX);
 		makeTaskCells();
 		vp.add(tableTasks);
+
+		spTask.setWidget(vp);
 		
 		// Buttons -----------------------------
 
@@ -545,6 +554,16 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		tableTasks.setRowCount(bargain.tasks.size());
 		prepareTaskData();
 		setAttention();
+		
+		// это для Opera
+		// для других браузеров значения не имеет
+		new Timer(){
+			@Override
+			public void run() {
+				spTask.getParent().setHeight(spBargain.getParent().getOffsetHeight()+"px");
+			}
+		}.schedule(2000);
+		
 		loadCounter--;
 	}
 
@@ -999,6 +1018,8 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 	
 	public class BargainFragment extends FlexTable {
 
+		
+		
 		BargainFragment() {
 			addStyleName("tableBorderCollapse");
 			getColumnFormatter().setWidth(1, "265px");

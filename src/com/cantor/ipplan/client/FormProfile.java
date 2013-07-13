@@ -7,6 +7,7 @@ import com.cantor.ipplan.client.widgets.CheckBox;
 import com.cantor.ipplan.client.widgets.ComboBox;
 import com.cantor.ipplan.client.widgets.GridPager;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.IntegerBox;
 import com.cantor.ipplan.client.widgets.RadioButton;
 import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.cantor.ipplan.shared.PUserWrapper;
@@ -15,6 +16,9 @@ import com.cantor.ipplan.shared.SyncWrapper;
 import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -22,6 +26,8 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
@@ -201,6 +207,16 @@ public class FormProfile extends Form {
 		Tabl1.setWidget(3, 1, p30);
 		p30.setWidth("100%");
 		Tabl1.getCellFormatter().setWidth(3, 1, "");
+
+		final RadioButton rbTaxType0 = new RadioButton("taxtype", "Налог отсутствует");
+		rbTaxType0.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				if(user.puserTaxtype!=0)
+				 toast(rbTaxType0,"Изменение коснется только новых сделок");
+			}
+		});
+		p30.add(rbTaxType0);
+		rbTaxType0.setValue(user.puserTaxtype==0);
 		
 		final RadioButton rbTaxType1 = new RadioButton("taxtype", "По ставке 6% от дохода");
 		rbTaxType1.addClickHandler(new ClickHandler() {
@@ -212,9 +228,20 @@ public class FormProfile extends Form {
 		p30.add(rbTaxType1);
 		rbTaxType1.setValue(user.puserTaxtype==1);
 		
-		final RadioButton rbTaxType2 = new RadioButton("taxtype", "По ставке 15% от доходов, уменьшенных на величину расходов");
+		final RadioButton rbTaxType2 = new RadioButton("taxtype", getTax2Caption());
 		rbTaxType2.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				NativeEvent ne = event.getNativeEvent();
+				Element el = elementFromPoint(ne.getClientX(),ne.getClientY());
+				if(el!=null && el.getId()!=null && el.getId().equals("taxvalue")) {
+					showDialogTaxValue(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							rbTaxType2.setHTML(getTax2Caption());
+						}
+					});
+					return;
+				}
 				if(user.puserTaxtype!=2)
 				 toast(rbTaxType2,"Изменение коснется только новых сделок");
 			}
@@ -394,7 +421,7 @@ public class FormProfile extends Form {
 		Tab2.setWidget(2, 0, payGrid);
 		Tab2.getCellFormatter().setHeight(2, 0, "");
 		Tab2.getCellFormatter().setWidth(2, 0, "");
-		payGrid.setSize("100%", "400px");
+		payGrid.setSize("100%", "");
 		
 		TextColumn<PaymentsWrapper> c3 = new PeriodColumn<PaymentsWrapper,Integer>() {
 			@Override
@@ -430,10 +457,6 @@ public class FormProfile extends Form {
 
 		prepareGrid(payGrid, user.paymentses);
 		Tab2.getCellFormatter().setHorizontalAlignment(1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		GridPager pagerPayBottom = new GridPager();
-		pagerPayBottom.setDisplay(payGrid);
-		Tab2.setWidget(3, 0, pagerPayBottom);
 		Tab2.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		payGrid.getColumnSortList().push(c3);
 		
@@ -487,56 +510,50 @@ public class FormProfile extends Form {
 		Tab3.getFlexCellFormatter().setColSpan(2, 0, 2);
 		Tab3.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
-		FlexTable Tab4 = new FlexTable();
-		tabPanel.add(Tab4, "Синхронизация", false);
-		Tab4.setSize("100%", "3cm");
-		
-		GridPager pagerSyncTop = new GridPager();
-		Tab4.setWidget(0, 0, pagerSyncTop);
-		
-		syncGrid = new CellTable<SyncWrapper>(15);
-		pagerSyncTop.setDisplay(syncGrid);
-		Tab4.setWidget(1, 0, syncGrid);
-		syncGrid.setSize("100%", "400px");
-		
-		TextColumn<SyncWrapper> c1 = new TextColumn<SyncWrapper>() {
-			@Override
-			public String getValue(SyncWrapper object) {
-				return (object==null)?"":object.getImei();
-			}
-		};
-		c1.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-		c1.setSortable(true);
-		syncGrid.setColumnWidth(c1, "200px");
-		
-		@SuppressWarnings("deprecation")
-		Column<SyncWrapper, Date> c2 = new Column<SyncWrapper, Date>(new DateCell(DateTimeFormat.getMediumDateTimeFormat())) {
-			@Override
-			public Date getValue(SyncWrapper object) {
-				return (object==null)?null:object.getLast();
-			}
-		};
-		c2.setSortable(true);
-		
-
-		syncGrid.addColumn(c1, "Устройство");
-		syncGrid.addColumn(c2, "Дата и время синхронизации");
-		
-		prepareGrid(syncGrid, user.syncs);
-		c2.setDefaultSortAscending(false);
-	    syncGrid.getColumnSortList().push(c2);
-	    Tab4.getCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-	    
-	    GridPager pagerSyncBottom = new GridPager();
-	    pagerSyncBottom.setDisplay(syncGrid);
-	    Tab4.setWidget(2, 0, pagerSyncBottom);
-	    Tab4.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		
-		
-//		syncGrid.setRowCount(user.syncs.size(),true);
 		
 		tabPanel.getTabBar().selectTab(0);
+	}
+
+	private native Element elementFromPoint(int x, int y) /*-{
+       return $doc.elementFromPoint(x,y);
+    }-*/;
+
+	protected void showDialogTaxValue(final ClickHandler ok) {
+		Dialog dlg = new Dialog("Введите ставку налога");
+		FlexTable table = dlg.getContent();
+		table.setCellPadding(1);
+		table.setCellSpacing(1);
+		final IntegerBox box = new IntegerBox();
+		box.setWidth("40px");
+		box.setValue(user.puserTaxvalue);
+		table.setWidget(0, 0, box);
+		table.setWidget(0, 1, new Label("%"));
+		table.setWidth("100%");
+		table.getFlexCellFormatter().setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		table.getFlexCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_LEFT);
+		table.getFlexCellFormatter().setWidth(0, 0, "122px");
+		
+		
+		dlg.getButtonOk().setText("Установить");
+		dlg.setButtonOkClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				user.puserTaxvalue = box.getValue();
+				ok.onClick(event);
+			}
+		});
+		dlg.center();
+	}
+
+	public SafeHtml getTax2Caption() {
+		return new SafeHtmlBuilder()
+			.appendEscaped("По ставке ")
+			.appendHtmlConstant("<span id=\"taxvalue\" class=\"link\">")
+			.append(user.puserTaxvalue)
+			.appendEscaped("%")
+			.appendHtmlConstant("</span>")
+			.appendEscaped(" от доходов, уменьшенных на величину расходов")
+			.toSafeHtml();
 	}
 
 	protected void showAddChildDialog() {

@@ -658,7 +658,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 		PUserWrapper u = getLoginUser();
 		if (sess.isNew() || u==null ) {
 			// проводим проверку через сервер UP
-			String host = getServletConfig().getInitParameter("loginCallBack");
+			String host = getServletContext().getInitParameter("loginCallBack");
 			LoginService login = (LoginService) SyncProxy.newProxyInstance(LoginService.class, host,"login");
 			u = login.isAccessDatabase(sessId);
 			if(u==null)

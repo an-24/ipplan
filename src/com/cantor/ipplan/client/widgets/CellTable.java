@@ -154,7 +154,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		    insertColumn(0, c0,c0Header);
 	    } else
 	    	insertColumn(0, c0);
-	    setColumnWidth(c0, "30px");	    
+	    setColumnWidth(c0, "32px");	    
 	    return c0;
 	}
 	

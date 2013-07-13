@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 
@@ -21,6 +22,11 @@ public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 		setKeyEvents();
 	}
 
+	public RadioButton(String name, SafeHtml label) {
+		super(name,label);
+		setKeyEvents();
+	}
+	
 	private void setKeyEvents() {
 		DOM.sinkEvents(getElement(), Event.ONKEYDOWN);
 		addKeyDownHandler(new KeyDownHandler() {

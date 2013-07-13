@@ -2,6 +2,8 @@ package com.cantor.ipplan.shared;
 
 import java.util.Date;
 
+import com.google.gwt.user.client.Window;
+
 public class Utils {
 
 	public static final String GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
@@ -11,8 +13,7 @@ public class Utils {
 	public static final String GOOGLE_CLIENT_ID = "317070202620-jl480ige77srbimqut9l6fmklh05e90s.apps.googleusercontent.com";
 	public static final String GOOGLE_SCOPE = "https://www.google.com/m8/feeds http://www.google.com/calendar/feeds";
 	public static final String GOOGLE_SCOPE_DRIVE = "https://www.googleapis.com/auth/drive";
-	//TODO при инсталяции нужно будет поменять здесь и в Google Apis Console 
-	public static final String REDIRECT_URI = "http://127.0.0.1:8889/main/auth";
+	public static final String REDIRECT_URI = Window.Location.getProtocol()+"//"+Window.Location.getHost()+"/main/auth";
 	
 	/**
 	 * Cклонение существительных по правилам русского языка

@@ -150,7 +150,7 @@ public class Form extends Composite {
 					}
 				};
 			} else
-			if(cell instanceof SafeHtmlCell) {
+			if(cell instanceof SafeHtmlCell || cell instanceof ClickableSafeHtmlCell) {
 				cmpr = new Comparator<T>(){
 					@Override
 					public int compare(T o1, T o2) {

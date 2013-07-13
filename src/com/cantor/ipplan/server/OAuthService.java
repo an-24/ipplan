@@ -20,7 +20,15 @@ import com.google.gson.Gson;
 
 @SuppressWarnings("serial")
 public class OAuthService extends HttpServlet {
-	private static final String GOOGLE_CLIENT_SECRET = "XABbXf5iX9vwBHMHSHAtGztQ";
+	
+	private static String GOOGLE_CLIENT_SECRET;
+	private static String GOOGLE_CLIENT_REDIRECTURI;
+	
+	@Override
+	public void init() {
+		GOOGLE_CLIENT_SECRET = getServletContext().getInitParameter("GoogleSecretKey");
+		GOOGLE_CLIENT_REDIRECTURI = getServletContext().getInitParameter("GoogleRedirectUri");
+	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	         throws IOException,ServletException {
@@ -37,7 +45,7 @@ public class OAuthService extends HttpServlet {
 					String message =new StringBuilder("code").append('=').append(URLEncoder.encode(code, "utf-8"))
 							.append("&").append("client_id").append('=').append(URLEncoder.encode(Utils.GOOGLE_CLIENT_ID, "utf-8"))
 							.append("&").append("client_secret").append('=').append(URLEncoder.encode(GOOGLE_CLIENT_SECRET, "utf-8"))
-							.append("&").append("redirect_uri").append('=').append(URLEncoder.encode(Utils.REDIRECT_URI, "utf-8"))
+							.append("&").append("redirect_uri").append('=').append(URLEncoder.encode(GOOGLE_CLIENT_REDIRECTURI, "utf-8"))
 							.append("&").append("grant_type=authorization_code")
 							.toString();
 					
