@@ -148,6 +148,7 @@ public class FormNewBargain extends Dialog {
 					@Override
 					public void onSuccess(BargainWrapper result) {
 						result.bargainRevenue = tbRevenue.getValue();
+						result.bargainTax = result.calcTax();
 						ok.onNotify(result);
 						hide();
 					}

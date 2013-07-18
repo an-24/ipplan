@@ -1,6 +1,10 @@
 package com.cantor.ipplan.client.widgets;
 
+import com.cantor.ipplan.client.UserAgent;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -34,6 +38,14 @@ public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 			public void onKeyDown(KeyDownEvent event) {
 				if(event.getNativeKeyCode() == 32) 
 				setValue(!(Boolean)getValue());
+			}
+		});
+		if(UserAgent.isIEBrowser())
+		addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				dropChecked(Document.get());
+			    if(getValue()) addStyleName(getStylePrimaryName()+"-checked");
 			}
 		});
 	}
@@ -72,5 +84,32 @@ public class RadioButton extends com.google.gwt.user.client.ui.RadioButton {
 			
 		});
 		
+	}
+
+	@Override
+	public void setValue(Boolean value) {
+	    super.setValue(value);
+		if(UserAgent.isIEBrowser()) {
+			dropChecked(Document.get());
+	    	if(value) addStyleName(getStylePrimaryName()+"-checked");
+		}	
+	}
+	
+	private void dropChecked(Node root){
+		NodeList<Node> ndl = root.getChildNodes();
+		for (int i = 0, len =ndl.getLength(); i < len; i++) {
+			Node nd = ndl.getItem(i);
+			if(nd.getNodeType() == Node.ELEMENT_NODE) {
+				Element el = (Element)nd;
+				String name = el.getAttribute("name");
+				if(name!=null && name.equals(this.getName())) {
+					Element span = el.getParentElement();
+					span.removeClassName(getStylePrimaryName()+"-checked");
+				}	
+				if(el.hasChildNodes())
+					dropChecked(el);
+			}
+		}	
+			
 	}
 }

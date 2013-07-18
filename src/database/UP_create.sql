@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     06.05.2013 10:53:33                          */
+/* Created on:     16.07.2013 11:13:38                          */
 /*==============================================================*/
 
 
@@ -35,7 +35,7 @@ constraint PK_PAYMENTS primary key (payments_id)
 create table puser (
 puser_id             INTEGER                        not null,
 owner_puser_id       INTEGER,
-puser_email          VARCHAR(320)                   not null,
+puser_email          VARCHAR(210)                   not null,
 puser_login          VARCHAR(60)                    not null,
 puser_pswd           VARCHAR(512)                   not null,
 puser_dbname         VARCHAR(256)                   not null,
@@ -48,12 +48,13 @@ puser_lock_reason    VARCHAR(256),
 puser_tarif          INTEGER                        not null,
 puser_flags          INTEGER                        default 0,
 puser_taxtype        INTEGER                        not null,
+puser_taxpercent     INTEGER                        default 15 not null,
 constraint PK_PUSER primary key (puser_id),
 constraint AK_KEY_2_PUSER unique (puser_email)
 );
 
-insert into puser values (-2,NULL,'kav-1@bk.ru','Andr','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,0,0,1);
-insert into puser values (-1,NULL,'ipplan2013@gmail.com','ipplan2013','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,1,0,2);
+insert into puser values (-2,NULL,'kav-1@bk.ru','Andr','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,0,0,1,15);
+insert into puser values (-1,NULL,'ipplan2013@gmail.com','ipplan2013','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,1,0,2,15);
 commit;
 
 /*==============================================================*/

@@ -94,7 +94,7 @@ public class FormMain extends Form {
 		p0.setSpacing(5);
 		p0.setStyleName("gwt-Form");
 		initWidget(p0);
-		p0.setSize("800px", "812px");
+		p0.setSize("800px", "");
 		
 		HorizontalPanel p1 = new HorizontalPanel();
 		p1.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -143,7 +143,7 @@ public class FormMain extends Form {
 		tabPanel = new MainTabPanel();
 		p0.add(tabPanel);
 		p0.setCellHorizontalAlignment(tabPanel, HasHorizontalAlignment.ALIGN_CENTER);
-		tabPanel.setSize("100%", "770px");
+		tabPanel.setSize("100%", UserAgent.isIEBrowser()?"700px":"755px");
 		tabPanel.setAnimationEnabled(true);
 		
 		FlexTable tab1 = new TabMain(this,getDataBaseService());
@@ -157,7 +157,7 @@ public class FormMain extends Form {
 		
 		FlexTable tab4 = new TabAnalytical(this);
 		tabPanel.add(tab4, "Анализ", false);
-		
+
 		currentTabId = numTab;
 		prepare();
 	}

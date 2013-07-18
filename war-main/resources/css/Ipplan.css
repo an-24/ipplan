@@ -1,12 +1,7 @@
 /** Add css rules here for your application. */
 
+
 /** Example rules used by the template application (remove for your app) */
-
-
-body {
-  padding:20px !important;
-}
-
 h1 {
   font-size: 2em;
   font-weight: bold;
@@ -78,11 +73,6 @@ h1 {
   padding:0px !important;
 }
 
-.collapse-padding-v {
-  padding-top:0px !important;
-  padding-bottom:0px !important;
-}
-
 .bold-text {
 	font-weight: bold;
 }
@@ -100,6 +90,9 @@ h1 {
 
 .baloonPanel {
     background: linear-gradient(#F9D835, #F3961C) repeat scroll 0 0 transparent;
+    /* MSIE */
+    filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#F9D835', endColorstr='#F3961C');
+
     border-radius: 10px 10px 10px 10px;
     color: #000000;
     margin-bottom:15px;
@@ -226,7 +219,6 @@ noindex:-o-prefocus,.errorHint:before {
     top: -12px;
 }
 
-
 .errorHint:after {
     border-color: #FFFAFA transparent;
     border-style: solid;
@@ -288,6 +280,9 @@ noindex:-o-prefocus,.errorHint:before {
     padding:10px  !important;
     font-weight: bold !important;
     background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent !important;
+    /* MSIE */
+    filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#D80000', endColorstr='#880000');
+
     color: whitesmoke !important;
 }
 
@@ -319,11 +314,12 @@ img#apploader {
 .customer-info {
     width:300px;
     padding: 2px 2px 2px 0px;
+    height: 61px;
 }
 
 .customer-info img {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     float: left;
     margin-right: 5px;
     border: 1px solid silver;
@@ -468,20 +464,4 @@ img#apploader {
   border: 1px solid #939393;
   border-radius:2px;
   margin-top: 1px;
-}
-
-.DecoratedFileUpload .gwt-Button {
-  font-size: 1em !important;
-}
-
-.GWTUpld .upld-status .filename {
-  text-overflow: ellipsis;
-  width: 178px;
-}
-
-.GWTUpld .upld-status {
-  border: 1px solid #939393;
-  border-radius:4px;
-  padding:4px;
-  font-weight:normal !important;
 }

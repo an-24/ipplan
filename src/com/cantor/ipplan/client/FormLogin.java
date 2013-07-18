@@ -13,6 +13,7 @@ import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.SubmitButton;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -21,6 +22,8 @@ import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.logical.shared.AttachEvent;
+import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.FormPanel;
@@ -104,13 +107,7 @@ public class FormLogin extends Form implements ValueChangeHandler<String> {
 		flexTable.getCellFormatter().setVerticalAlignment(3, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 		flexTable.getCellFormatter().setHorizontalAlignment(3, 0, HasHorizontalAlignment.ALIGN_CENTER);
 		
-		Button button = new Button("Войти");
-		button.getElement().setAttribute("type", "submit");
-		button.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				//form.submit();
-			}
-		});
+		final SubmitButton button = new SubmitButton("Войти");
 		
 		form.addSubmitHandler(new SubmitHandler() {
 			public void onSubmit(SubmitEvent event) {

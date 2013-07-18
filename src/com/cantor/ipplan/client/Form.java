@@ -269,8 +269,5 @@ public class Form extends Composite {
 		errorList.clear();
 	}
 
-	public static native String getUserAgent() /*-{
-	return navigator.userAgent.toLowerCase();
-	}-*/;	
 
 }

@@ -107,7 +107,6 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 	}
 	
 
-	//TODO при смене email нужно синхронизировать данные по id пользователя
 	/**
 	 *  После удачного open в сессии два атрибута
 	 *  (PUserWrapper) loginUser - пользователь в профиле
@@ -118,7 +117,6 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 	public PUserWrapper open(String sessId) throws Exception {
 		PUserWrapper uw = checkAccess(sessId);
 		//setLoginUser(uw);
-		
 		SessionFactory sessionFactory = getSessionFactory();
 		if(sessionFactory==null) {
 			String url = openOrCreateStore(uw.puserDbname,uw.puserEmail);
@@ -719,21 +717,29 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 		// проверка наличия пользователя
     	Session session = sessionFactory.openSession();
     	try {
-    		PUserIdent user;
-    		Query q = session.createQuery("select u from PUserIdent u where u.puserEmail=:email");
-			q.setString("email", u.puserEmail);
-			user =  (PUserIdent) q.uniqueResult();
+
+    		PUserIdent user =  (PUserIdent) session.get(PUserIdent.class, u.puserId);
+    		
+//    		PUserIdent user;
+//    		Query q = session.createQuery("select u from PUserIdent u where u.puserId=:id");
+//			q.setInteger("id", u.puserId);
+//			user =  (PUserIdent) q.uniqueResult();
+    		
+			// добавим нового
     		if(user == null) {
-    			// добавим
     			Transaction tx = session.beginTransaction();
     			try {
     				user = new PUserIdent();
     				user.setPuserEmail(u.puserEmail);
     				user.setPuserLogin(u.puserLogin);
     				user.setPuserTaxtype(u.puserTaxtype);
+    				user.setPuserTaxpercent(u.puserTaxpercent);
     				if(u.puserId==PUserIdent.USER_ROOT_ID) user.setPuserId(PUserIdent.USER_ROOT_ID); else {
     					PUserIdent own = (PUserIdent) session.get(PUserIdent.class, PUserIdent.USER_ROOT_ID);
-    					if(own==null) user.setPuserId(PUserIdent.USER_ROOT_ID); else user.setOwner(own);
+    					if(own==null) user.setPuserId(PUserIdent.USER_ROOT_ID); else {
+    	    				user.setPuserId(u.puserId);
+    						user.setOwner(own);
+    					}
     				}
     				session.save(user);
     				// добавим статусы: только для root
@@ -744,6 +750,20 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     			} catch (Exception e) {
     				tx.rollback();
     				throw e;
+				}
+   			// изменим сущетвующего
+    		} else {
+    			Transaction tx = session.beginTransaction();
+    			try {
+					user.setPuserEmail(u.puserEmail);
+					user.setPuserLogin(u.puserLogin);
+					user.setPuserTaxtype(u.puserTaxtype);
+					user.setPuserTaxpercent(u.puserTaxpercent);
+					
+					tx.commit();
+				} catch (Exception e) {
+					tx.rollback();
+					throw e;
 				}
     		}
     		user.fetch(true);
@@ -1815,11 +1835,12 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 	}
 
 	@Override
-	public boolean isNewVersionBargain(BargainWrapper bargain) throws Exception {
+	public boolean isNewVersionBargain(BargainWrapper bargain, boolean savestate) throws Exception {
 		checkAccess();
 		SessionFactory sessionFactory = getSessionFactory();
     	Session session = sessionFactory.openSession();
     	try {
+    		if(savestate) saveTemporalyBargain(bargain);
 			Bargain b = (Bargain) session.get(Bargain.class, bargain.bargainId);
 			if(b==null) return true; else {
 				session.update(b);

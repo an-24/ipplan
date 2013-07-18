@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
 import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.cantor.ipplan.shared.HttpStatusText;
+import com.cantor.ipplan.shared.PUserWrapper;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -30,7 +31,8 @@ import com.google.gwt.user.datepicker.client.DateBox.DefaultFormat;
 
 public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 
-	public static String USER_AGENT;
+	protected PUserWrapper user;
+	
 	public static boolean USER_AGENT_IPHONE;
 	public static DefaultFormat DEFAULT_DATE_FORMAT;
 	public static DefaultFormat DEFAULT_DATETIME_FORMAT;
@@ -49,8 +51,7 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 	
     public Ipplan() {
     	super();
-    	USER_AGENT = Form.getUserAgent();
-    	USER_AGENT_IPHONE = USER_AGENT.indexOf("iPhone")>=0;
+    	USER_AGENT_IPHONE = UserAgent.isIPhone();
     	DEFAULT_DATE_FORMAT = new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy"));
     	DEFAULT_DATETIME_FORMAT = new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd.MM.yyyy, HH:mm"));
     	ALTERNATE_DATETIME_FORMAT = new DateBox.DefaultFormat(DateTimeFormat.getFormat("dd MMMM yyyy, HH:mm"));
@@ -291,6 +292,10 @@ public class Ipplan implements EntryPoint, ValueChangeHandler<String>  {
 		}
 		return "<a href=\""+tolink+phone+"\">"+phonedisplay+"</a>";
 	}
+
+	public void setUser(PUserWrapper usr) {
+		user = usr;
+	};
 
 	
 }

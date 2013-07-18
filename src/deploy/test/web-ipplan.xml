@@ -8,12 +8,15 @@
   <!-- for node: Месторасположение хранилища -->
   <context-param>
     <param-name>storeLocation</param-name>
-    <param-value>d:\database\store</param-value>
+<!--    <param-value>d:\database\store</param-value>-->
+    <param-value>/var/local/ipplan/database/store</param-value>
+
   </context-param>
   <!-- for master: БД для профиля -->
   <context-param>
-    <param-name>profileDBUrl</param-name>
-    <param-value>jdbc:firebirdsql:localhost:D:\Database\IPPLAN_UP.FDB</param-value>
+    <param-name>profileDBUrl</param-name> 
+<!--    <param-value>jdbc:firebirdsql:localhost:D:\Database\IPPLAN_UP.FDB</param-value>-->
+    <param-value>jdbc:firebirdsql:localhost:/var/local/ipplan/database/ipplan_up.fdb</param-value>
   </context-param>
 
 
@@ -25,7 +28,7 @@
     <!-- TODO: будет переписано. Будет определятся динамически из определенного пула -->
     <init-param>
     	<param-name>dataServer</param-name>
-    	<param-value>http://127.0.0.1:8080/main/Main.html</param-value>
+    	<param-value>http://192.168.0.104/main/Main.html</param-value>
     </init-param>
   </servlet>
   <servlet>
@@ -38,7 +41,7 @@
   	<!--  for node: Параметр для обратного вызова и подтверждения полномочий пользователя -->
     <init-param>
     	<param-name>loginCallBack</param-name>
-    	<param-value>http://127.0.0.1:8080/ipplan/</param-value>
+    	<param-value>http://192.168.0.104/ipplan/</param-value>
     </init-param>
   </servlet>
   <servlet>

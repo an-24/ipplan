@@ -20,6 +20,6 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("profile")
 public interface ProfileService extends RemoteService {
-	public void setUserData(PUserWrapper data, int joinAction) throws Exception;
+	public PUserWrapper setUserData(PUserWrapper data, int joinAction) throws Exception;
 	public boolean checkUser(String name,String email) throws Exception;
 }

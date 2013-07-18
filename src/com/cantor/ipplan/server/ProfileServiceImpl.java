@@ -48,7 +48,7 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
 	}
 	
 	@Override
-	public void setUserData(PUserWrapper data,int joinAction) throws Exception {
+	public PUserWrapper setUserData(PUserWrapper data,int joinAction) throws Exception {
 		PUser user = checkLogin();
 		
 		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
@@ -56,9 +56,14 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
     	try {
     		Transaction tx = session.beginTransaction();
     		try {
+    			session.update(user);
+
     			user.setPuserLogin(data.puserLogin);
     			user.setPuserEmail(data.puserEmail);
     			user.setPuserTarif(data.puserTarif);
+    			user.setPuserTaxtype(data.puserTaxtype);
+    			user.setPuserTaxpercent(data.puserTaxpercent);
+    			
     			// устанавливаем Босс-аккаунт
     			if(data.puserBoss!=0 && user.getPuserTarif()<=0)
     				throw new Exception("Профиль не может быть изменен, так как для включения "+
@@ -91,9 +96,9 @@ public class ProfileServiceImpl extends RemoteServiceServlet implements ProfileS
     				// удаление сообщения
     				deleteMessage(session,data.lastSystemMessage.messageId);
     			}
-    			
-    			session.update(user);
     			tx.commit();
+    			
+    			return user.toClient();
     		} catch (Exception e) {
     			tx.rollback();
     			Ipplan.error(e);

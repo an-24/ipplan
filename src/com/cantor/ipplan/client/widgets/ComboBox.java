@@ -1,6 +1,7 @@
 package com.cantor.ipplan.client.widgets;
 
 
+import com.cantor.ipplan.client.UserAgent;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -122,7 +123,14 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 				dropDown();
 			}
 		});
-		DOM.sinkEvents((com.google.gwt.user.client.Element) getElement().getChild(1), Event.ONMOUSEDOWN);
+		
+		com.google.gwt.user.client.Element selElem = getElement().getChild(1).cast(); 
+		DOM.sinkEvents(selElem, Event.ONMOUSEDOWN);
+		
+		/* dropdown list почему-то открывается в IE. Времянка, что он тут же закрывался */
+		// FIXME мигает dropdown list 
+		if(UserAgent.isIEBrowser()) 
+			DOM.sinkEvents(selElem, Event.ONCLICK);
 		
 		addBlurHandler(new BlurHandler() {
 			@Override

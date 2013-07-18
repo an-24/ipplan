@@ -12,11 +12,6 @@
  *    }
  */
 
-body {
-  height:100%;
-  width:100%;
-}
-
 body, table td, select, button {
   font-family: Geneva, Calibri,'Arial Unicode MS', Arial, sans-serif;
   font-size: small;
@@ -42,6 +37,13 @@ select {
   background: white;
 }
 
+label {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
 
 input:focus,
 button:focus,
@@ -72,7 +74,8 @@ a:hover {
   text-decoration:underline;
 }
 
-.gwt-Button {
+.gwt-Button,
+.gwt-SubmitButton {
 	display: inline-block;
 	position: relative;
 	padding: 0;
@@ -91,12 +94,13 @@ a:hover {
 }
 
 .gwt-Button::-moz-focus-inner,
-.gwt-Button::-moz-focus-inner {
+.gwt-SubmitButton::-moz-focus-inner {
 	border: 0;
 	padding: 0;
 }
 
-.gwt-Button:hover {
+.gwt-Button:hover,
+.gwt-SubmitButton:hover {
 	text-decoration: none;
 	border: 1px solid #939393;
 	background: #f6f6f6 url(images/ui-bg_highlight-hard_100_f6f6f6_1x100.png) 50% 50% repeat-x;
@@ -104,7 +108,8 @@ a:hover {
 	color: #111111;
 }
 
-.gwt-Button:focus {
+.gwt-Button:focus,
+.gwt-SubmitButton:focus {
 	text-decoration: none;
 	border: 1px solid #939393;
 	background: #f6f6f6 url(images/ui-bg_highlight-hard_100_f6f6f6_1x100.png) 50% 50% repeat-x;
@@ -112,7 +117,8 @@ a:hover {
 	color: #111111;
 }
 
-.gwt-Button:active {
+.gwt-Button:active,
+.gwt-SubmitButton:active {
 	text-decoration: none;
 	border: 1px solid #eeeeee;
 	background: #ffffff url(images/ui-bg_flat_65_ffffff_40x100.png) 50% 50% repeat-x;
@@ -120,12 +126,14 @@ a:hover {
 	color: #cc0000;
 }
 
-.gwt-Button[disabled] {
+.gwt-Button[disabled],
+.gwt-SubmitButton[disabled] {
   cursor: default;
   color: #888;
 }
 
-.gwt-Button[disabled]:hover {
+.gwt-Button[disabled]:hover,
+.gwt-SubmitButton[disabled]:hover {
   border: 1px solid #D8DCDF;
   background: url("images/ui-bg_highlight-hard_100_eeeeee_1x100.png") repeat-x scroll 50% 50% #EEEEEE;
 }
@@ -202,10 +210,16 @@ a:hover {
   background:white;
 }
 
+/* hack IE8 */
+.gwt-ComboBox-button {
+  margin: -1px -4px -18px auto\0/;
+}
+
 /* hack Opera */
 noindex:-o-prefocus,.gwt-ComboBox-button {
   margin: -1px -4px -18px auto;
 }
+
 
 .gwt-ComboBox-button-img {
   background: url(images/ui-icons_cc0000_256x240.png) no-repeat -62px -14px;
@@ -296,11 +310,12 @@ noindex:-o-prefocus,.gwt-ComboBox-button {
 
 .gwt-CheckBox input,
 .gwt-RadioButton input{
-  display:none;
+  left: -5000px;
+  position: absolute;
 }
 
-.gwt-CheckBox label::before,
-.gwt-RadioButton label::before{
+.gwt-CheckBox label:before,
+.gwt-RadioButton label:before{
   content: "";
   display:inline-block;
   height:18px;
@@ -311,27 +326,40 @@ noindex:-o-prefocus,.gwt-ComboBox-button {
   border-radius: 4px;
 }
 
-.gwt-CheckBox label::before{
+.gwt-CheckBox label:before{
   background:url(images/ui-icons_ffffff_256x240.png) no-repeat;
   background-position: -64px -144px;
 }
 
-.gwt-RadioButton label::before{
+.gwt-RadioButton label:before{
   background:url(images/ui-icons_ffffff_256x240.png) no-repeat;
   background-position: -79px -144px;
 }
 
-.gwt-CheckBox input:checked+label::before{
+.gwt-CheckBox input:checked+label:before{
   background:url(images/ui-icons_cc0000_256x240.png) no-repeat;
   background-position: -64px -144px;
 }
 
-.gwt-RadioButton input:checked+label::before{
+.gwt-RadioButton input:checked+label:before{
   background:url(images/ui-icons_cc0000_256x240.png) no-repeat;
   background-position: -79px -144px;
 }
 
-.gwt-CheckBox:focus label::before,
+
+/* for IE8 */
+.gwt-CheckBox-checked label:before{
+  background:url(images/ui-icons_cc0000_256x240.png) no-repeat;
+  background-position: -64px -144px;
+}
+
+.gwt-RadioButton-checked label:before{
+  background:url(images/ui-icons_cc0000_256x240.png) no-repeat;
+  background-position: -79px -144px;
+}
+/* ---- */
+
+.gwt-CheckBox:focus label:before,
 .gwt-RadioButton:focus label::before{
   background-color: #f6f6f6;
   border: 1px solid #939393;
@@ -348,7 +376,11 @@ noindex:-o-prefocus,.gwt-ComboBox-button {
 }
 
 .gwt-DialogBox .Caption {
+  
   background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent;
+  /* MSIE */
+  filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#D80000', endColorstr='#880000');
+
   color:white;
   padding: 6px 10px;
   cursor: default;
@@ -1730,6 +1762,11 @@ td.datePickerMonth {
     margin-left: -20px;
     top: -4px;
     position: relative;
+}
+
+/* hack IE8 */
+.gwt-CustomerBox {
+  margin-left: -22px\0/;
 }
 
 /* hack Opera */

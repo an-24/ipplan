@@ -90,6 +90,9 @@ h1 {
 
 .baloonPanel {
     background: linear-gradient(#F9D835, #F3961C) repeat scroll 0 0 transparent;
+    /* MSIE */
+    filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#F9D835', endColorstr='#F3961C');
+
     border-radius: 10px 10px 10px 10px;
     color: #000000;
     margin-bottom:15px;
@@ -277,6 +280,9 @@ noindex:-o-prefocus,.errorHint:before {
     padding:10px  !important;
     font-weight: bold !important;
     background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent !important;
+    /* MSIE */
+    filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#D80000', endColorstr='#880000');
+
     color: whitesmoke !important;
 }
 

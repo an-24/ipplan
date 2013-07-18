@@ -31,8 +31,7 @@ public interface DatabaseServiceAsync {
 	void dropTemporalyBargain(int id, AsyncCallback<Void> callback);
 	void saveBargain(BargainWrapper bargain, boolean drop,
 			AsyncCallback<BargainWrapper> callback);
-	void saveTemporalyBargain(BargainWrapper bargain,
-			AsyncCallback<Void> callback);
+	void saveTemporalyBargain(BargainWrapper bargain,AsyncCallback<Void> callback);
 	void findCustomer(String query,
 			AsyncCallback<List<CustomerWrapper>> callback);
 	void getAllStatuses(AsyncCallback<List<StatusWrapper>> callback);
@@ -57,7 +56,7 @@ public interface DatabaseServiceAsync {
 	void deleteTask(int id, AsyncCallback<Boolean> callback);
 	void addTask(TaskWrapper task, AsyncCallback<TaskWrapper> callback);
 	void updateTask(TaskWrapper task, AsyncCallback<TaskWrapper> callback);
-	void isNewVersionBargain(BargainWrapper bargain,
+	void isNewVersionBargain(BargainWrapper bargain, boolean savestate,
 			AsyncCallback<Boolean> callback);
 	void getConfig(String name, AsyncCallback<String> callback);
 	void searchFile(int typeDrive, String searchStr,

@@ -6,10 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.cantor.ipplan.db.ud.Bargain;
-import com.cantor.ipplan.db.ud.Bargaincosts;
-
-
 @SuppressWarnings("serial")
 public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable {
 
@@ -97,10 +93,16 @@ public class BargainWrapper implements java.io.Serializable,com.google.gwt.user.
 
 	public int calcTax() {
 		if(bargainRevenue==null) return 0;
-		//6% от дохода
-		if(puser.puserTaxtype==1) return ((Long)Math.round(0.06*bargainRevenue)).intValue(); else
-			if(puser.puserTaxtype==2) 
-				return ((Long)Math.max(Math.round(0.15*getMargin()), Math.round(0.01*bargainRevenue))).intValue();
+		switch (puser.puserTaxtype) {
+			// без налога
+			case 0: return 0;
+			//6% от дохода
+			case 1: return ((Long)Math.round(0.06*bargainRevenue)).intValue(); 
+			//5-15% от дохода-расход
+			case 2: return ((Long)Math.max(Math.round(getMargin()*puser.puserTaxpercent/100.0), Math.round(0.01*bargainRevenue))).intValue();
+		default:
+			break;
+		}
 		return 0;
 	}
 

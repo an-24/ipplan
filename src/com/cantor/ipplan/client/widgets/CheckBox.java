@@ -1,5 +1,8 @@
 package com.cantor.ipplan.client.widgets;
 
+import com.cantor.ipplan.client.UserAgent;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.DOM;
@@ -29,6 +32,14 @@ public class CheckBox extends com.google.gwt.user.client.ui.CheckBox {
 				setValue(!(Boolean)getValue());
 			}
 		});
+		if(UserAgent.isIEBrowser())
+		addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+			    if(getValue()) addStyleName(getStylePrimaryName()+"-checked");
+		    		      else removeStyleName(getStylePrimaryName()+"-checked");
+			}
+		});
 	}
 
 	@Override
@@ -41,4 +52,11 @@ public class CheckBox extends com.google.gwt.user.client.ui.CheckBox {
 		getElement().setTabIndex(index);
     }
 	
+	@Override
+	public void setValue(Boolean value) {
+	    super.setValue(value);
+		if(UserAgent.isIEBrowser())
+	    if(value) addStyleName(getStylePrimaryName()+"-checked");
+	    	else removeStyleName(getStylePrimaryName()+"-checked");
+	}
 }

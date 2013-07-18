@@ -37,6 +37,7 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 	private String puserEmail;
 	private String puserLogin;
 	private int puserTaxtype;
+	private int puserTaxpercent;
 	private String puserGoogleToken;
 	private String puserGoogleRefreshToken;
 	private Integer puserGoogleExpiresIn;
@@ -115,6 +116,15 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		this.puserTaxtype = puserTaxtype;
 	}
 
+	@Column(name = "PUSER_TAXPERCENT", nullable = false)
+	public int getPuserTaxpercent() {
+		return puserTaxpercent;
+	}
+
+	public void setPuserTaxpercent(int puserTaxpercent) {
+		this.puserTaxpercent = puserTaxpercent;
+	}
+	
 	@Column(name = "PUSER_GOOGLE_TOKEN", length = 100)
 	public String getPuserGoogleToken() {
 		return this.puserGoogleToken;
@@ -214,7 +224,8 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		wrap.puserTaxtype = puserTaxtype;
 		wrap.owner = owner==null?null:owner.toClient();
 		wrap.puserContactSyncDuration = puserContactSyncDuration;
-		wrap.puserCalendarSyncDuration = puserCalendarSyncDuration; 
+		wrap.puserCalendarSyncDuration = puserCalendarSyncDuration;
+		wrap.puserTaxpercent = puserTaxpercent;
 		return wrap;
 	}
 
@@ -229,7 +240,8 @@ public class PUserIdent implements java.io.Serializable, IdGetter, DataBridge<PU
 		puserEmail = data.puserEmail;
 		puserTaxtype = data.puserTaxtype;
 		puserContactSyncDuration = data.puserContactSyncDuration;
-		puserCalendarSyncDuration = data.puserCalendarSyncDuration; 
+		puserCalendarSyncDuration = data.puserCalendarSyncDuration;
+		puserTaxpercent = data.puserTaxpercent;
 	}
 
 	@Override

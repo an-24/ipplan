@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     08.07.2013 10:03:22                          */
+/* Created on:     16.07.2013 11:14:10                          */
 /*==============================================================*/
 
 
@@ -164,6 +164,7 @@ owner_puser_id       INTEGER,
 puser_login          VARCHAR(60)                    not null,
 puser_email          VARCHAR(320)                   not null,
 puser_taxtype        INTEGER                        not null,
+puser_taxpercent     INTEGER                        not null,
 puser_google_token   VARCHAR(100),
 puser_google_refresh_token VARCHAR(100),
 puser_google_expires_in INTEGER,

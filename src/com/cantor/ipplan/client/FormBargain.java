@@ -27,7 +27,6 @@ import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.cantor.ipplan.shared.Utils;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
@@ -44,8 +43,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.logical.shared.AttachEvent;
-import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -76,7 +73,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 @SuppressWarnings("rawtypes")
-public class FormBargain extends InplaceForm implements ValueChangeHandler{
+public class FormBargain extends InplaceForm implements ValueChangeHandler {
 
 	private DatabaseServiceAsync dbservice;
 	
@@ -128,10 +125,9 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		//getElement().getStyle().setTableLayout(TableLayout.FIXED);
 		setStyleName("FormBargain");
 		addStyleName("tableBorderCollapse");
-
+		//setCellSpacing(5);
 		
 		Label l;
-		VerticalPanel p;
 		
 		lTitle = new Label();
 		lTitle.setStyleName("gwt-FormCaption");
@@ -147,12 +143,12 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		stylecell.setPosition(Position.RELATIVE);
 		//stylecell.setWidth(100, Unit.PC);
 		spTimeline = new ScrollPanel();
-		spTimeline.setStyleName("simplebox");
+		//spTimeline.setStyleName("simplebox");
 		stylecell = spTimeline.getElement().getStyle(); 
 		stylecell.setOverflow(Overflow.HIDDEN);
 		spTimeline.setWidth("732px");
 		spTimeline.setHeight("auto");
-		Element container = (Element) spTimeline.getElement().getFirstChild();
+		//Element container = (Element) spTimeline.getElement().getFirstChild();
 		//container.getStyle().setOverflow(Overflow.HIDDEN);
 		//container.getStyle().setPosition(Position.STATIC);
 		stylecell.setPaddingLeft(20, Unit.PX);
@@ -191,23 +187,32 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		
 		setWidget(1, 0, spTimelineContainer);
 	    getFlexCellFormatter().setColSpan(1, 0, 2);
+		getCellFormatter().setStyleName(1, 0, "simplebox");
+		stylecell = getCellFormatter().getElement(1, 0).getStyle();
+		stylecell.setPadding(5, Unit.PX);
+		//stylecell.setPaddingLeft(2,Unit.PX);
 		
         // BARGAIN -----------------
 		spBargain = new SimplePanel();
-		spBargain.setStyleName("simplebox");
+		//spBargain.setStyleName("simplebox");
+		spBargain.setWidth("534px");
+
 		setWidget(2, 0, spBargain);
+		getCellFormatter().setStyleName(2, 0, "simplebox");
 		bargainFragment = new BargainFragment();
 		spBargain.setWidget(bargainFragment);
 		
 
 		//TASK ----------
 		spTask = new SimplePanel();
-		spTask.setStyleName("simplebox");
+		//spTask.setStyleName("simplebox");
 		spTask.setWidth("193px");
 		
 		//getFlexCellFormatter().setRowSpan(1, 2, 13);
 		setWidget(2, 1, spTask);
+		getCellFormatter().setStyleName(2, 1, "simplebox");
 		getCellFormatter().getElement(2,1).getStyle().setHeight(100, Unit.PCT);
+		getCellFormatter().setVerticalAlignment(2, 1, HasVerticalAlignment.ALIGN_TOP);
 		
 		VerticalPanel vp =  new VerticalPanel();
 		l = new Label("Задачи");
@@ -460,7 +465,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		eRevenue.addValueChangeHandler(this);
 		ePrePayment.addValueChangeHandler(this);
 		eFine.addValueChangeHandler(this);
-		eCustomer.addValueChangeHandler(this);
+		//eCustomer.addValueChangeHandler(this);
 		eStatus.addValueChangeHandler(this);
 		taNote.addValueChangeHandler(this);
 		
@@ -544,8 +549,8 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		loadCounter++;
 		resetErrors();
 		bargain = result;
-		refreshTitle();				
 		bargainToFormField(bargain);
+		refreshTitle();				
 
 		if(eStatus.isLocked()) eStatus.lock(false);
 		eStatus.refreshStatus();
@@ -554,15 +559,6 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 		tableTasks.setRowCount(bargain.tasks.size());
 		prepareTaskData();
 		setAttention();
-		
-		// это для Opera
-		// для других браузеров значения не имеет
-		new Timer(){
-			@Override
-			public void run() {
-				spTask.getParent().setHeight(spBargain.getParent().getOffsetHeight()+"px");
-			}
-		}.schedule(2000);
 		
 		loadCounter--;
 	}
@@ -626,7 +622,6 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 			public void onNotify(FileBox c) {
 				final FormFileLink dlg = new FormFileLink(getDataBaseService());
 				dlg.okExternalHandler = new ClickHandler() {
-					
 					@Override
 					public void onClick(ClickEvent event) {
 						bw.flinks.add(dlg.getFilelink());
@@ -842,14 +837,15 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 			setAttention();
 		};
 		
-		if(!oldDirty) checkNewVersion();
+		if(!oldDirty) checkNewVersion(); //в checkNewVersion уже есть saveState 
+				 else saveState();
 		
 		refreshTitle();
 	}
 
 	private void checkNewVersion() {
 		formFieldToBargain(bargain);		
-		dbservice.isNewVersionBargain(bargain, new AsyncCallback<Boolean>() {
+		dbservice.isNewVersionBargain(bargain, true, new AsyncCallback<Boolean>() {
 			@Override
 			public void onSuccess(Boolean result) {
 				if(result) { 
@@ -862,7 +858,19 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 				// since
 			}
 		});
-		
+	}
+	
+	private void saveState() {
+		formFieldToBargain(bargain);		
+		dbservice.saveTemporalyBargain(bargain, new AsyncCallback<Void>() {
+			@Override
+			public void onSuccess(Void v) {
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				// since
+			}
+		});
 	}
 
 	protected void startNote() {
@@ -1213,6 +1221,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 				@Override
 				public void onSelection(SelectionEvent<SuggestOracle.Suggestion> event) {
 					showInfoCustomer();
+					onValueChange(new BargainChangeEvent(bargain, eCustomer));
 				}
 			});		
 			pCustomer.add(eCustomer);		
@@ -1369,4 +1378,5 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler{
 	    @Source({ CellTable.Style.DEFAULT_CSS, "TableResources.css","TaskTableResources.css" })
 	    TableStyle cellTableStyle();
 	}
+
 }

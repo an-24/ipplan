@@ -18,7 +18,6 @@ import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -362,10 +361,11 @@ public class FormProfile extends Form {
 			public void onClick(ClickEvent event) {
 				resetErrors();
 				if(!validateTab1()) return;
-				PUserWrapper u = new PUserWrapper();
+				final PUserWrapper u = new PUserWrapper();
 				u.puserLogin = tbName.getText();
 				u.puserEmail = tbEmail.getText();
-				u.puserTaxtype = rbTaxType1.getValue()?1:2;
+				u.puserTaxtype = rbTaxType0.getValue()?0:rbTaxType1.getValue()?1:2;
+				u.puserTaxpercent = user.puserTaxpercent;
 				u.puserBoss = cbBoss.getValue()?1:0;
 				u.puserTarif =cbTarif.getSelectedIndex();
 				u.children.addAll(user.children);
@@ -374,9 +374,10 @@ public class FormProfile extends Form {
 					u.owner = FormProfile.this.user.lastSystemMessage.sender;
 				
 				if(profService==null) profService = GWT.create(ProfileService.class);
-				profService.setUserData(u, rbOwnerOk.getValue()?1:rbOwnerCancel.getValue()?-1:0,new AsyncCallback<Void>() {
-					public void onSuccess(Void result) {
+				profService.setUserData(u, rbOwnerOk.getValue()?1:rbOwnerCancel.getValue()?-1:0,new AsyncCallback<PUserWrapper>() {
+					public void onSuccess(PUserWrapper result) {
 						toast(btnSave,"Общие данные успешно изменены");
+						getMain().setUser(result);
 						getMain().refreshForm(FormProfile.class,null);
 					}
 					
@@ -525,7 +526,7 @@ public class FormProfile extends Form {
 		table.setCellSpacing(1);
 		final IntegerBox box = new IntegerBox();
 		box.setWidth("40px");
-		box.setValue(user.puserTaxvalue);
+		box.setValue(user.puserTaxpercent);
 		table.setWidget(0, 0, box);
 		table.setWidget(0, 1, new Label("%"));
 		table.setWidth("100%");
@@ -538,7 +539,7 @@ public class FormProfile extends Form {
 		dlg.setButtonOkClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				user.puserTaxvalue = box.getValue();
+				user.puserTaxpercent = box.getValue();
 				ok.onClick(event);
 			}
 		});
@@ -549,7 +550,7 @@ public class FormProfile extends Form {
 		return new SafeHtmlBuilder()
 			.appendEscaped("По ставке ")
 			.appendHtmlConstant("<span id=\"taxvalue\" class=\"link\">")
-			.append(user.puserTaxvalue)
+			.append(user.puserTaxpercent)
 			.appendEscaped("%")
 			.appendHtmlConstant("</span>")
 			.appendEscaped(" от доходов, уменьшенных на величину расходов")

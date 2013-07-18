@@ -1,0 +1,89 @@
+Ubuntu 13.04
+
+Основные пути:
+- Tomcat webapps - /var/lib/tomcat6
+            log  - /var/log/tomcat6
+- Apache	 - /etc/apache2
+- стат ресурсы	 - /var/www/ipplan
+- хранилище	 - /var/local/ipplan/database
+- firebird config- /etc/firebird/2.5
+
+==============================================================
+
+0) может потребоваться 
+sudo apt-get update
+
+1) sudo apt-get install openssh-server
+
+2) sudo apt-get install firebird2.5-super
+
+3) sudo dpkg-reconfigure firebird2.5-super
+
+4) sudo apt-get install tomcat6 tomcat6-admin
+
+5) в файле /var/lib/tomcat6/conf/tomcat-users.xml добавить
+роль manager-gui и пользователя с доступом к этой роли
+
+6) sudo apt-get install apache2 libapache2-mod-jk
+
+
+7) Настройка AJP
+
+== проверить наличие /etc/apache2/mods-available/jk.conf
+если его нет то в /etc/apache2/apache2.conf добавить
+
+# AJP Bridge Settings
+
+# The location where mod_jk will find the workers definitions
+JkWorkersFile   /etc/libapache2-mod-jk/workers.properties
+
+# The location where mod_jk is going to place its log file
+JkLogFile       /var/log/apache2/mod_jk.log
+
+# The log level:
+# - info log will contain standard mod_jk activity (default).
+# - warn log will contain non fatal error reports.
+# - error log will contain also error reports.
+# - debug log will contain all information on mod_jk activity
+# - trace log will contain all tracing information on mod_jk activity
+JkLogLevel      info
+
+== в /etc/apache2/sites-enabled/000-default добавить
+JkMount / ajp13_worker
+JkMount /* ajp13_worker
+JkUnMount /*.ico ajp13_worker
+JkUnMount /*.png ajp13_worker
+JkUnMount /*.css ajp13_worker
+JkUnMount /*.html ajp13_worker
+
+8) Права
+sudo groupadd store-man
+sudo usermod -G store-man kav
+sudo usermod -G store-man firebird
+sudo chown -R kav:store-man /var/local/
+sudo chown -R kav:store-man /var/www/
+sudo chmod -R 0775 /var/local/
+sudo chmod -R 0775 /var/www/
+mkdir /var/local/ipplan
+
+9) Upload базы данных. Выполнить
+  src\deploy\uload.cmd 
+
+10) Upload статических ресурсов. Выполнить
+  src\deploy\uload-stats.cmd 
+
+11) В файле
+/etc/firebird/2.5/firebird.conf
+раскомментировать строку DatabaseAccess = Full
+и перезагрузить сервер
+sudo service firebird2.5-super restart
+
+12) Выполнить
+  sh /var/local/ipplan/database/restore_up.sh
+
+13) Развертывание war
+
+
+
+
+

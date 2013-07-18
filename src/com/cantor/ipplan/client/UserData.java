@@ -8,7 +8,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class UserData extends Ipplan {
 
-	protected PUserWrapper user;
 	private DatabaseServiceAsync dbservice;
 	//protected String sessionId;
 	
@@ -77,7 +76,7 @@ public class UserData extends Ipplan {
 		DatabaseServiceAsync service = getDataBaseService();
 		service.isLogged(new AsyncCallback<PUserWrapper>() {
 			public void onSuccess(PUserWrapper result) {
-				UserData.this.user = result;
+				setUser(result);
 				History.newItem(INIT_TOKEN);
 			}
 			public void onFailure(Throwable caught) {
@@ -101,6 +100,8 @@ public class UserData extends Ipplan {
 			}
 		});
 	}
+
+
 
 
 

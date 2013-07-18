@@ -8,7 +8,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class UserProfile extends Ipplan {
 
-	private PUserWrapper user;	
     static {
     	tokenForms.put("login", FormLogin.class);
     	tokenForms.put("profile", FormProfile.class);
@@ -20,10 +19,6 @@ public class UserProfile extends Ipplan {
 		super.onModuleLoad();
 	}
 
-	public void setUser(PUserWrapper user) {
-		this.user = user;
-	}
-    
 	public void refreshForm(final Class<? extends Form> type,final String sessionId) {
 		//unknown form
 		if(type==null) {
