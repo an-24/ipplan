@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -77,7 +78,10 @@ public class BaseServiceImpl extends RemoteServiceServlet {
 	    	cfg.setProperty(Environment.CONNECTION_PROVIDER, "com.cantor.ipplan.server.UserDataPoolConnection");
 	    	ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build(); 
 	    	UserDataPoolConnection pool = (UserDataPoolConnection) serviceRegistry.getService(org.hibernate.engine.jdbc.connections.spi.ConnectionProvider.class);
-	    	pool.setPool(url);
+	    	ServletContext ctx = getServletContext();
+	    	pool.setPool(url,
+	    			ctx.getInitParameter("user"),
+	    			ctx.getInitParameter("password"));
 	    	sessionFactory = cfg.buildSessionFactory(serviceRegistry);
 	    	// устанавливаем в сессии
 	    	this.getSession().setAttribute("sessionFactory", sessionFactory);

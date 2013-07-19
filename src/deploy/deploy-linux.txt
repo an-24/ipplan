@@ -3,15 +3,39 @@ Ubuntu 13.04
 Основные пути:
 - Tomcat webapps - /var/lib/tomcat6
             log  - /var/log/tomcat6
+            bin  - /usr/share/tomcat6
+
 - Apache	 - /etc/apache2
 - стат ресурсы	 - /var/www/ipplan
 - хранилище	 - /var/local/ipplan/database
 - firebird config- /etc/firebird/2.5
+             bin - /usr/lib/firebird/2.5
 
 ==============================================================
 
 0) может потребоваться 
+
 sudo apt-get update
+
+установить русскую locale
+
+	узнать local
+	locale -a  
+
+	установить ru_RU.UTF-8
+	sudo dpkg-reconfigure locales
+
+	сделать активной
+        	sudo apt-get install console-cyrillic
+         	sudo dpkg-reconfigure console-cyrillic
+                <reboot>
+        иногда это не помогает, нужно в profile добавить
+        export LC_ALL=ru_RU.utf8
+        export LANG=ru_RU.UTF8
+
+        установить часовой пояс
+	sudo dpkg-reconfigure tzdata
+
 
 1) sudo apt-get install openssh-server
 
@@ -60,10 +84,11 @@ JkUnMount /*.html ajp13_worker
 sudo groupadd store-man
 sudo usermod -G store-man kav
 sudo usermod -G store-man firebird
+sudo usermod -G store-man,firebird tomcat6
 sudo chown -R kav:store-man /var/local/
 sudo chown -R kav:store-man /var/www/
-sudo chmod -R 0775 /var/local/
-sudo chmod -R 0775 /var/www/
+sudo chmod -R 775 /var/local/
+sudo chmod -R 775 /var/www/
 mkdir /var/local/ipplan
 
 9) Upload базы данных. Выполнить
@@ -84,6 +109,8 @@ sudo service firebird2.5-super restart
 13) Развертывание war
 
 
-
-
+14) ЗАКРЫТЬ ПОРТ 3050!!
+iptables -A INPUT -i eth0 -p tcp -m tcp --dport 3050 -j DROP
+удалить правило
+iptables -D INPUT -i eth0 -p tcp -m tcp --dport 3050 -j DROP
 

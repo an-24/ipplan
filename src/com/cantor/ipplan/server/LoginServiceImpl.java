@@ -12,7 +12,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
 import org.hibernate.Query;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -45,6 +44,10 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
 			return null;
 		}
 		
+		HttpSession oldsess = this.getThreadLocalRequest().getSession(false);
+		if(oldsess!=null) 
+			oldsess.invalidate();
+		
 		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
     	Session session = sessionFactory.openSession();
     	try {
@@ -69,7 +72,7 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     				// модмфицируем lastaccess
     				u.setPuserLastaccess(new Date());
     				u.setPuserLastaccessDevice(device);
-    				session.update(u);
+    				//session.update(u);
     				
         			tx.commit();
     				
@@ -110,11 +113,6 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     	} finally {
     		session.close();
     	}
-	}
-
-	private HttpSession findSession(String sessionId) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -179,11 +177,11 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     	try {
     		Transaction tx = session.beginTransaction();
     		try {
+				session.update(user);
     			// расчет доступности пользователя 
     			calcLockFlag(user);
     			if(user.getPuserLock()!=0) {
     				// доступнсоть могла изменится
-    				session.update(user);
     				tx.commit();
     				throw new Exception("База данных заблокирована. Причина: "+user.getPuserLockReason());
     			}
@@ -193,10 +191,11 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     				byte[] code = new byte[16];
     				new SecureRandom().nextBytes(code);
     				user.setPuserDbname(new BigInteger(1,code).toString(16));
-    				session.update(user); 
     			} else {
     				if(user.getOwner()!=null && user.getOwner().getPuserDbname().isEmpty())
         				throw new Exception("База данных еще не подготовлена. Обратитесь к лицу, которому подчиняетесь");
+    				if(user.getOwner()!=null)
+    					user.setPuserDbname(user.getOwner().getPuserDbname());
     			}
     			String host = getServletConfig().getInitParameter("dataServer");
     			if(host==null)
@@ -226,6 +225,7 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
 		//TODO проверка условий предоставления доступа (оплата и т.д.)
 	}
 
+/*	
 	private boolean isAccessDatabase(String dbName, String userEmail) {
 		SessionFactory sessionFactory = (SessionFactory) getServletContext().getAttribute("sessionFactory");
     	Session session = sessionFactory.openSession();
@@ -241,6 +241,6 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     		session.close();
     	}
 	}
-
+*/
 
 }

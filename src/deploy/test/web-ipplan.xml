@@ -10,13 +10,20 @@
     <param-name>storeLocation</param-name>
 <!--    <param-value>d:\database\store</param-value>-->
     <param-value>/var/local/ipplan/database/store</param-value>
-
   </context-param>
   <!-- for master: БД для профиля -->
   <context-param>
     <param-name>profileDBUrl</param-name> 
 <!--    <param-value>jdbc:firebirdsql:localhost:D:\Database\IPPLAN_UP.FDB</param-value>-->
     <param-value>jdbc:firebirdsql:localhost:/var/local/ipplan/database/ipplan_up.fdb</param-value>
+  </context-param>
+  <context-param>
+    <param-name>user</param-name>
+    <param-value>SYSDBA</param-value>
+  </context-param>
+  <context-param>
+    <param-name>password</param-name>
+    <param-value>masterkey</param-value>
   </context-param>
 
 

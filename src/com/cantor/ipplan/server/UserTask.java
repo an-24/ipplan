@@ -82,7 +82,9 @@ public class UserTask extends TimerTask {
 								    	Configuration cfg = new Configuration().configure();
 								    	ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build(); 
 								    	PoolConnection pool = (PoolConnection) serviceRegistry.getService(org.hibernate.engine.jdbc.connections.spi.ConnectionProvider.class);
-										pool.setPool(url);
+										pool.setPool(url,ctx.
+												getInitParameter("user"),
+								    			ctx.getInitParameter("password"));
 								    	sessionFactory = cfg.buildSessionFactory(serviceRegistry);
 								    	session = sessionFactory.openSession();
 									}

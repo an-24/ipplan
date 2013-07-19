@@ -76,8 +76,12 @@ public class UserData extends Ipplan {
 		DatabaseServiceAsync service = getDataBaseService();
 		service.isLogged(new AsyncCallback<PUserWrapper>() {
 			public void onSuccess(PUserWrapper result) {
-				setUser(result);
-				History.newItem(INIT_TOKEN);
+				if(result==null) {
+					FormMain.quit();
+				} else {
+					setUser(result);
+					History.newItem(INIT_TOKEN);
+				}
 			}
 			public void onFailure(Throwable caught) {
 				showError(caught);

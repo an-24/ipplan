@@ -129,7 +129,8 @@ a:hover {
 .gwt-Button[disabled],
 .gwt-SubmitButton[disabled] {
   cursor: default;
-  color: #888;
+  color: #888 !important;
+  background: #DDDDDD !important;
 }
 
 .gwt-Button[disabled]:hover,
@@ -202,7 +203,7 @@ a:hover {
   border: 1px solid #D8DCDF;
   border-radius: 6px 6px 6px 6px;
   height: 20px;
-  margin: -1px -4px -22px auto;
+  margin: -10px -3px -22px auto;
   position: relative;
   top: 50%;
   width: 20px;
@@ -212,7 +213,7 @@ a:hover {
 
 /* hack IE8 */
 .gwt-ComboBox-button {
-  margin: -1px -4px -18px auto\0/;
+  margin: -10px -3px -18px auto\0/;
 }
 
 /* hack Opera */
@@ -271,7 +272,7 @@ noindex:-o-prefocus,.gwt-ComboBox-button {
 
 .gwt-ListBox,
 .gwt-ComboBox {
-  padding: 3px 5px;
+  padding: 5px 4px 6px 4px;
   border: 1px solid #D8DCDF;
   border-radius: 6px;
   background-color: white;
@@ -279,14 +280,17 @@ noindex:-o-prefocus,.gwt-ComboBox-button {
   outline: none;
 }
 
+.gwt-ComboBox {
+  height:1em;
+  line-height: 2.4em;
+  /* hack IE8 */
+  line-height: 2em\0/;
+}
 
 .gwt-ListBox:focus,
 .gwt-ComboBox:focus {
-  padding: 2px 5px;
   border: 1px solid #939393;
-  border-radius: 6px;
   background-color: #f6f6f6;
-  overflow: hidden;
 }
 
 .gwt-ComboBox:focus select {
@@ -1444,10 +1448,13 @@ noindex:-o-prefocus,.gwt-ComboBox-button {
   border-top:1px solid #999;
   cursor: default;
 }
+
 .gwt-DatePicker td,
 .datePickerMonthSelector td:focus {
   outline: none;
+  background-color: white;
 }
+
 .datePickerDays {
   width: 100%;
   background: white;
@@ -1760,7 +1767,7 @@ td.datePickerMonth {
     border:0px none;
     width: 100%;
     margin-left: -20px;
-    top: -4px;
+    top: 0px;
     position: relative;
 }
 
@@ -1785,6 +1792,7 @@ noindex:-o-prefocus,.gwt-CustomerBox {
 
 .Customer-bind {
     font-weight: bold;
+    top: -3px;
 }
 
 .Customer-bind+div {

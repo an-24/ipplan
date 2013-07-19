@@ -1,16 +1,22 @@
 package com.cantor.ipplan.client.widgets;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.cantor.ipplan.client.UserAgent;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Text;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -19,6 +25,8 @@ import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -52,39 +60,22 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	private static final int INSERT_AT_END = -1;
 
 
-	/**
-	 * Creates a ListBox widget that wraps an existing &lt;select&gt; element.
-	 * 
-	 * This element must already be attached to the document. If the element is
-	 * removed from the document, you must call
-	 * {@link RootPanel#detachNow(Widget)}.
-	 * 
-	 * @param element
-	 *            the element to be wrapped
-	 * @return list box
-	 */
-	public static ComboBox wrap(Element element) {
-		// Assert that the element is attached.
-		assert Document.get().getBody().isOrHasChild(element);
-
-		ComboBox listBox = new ComboBox(element);
-
-		// Mark it attached and remember it for cleanup.
-		listBox.onAttach();
-		RootPanel.detachOnWindowClose(listBox);
-
-		return listBox;
-	}
-
 	private DirectionEstimator estimator;
-
-	private SelectElement selectElement;
-
+	private InputElement selectElement;
 	private Element btnElement;
-
 	private ComboPopupList popupList;
 	private boolean lostFocusLocked = false;
+	
+	private List<Option> list = new ArrayList<Option>();
 
+	private int selectedIndex = -1;
+
+	private int visibleCount;
+
+	private boolean isMultiple = false;
+
+	private Text textElement;
+	
 	/**
 	 * Creates an empty list box in single selection mode.
 	 */
@@ -103,8 +94,12 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 */
 	public ComboBox(boolean isMultipleSelect) {
 		super(createElement(isMultipleSelect));
-		selectElement = getElement().getChild(1).cast();
+		isMultiple = isMultipleSelect;
 		btnElement = getElement().getChild(0).cast();
+		selectElement = getElement().getChild(1).cast();
+		textElement = getElement().getChild(2).cast();
+		
+
 		Event.setEventListener(btnElement, new EventListener() {
 			@Override
 			public void onBrowserEvent(Event event) {
@@ -115,22 +110,15 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 		});
 		DOM.sinkEvents((com.google.gwt.user.client.Element) btnElement, Event.ONMOUSEDOWN);
 		
-		Event.setEventListener(selectElement, new EventListener() {
+		
+		addMouseDownHandler(new MouseDownHandler() {
 			@Override
-			public void onBrowserEvent(Event event) {
+			public void onMouseDown(MouseDownEvent event) {
 				event.preventDefault();
 				event.stopPropagation();
 				dropDown();
 			}
 		});
-		
-		com.google.gwt.user.client.Element selElem = getElement().getChild(1).cast(); 
-		DOM.sinkEvents(selElem, Event.ONMOUSEDOWN);
-		
-		/* dropdown list почему-то открывается в IE. Времянка, что он тут же закрывался */
-		// FIXME мигает dropdown list 
-		if(UserAgent.isIEBrowser()) 
-			DOM.sinkEvents(selElem, Event.ONCLICK);
 		
 		addBlurHandler(new BlurHandler() {
 			@Override
@@ -152,6 +140,39 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 		setStyleName("gwt-ComboBox");
 	}
 	
+	/*	
+	protected ComboBox(Element element) {
+		super(element);
+		selectElement = SelectElement.as(element);
+	}
+*/
+	
+	/**
+	 * Creates a ListBox widget that wraps an existing &lt;select&gt; element.
+	 * 
+	 * This element must already be attached to the document. If the element is
+	 * removed from the document, you must call
+	 * {@link RootPanel#detachNow(Widget)}.
+	 * 
+	 * @param element
+	 *            the element to be wrapped
+	 * @return list box
+	 */
+	public static ComboBox wrap(Element element) {
+		// Assert that the element is attached.
+		assert Document.get().getBody().isOrHasChild(element);
+		
+		throw new RuntimeException("wrap not supported");
+//TODO
+//		ComboBox listBox = new ComboBox(element);
+/*
+		// Mark it attached and remember it for cleanup.
+		listBox.onAttach();
+		RootPanel.detachOnWindowClose(listBox);
+
+		return listBox;
+*/		
+	}
 
 	public void dropDown() {
 		if (!isDropDown()) {
@@ -294,25 +315,17 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 * @param element
 	 *            the element to be used
 	 */
-	protected ComboBox(Element element) {
-		super(element);
-		selectElement = SelectElement.as(element);
-	}
-
 	static private Element createElement(boolean isMultipleSelect) {
 		Element div = DOM.createDiv();
-		SelectElement select = Document.get().createSelectElement(
-				isMultipleSelect);
-		select.setClassName("gwt-ComboBox-inner");
-		select.setTabIndex(-1);
+		Element select = Document.get().createHiddenInputElement();
 		Element btnPlace = DOM.createDiv();
 		btnPlace.setClassName("gwt-ComboBox-button");
 		div.appendChild(btnPlace);
 		Element btn = DOM.createDiv();
 		btn.setClassName("gwt-ComboBox-button-img");
 		btnPlace.appendChild(btn);
-		
 		div.appendChild(select);
+		div.appendChild(Document.get().createTextNode(""));
 		return div;
 	}
 
@@ -392,7 +405,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 * Removes all items from the list box.
 	 */
 	public void clear() {
-		getSelectElement().clear();
+		getSelectElement().setValue("");
 	}
 
 	public DirectionEstimator getDirectionEstimator() {
@@ -405,7 +418,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 * @return the number of items
 	 */
 	public int getItemCount() {
-		return getSelectElement().getOptions().getLength();
+		return list.size();
 	}
 
 	/**
@@ -419,7 +432,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 */
 	public String getItemText(int index) {
 		checkIndex(index);
-		return getOptionText(getSelectElement().getOptions().getItem(index));
+		return getOptionText(list.get(index));
 	}
 
 	public String getName() {
@@ -434,7 +447,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 * @return the selected index, or <code>-1</code> if none is selected
 	 */
 	public int getSelectedIndex() {
-		return getSelectElement().getSelectedIndex();
+		return selectedIndex;
 	}
 
 	/**
@@ -448,7 +461,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 */
 	public String getValue(int index) {
 		checkIndex(index);
-		return getSelectElement().getOptions().getItem(index).getValue();
+		return list.get(index).value;
 	}
 
 	/**
@@ -458,7 +471,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 * @return the visible item count
 	 */
 	public int getVisibleItemCount() {
-		return getSelectElement().getSize();
+		return visibleCount;
 	}
 
 	/**
@@ -535,20 +548,19 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 *            the index at which to insert it
 	 */
 	public void insertItem(String item, Direction dir, String value, int index) {
-		SelectElement select = getSelectElement();
-		OptionElement option = Document.get().createOptionElement();
-		setOptionText(option, item, dir);
-		option.setValue(value);
+		
+		Option option = new Option();
+		option.text = item;
+		option.value = value;
 
-		int itemCount = select.getLength();
+		int itemCount = list.size();
 		if (index < 0 || index > itemCount) {
 			index = itemCount;
 		}
 		if (index == itemCount) {
-			select.add(option, null);
+			list.add(option);
 		} else {
-			OptionElement before = select.getOptions().getItem(index);
-			select.add(option, before);
+			list.add(index, option);
 		}
 	}
 
@@ -563,7 +575,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 */
 	public boolean isItemSelected(int index) {
 		checkIndex(index);
-		return getSelectElement().getOptions().getItem(index).isSelected();
+		return selectedIndex == index;
 	}
 
 	/**
@@ -572,7 +584,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 * @return <code>true</code> if multiple selection is allowed
 	 */
 	public boolean isMultipleSelect() {
-		return getSelectElement().isMultiple();
+		return isMultiple ;
 	}
 
 	/**
@@ -594,7 +606,7 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 */
 	public void removeItem(int index) {
 		checkIndex(index);
-		getSelectElement().remove(index);
+		list.remove(index);
 	}
 
 	/**
@@ -631,7 +643,8 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	 */
 	public void setItemSelected(int index, boolean selected) {
 		checkIndex(index);
-		getSelectElement().getOptions().getItem(index).setSelected(selected);
+		if(!isMultiple) selectedIndex = selected?index:-1; 
+			//TODO else
 	}
 
 	/**
@@ -648,120 +661,47 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 		setItemText(index, text, null);
 	}
 
-	/**
-	 * Sets the text associated with the item at a given index.
-	 * 
-	 * @param index
-	 *            the index of the item to be set
-	 * @param text
-	 *            the item's new text
-	 * @param dir
-	 *            the item's direction.
-	 * @throws IndexOutOfBoundsException
-	 *             if the index is out of range
-	 */
 	public void setItemText(int index, String text, Direction dir) {
 		checkIndex(index);
 		if (text == null) {
 			throw new NullPointerException(
 					"Cannot set an option to have null text");
 		}
-		setOptionText(getSelectElement().getOptions().getItem(index), text, dir);
+		list.get(index).text = text;
 	}
 
-	/**
-	 * Sets whether this list allows multiple selections.
-	 * <em>NOTE: The preferred
-	 * way of enabling multiple selections in a list box is by using the
-	 * {@link #ListBox(boolean)} constructor. Using this method can spuriously
-	 * fail on Internet Explorer 6.0.</em>
-	 * 
-	 * @param multiple
-	 *            <code>true</code> to allow multiple selections
-	 * @deprecated use {@link #ListBox(boolean)} instead
-	 */
 	@Deprecated
 	public void setMultipleSelect(boolean multiple) {
-		getSelectElement().setMultiple(multiple);
+		isMultiple = multiple;
 	}
 
 	public void setName(String name) {
 		getSelectElement().setName(name);
 	}
 
-	/**
-	 * Sets the currently selected index.
-	 * 
-	 * After calling this method, only the specified item in the list will
-	 * remain selected. For a ListBox with multiple selection enabled, see
-	 * {@link #setItemSelected(int, boolean)} to select multiple items at a
-	 * time.
-	 * 
-	 * <p>
-	 * Note that setting the selected index programmatically does <em>not</em>
-	 * cause the {@link ChangeHandler#onChange(ChangeEvent)} event to be fired.
-	 * </p>
-	 * 
-	 * @param index
-	 *            the index of the item to be selected
-	 */
 	public void setSelectedIndex(int index) {
-		getSelectElement().setSelectedIndex(index);
+		selectedIndex = index;
+		if(selectedIndex<0)	clear();else {
+			checkIndex(selectedIndex);
+			Option opt = list.get(selectedIndex);
+			getSelectElement().setValue(opt.value);
+			textElement.setData(opt.text);
+		}
 	}
 
-	/**
-	 * Sets the value associated with the item at a given index. This value can
-	 * be used for any purpose, but is also what is passed to the server when
-	 * the list box is submitted as part of a {@link FormPanel}.
-	 * 
-	 * @param index
-	 *            the index of the item to be set
-	 * @param value
-	 *            the item's new value; cannot be <code>null</code>
-	 * @throws IndexOutOfBoundsException
-	 *             if the index is out of range
-	 */
 	public void setValue(int index, String value) {
 		checkIndex(index);
-		getSelectElement().getOptions().getItem(index).setValue(value);
+		list.get(index).value = value;
 	}
 
-	/**
-	 * Sets the number of items that are visible. If only one item is visible,
-	 * then the box will be displayed as a drop-down list.
-	 * 
-	 * @param visibleItems
-	 *            the visible item count
-	 */
 	public void setVisibleItemCount(int visibleItems) {
-		getSelectElement().setSize(visibleItems);
+		visibleCount = visibleItems;
 	}
 
-	/**
-	 * Retrieves the text of an option element. If the text was set by
-	 * {@link #setOptionText} and was wrapped with Unicode bidi formatting
-	 * characters, also removes those additional formatting characters.
-	 * 
-	 * @param option
-	 *            an option element
-	 * @return the element's text
-	 */
-	protected String getOptionText(OptionElement option) {
-		String text = option.getText();
-		if (option.hasAttribute(BIDI_ATTR_NAME) && text.length() > 1) {
-			text = text.substring(1, text.length() - 1);
-		}
-		return text;
+	protected String getOptionText(Option option) {
+		return option.text;
 	}
 
-	/**
-	 * <b>Affected Elements:</b>
-	 * <ul>
-	 * <li>-item# = the option at the specified index.</li>
-	 * </ul>
-	 * 
-	 * @see UIObject#onEnsureDebugId(String)
-	 */
 	@Override
 	protected void onEnsureDebugId(String baseID) {
 		super.onEnsureDebugId(baseID);
@@ -769,46 +709,10 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 		// Set the id of each option
 		int numItems = getItemCount();
 		for (int i = 0; i < numItems; i++) {
-			ensureDebugId(getSelectElement().getOptions().getItem(i), baseID,
-					"item" + i);
+			ensureDebugId(getSelectElement(), baseID, "item" + i);
 		}
 	}
 
-	/**
-	 * Sets the text of an option element. If the direction of the text is
-	 * opposite to the page's direction, also wraps it with Unicode bidi
-	 * formatting characters to prevent garbling, and indicates that this was
-	 * done by setting the option's <code>BIDI_ATTR_NAME</code> custom
-	 * attribute.
-	 * 
-	 * @param option
-	 *            an option element
-	 * @param text
-	 *            text to be set to the element
-	 * @param dir
-	 *            the text's direction. If {@code null} and direction estimation
-	 *            is turned off, direction is ignored.
-	 */
-	protected void setOptionText(OptionElement option, String text,
-			Direction dir) {
-		if (dir == null && estimator != null) {
-			dir = estimator.estimateDirection(text);
-		}
-		if (dir == null) {
-			option.setText(text);
-			option.removeAttribute(BIDI_ATTR_NAME);
-		} else {
-			String formattedText = BidiFormatter
-					.getInstanceForCurrentLocale()
-					.unicodeWrapWithKnownDir(dir, text, false /* isHtml */, false /* dirReset */);
-			option.setText(formattedText);
-			if (formattedText.length() > text.length()) {
-				option.setAttribute(BIDI_ATTR_NAME, "");
-			} else {
-				option.removeAttribute(BIDI_ATTR_NAME);
-			}
-		}
-	}
 
 	private void checkIndex(int index) {
 		if (index < 0 || index >= getItemCount()) {
@@ -816,15 +720,15 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 		}
 	}
 
-	private SelectElement getSelectElement() {
+	private InputElement getSelectElement() {
 		return selectElement;
 	}
 	
 	public int valueIndexOf(String value) {
-		NodeList<OptionElement> options = getSelectElement().getOptions();
-		for (int i = 0, len = options.getLength(); i < len; i++) {
-			OptionElement o = options.getItem(i);
-			if(value.equals(o.getValue())) return i;
+		int i = 0;
+		for (Option opt : list) {
+			if(value.equals(opt.value)) return i;
+			i++;
 		}
 		return -1;
 	}
@@ -842,4 +746,10 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 		
 	}
 
+	class Option {
+		String text;
+		String value;
+		String label;
+		boolean disabled = false;
+	}
 }

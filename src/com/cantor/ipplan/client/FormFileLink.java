@@ -17,6 +17,7 @@ import com.cantor.ipplan.shared.FileLinksWrapper;
 import com.cantor.ipplan.shared.SearchInfo;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONObject;
@@ -29,6 +30,7 @@ import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ToggleButton;
+import com.google.gwt.user.client.ui.Widget;
 
 public class FormFileLink extends Dialog {
 	
@@ -145,7 +147,9 @@ public class FormFileLink extends Dialog {
 		final Hidden tbTypeDrive = new Hidden("tdrive");
 		btnUpload.add(tbTypeDrive);
 		btnUpload.setAutoSubmit(true);
-		btnUpload.getFileInput().getWidget().setSize("309px", "30px");
+		Widget w = btnUpload.getFileInput().getWidget();
+		w.setSize("309px", "30px");
+		w.getElement().getStyle().setFontSize(1, Unit.EM);
 		btnUpload.setI18Constants((UploaderConstants) GWT.create(UploaderConstantsRU.class));
 		btnUpload.addOnStartUploadHandler(new OnStartUploaderHandler() {
 			@Override

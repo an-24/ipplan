@@ -2,7 +2,6 @@ package com.cantor.ipplan.server;
 
 import java.io.File;
 import java.net.URL;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,7 +10,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.management.RuntimeErrorException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
@@ -56,7 +54,6 @@ import com.cantor.ipplan.shared.TasktypeWrapper;
 import com.gdevelop.gwt.syncrpc.SyncProxy;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.Drive.Files;
@@ -679,6 +676,9 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 		String dbName;
 		if(newCatalog) {
 			userroot.mkdir();
+			// доступ к каталогу только от группы store-man
+			if(isUnix())
+				Runtime.getRuntime().exec("chmod 770 "+userroot.getAbsolutePath());
 			// создаем бд из pattern.fbk
 			dbName = createDatabase(root,name);
 			// переносим файл конфигурации
@@ -694,24 +694,40 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 	}
 
 	private String createDatabase(File root, String name) throws Exception {
+		final String TMPPATH = "/tmp/"; 
 		try {
 			String dbname = getCurrentDBName(root, name);
 			BackupManager restoreManager = new FBBackupManager(GDSType.getType("PURE_JAVA"));
 			restoreManager.setHost("localhost");
 			restoreManager.setPort(3050);
-			restoreManager.setUser("SYSDBA");
-			restoreManager.setPassword("masterkey");
+			String user = getServletContext().getInitParameter("user");
+			String pswd = getServletContext().getInitParameter("password");
+			restoreManager.setUser(user==null?"SYSDBA":user);
+			restoreManager.setPassword(pswd==null?"masterkey":pswd);
 			restoreManager.setLogger(System.out);
 			restoreManager.setVerbose(true);
-			restoreManager.setDatabase(dbname);
 			restoreManager.setBackupPath(root.getAbsolutePath()+File.separatorChar+"pattern.fbk");
+			restoreManager.setDatabase(dbname);				
 			restoreManager.restoreDatabase();
+			restoreManager = null;
+			
+			// доступ к каталогу только от группы store-man
+			if(isUnix())
+				Runtime.getRuntime().exec("chmod 550 "+dbname);
+
 			return dbname;
 		} catch (Throwable e) {
 			throw new Exception(e.getMessage());
 		}
 	}
 
+	
+	public static boolean isUnix (){
+		String os = System.getProperty("os.name").toLowerCase();
+	    //linux or unix
+        return (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0);
+	}
+	
 	private PUserIdent makeUser(PUserWrapper u) throws Exception {
 		SessionFactory sessionFactory = getSessionFactory();
 		// проверка наличия пользователя
@@ -1985,6 +2001,14 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     	} finally {
     		session.close();
     	}
+	}
+
+	@Override
+	public void exit() {
+		if(isLogged()!=null) {
+			getThreadLocalRequest().getSession(false).invalidate();
+		}
+		
 	}
 
 

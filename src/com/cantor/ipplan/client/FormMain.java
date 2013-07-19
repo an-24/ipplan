@@ -124,16 +124,7 @@ public class FormMain extends Form {
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				getDataBaseService().getConfig("IpplanHost", new AsyncCallback<String>() {
-					@Override
-					public void onSuccess(String result) {
-						Window.Location.assign(result+"#login");
-					}
-					@Override
-					public void onFailure(Throwable caught) {
-						Ipplan.showError(caught);
-					}
-				});
+				quit();
 			}
 		});
 		p1.add(btn);
@@ -519,6 +510,21 @@ public class FormMain extends Form {
 			@Override
 			public void onFailure(Throwable caught) {
 				// молчим
+			}
+		});
+	}
+
+	public static void quit() {
+		final DatabaseServiceAsync service = GWT.create(DatabaseService.class);
+		service.getConfig("IpplanHost", new AsyncCallback<String>() {
+			@Override
+			public void onSuccess(String result) {
+				service.exit(new EmptyAsyncCallback());
+				Window.Location.assign(result+"#login");
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				Ipplan.showError(caught);
 			}
 		});
 	}

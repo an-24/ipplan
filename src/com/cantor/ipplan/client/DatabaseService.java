@@ -36,6 +36,7 @@ public interface DatabaseService extends RemoteService {
 	public String getConfig(String name) throws Exception;
 	
 	public PUserWrapper open(String sessId) throws Exception;
+	public void exit();
 	public PUserWrapper isLogged();
 	public BargainTotals[] getTotals() throws Exception;
 	
@@ -76,4 +77,5 @@ public interface DatabaseService extends RemoteService {
 	public ImportExportProcessInfo syncCalendar() throws Exception;
 	
 	public SearchInfo searchFile(int typeDrive, String searchStr) throws Exception;
+	
 }

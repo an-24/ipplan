@@ -15,7 +15,9 @@ public class DatabaseUtils {
 	    	Configuration cfg = new Configuration().configure();
 	    	ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build(); 
 	    	PoolConnection pool = (PoolConnection) serviceRegistry.getService(org.hibernate.engine.jdbc.connections.spi.ConnectionProvider.class);
-	    	pool.setPool(ctx.getInitParameter("profileDBUrl"));
+	    	pool.setPool(ctx.getInitParameter("profileDBUrl"),
+	    			ctx.getInitParameter("user"),
+	    			ctx.getInitParameter("password"));
 	    	SessionFactory sessionFactory = cfg.buildSessionFactory(serviceRegistry);
 	    	ctx.setAttribute(SESSION_FACTORY_ID, sessionFactory);
 		}

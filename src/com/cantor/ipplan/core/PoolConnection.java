@@ -15,10 +15,10 @@ public class PoolConnection implements ConnectionProvider {
 	private ConnectionPool pool=null;
 
 	
-	public void setPool(String dbUrl) throws ClassNotFoundException {
+	public void setPool(String dbUrl, String user, String pswd) throws ClassNotFoundException {
 		Properties prop = new Properties();
-		prop.setProperty("user", "SYSDBA");
-		prop.setProperty("password", "masterkey");
+		prop.setProperty("user", (user==null || user.isEmpty())?"SYSDBA":user);
+		prop.setProperty("password", (pswd==null || pswd.isEmpty())?"masterkey":pswd);
 		//prop.setProperty("encoding", "UNICODE_FSS");
 		prop.setProperty("encoding", "UTF8");
 		//prop.setProperty("lc_ctype", "WIN1251");

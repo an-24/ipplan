@@ -61,4 +61,5 @@ public interface DatabaseServiceAsync {
 	void getConfig(String name, AsyncCallback<String> callback);
 	void searchFile(int typeDrive, String searchStr,
 			AsyncCallback<SearchInfo> callback);
+	void exit(AsyncCallback<Void> callback);
 }

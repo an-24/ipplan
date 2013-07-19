@@ -31,6 +31,8 @@
             <exclude name="WEB-INF/**" />
             <webinf dir="${distrib}/WEB-INF/">
                 <include name="lib/**/*.jar" />
+                <include name="lib/**/*.dll" />
+                <include name="lib/**/*.so" />
                 <include name="classes/com/**/*.*" />
                 <include name="deploy/**/*.*" />
                 <include name="classes/hibernate.cfg.xml" />

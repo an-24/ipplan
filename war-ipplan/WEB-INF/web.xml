@@ -15,6 +15,14 @@
     <param-name>profileDBUrl</param-name>
     <param-value>jdbc:firebirdsql:localhost:D:\Database\IPPLAN_UP.FDB</param-value>
   </context-param>
+  <context-param>
+    <param-name>user</param-name>
+    <param-value>SYSDBA</param-value>
+  </context-param>
+  <context-param>
+    <param-name>password</param-name>
+    <param-value>masterkey</param-value>
+  </context-param>
 
 
   <!-- Servlets -->

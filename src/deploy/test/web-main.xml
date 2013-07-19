@@ -11,6 +11,14 @@
 <!--    <param-value>d:\database\store</param-value>-->
     <param-value>/var/local/ipplan/database/store</param-value>
   </context-param>
+  <context-param>
+    <param-name>user</param-name>
+    <param-value>SYSDBA</param-value>
+  </context-param>
+  <context-param>
+    <param-name>password</param-name>
+    <param-value>masterkey</param-value>
+  </context-param>
 
   <!-- используется для вовзрата в профиль пользователя -->
   <context-param>

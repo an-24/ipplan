@@ -51,7 +51,7 @@ public class PUserWrapper implements java.io.Serializable,com.google.gwt.user.cl
 	}
 	
 	public boolean isDatabaseCreateNeeded() {
-		return puserDbname.isEmpty() || (owner!=null && owner.puserDbname.isEmpty());
+		return !(!puserDbname.isEmpty() || (owner!=null && !owner.puserDbname.isEmpty()));
 	}
 
 	public boolean isAllowedCreateDatabase() {

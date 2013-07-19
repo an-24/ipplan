@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     16.07.2013 11:13:38                          */
+/* Created on:     19.07.2013 13:44:53                          */
 /*==============================================================*/
 
 
@@ -53,7 +53,7 @@ constraint PK_PUSER primary key (puser_id),
 constraint AK_KEY_2_PUSER unique (puser_email)
 );
 
-insert into puser values (-2,NULL,'kav-1@bk.ru','Andr','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,0,0,1,15);
+insert into puser values (-2,NULL,'ipp@rbc.vrt.hbo.com','Норинский Альберт','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,0,0,1,15);
 insert into puser values (-1,NULL,'ipplan2013@gmail.com','ipplan2013','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,1,0,2,15);
 commit;
 
