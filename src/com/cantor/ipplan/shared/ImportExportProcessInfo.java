@@ -2,6 +2,7 @@ package com.cantor.ipplan.shared;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class ImportExportProcessInfo  implements Serializable,com.google.gwt.user.client.rpc.IsSerializable  {
 	
 	public static final int TOKEN_EXPIRED = -1;

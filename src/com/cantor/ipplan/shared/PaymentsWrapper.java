@@ -2,9 +2,8 @@ package com.cantor.ipplan.shared;
 
 import java.util.Date;
 
-import com.google.gwt.user.client.Window;
 
-
+@SuppressWarnings("serial")
 public class PaymentsWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable  {
 	private int paymentsId;
 	private int paymentsPeriod;

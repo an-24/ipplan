@@ -163,6 +163,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	}
 	
 	
+	@SuppressWarnings("rawtypes")
 	public void setEditorMode(boolean b) {
 		for (int i = 0, len = getColumnCount(); i < len; i++) {
 			Cell<?> cell = getColumn(i).getCell();
@@ -178,6 +179,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		return null;
 	};
 	
+	@SuppressWarnings("rawtypes")
 	public boolean isEditorMode() {
 		for (int i = 0, len = getColumnCount(); i < len; i++) {
 			Cell<?> cell = getColumn(i).getCell();
@@ -646,7 +648,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 	    			editor.setFocus();
 	    			TableRowElement row = getRowElement(getVisibleItems().indexOf(bcw));
 	    			final TableCellElement td = row.getCells().getItem(idx);
-	    			td.addClassName("gwt-CellTable-Error");
+	    			//td.addClassName("gwt-CellTable-Error");
 	    			final PopupPanel pp = new PopupPanel();
 	    			pp.setWidget(new Label(text));
 	    			pp.setStyleName("errorBalloon");

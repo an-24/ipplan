@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
@@ -133,12 +134,6 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 		return uw;
 	}
 
-	private void mergeUserData(PUserWrapper target, PUserIdent source) {
-		target.puserContactSyncDuration = source.getPuserContactSyncDuration();
-		target.puserCalendarSyncDuration = source.getPuserCalendarSyncDuration();
-		//.. и т.д.
-	}
-
 	@Override
 	public PUserWrapper isLogged() {
 		SessionFactory sessionFactory = getSessionFactory();
@@ -170,7 +165,8 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     		
     		Query q = session.createQuery(hsq);
     		q.setMaxResults(5);
-    		List<Bargain> bargains = q.list();
+    		@SuppressWarnings("unchecked")
+			List<Bargain> bargains = q.list();
     		for (Bargain b : bargains) {
     			BargainWrapper wrap = b.toClient();
     			wrap.attention =  b.makeAttention();
@@ -234,7 +230,8 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
       			 " order by b.status_id";
       		q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(BargainTotals.class));
         	q.setParameter("year", 1900+new Date().getYear());
-        	List<BargainTotals> listSales = q.list();
+        	@SuppressWarnings("unchecked")
+			List<BargainTotals> listSales = q.list();
         	// по статусу "Закючивших контракт"
     		sql = "select count(b.bargain_id) \"count\",sum(b.bargain_revenue) \"revenue\",sum(b.bargain_prepayment) \"prepayment\","+
         	      "sum(b.bargain_costs) \"costs\", sum(b.bargain_payment_costs) \"paymentCosts\", sum(b.bargain_fine) \"fine\", sum(b.bargain_tax) \"tax\" "+
@@ -332,6 +329,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 	private void fillTimeline(int id, Session sess, BargainWrapper bw) {
 		Query q = sess.createQuery("from Bargain b where b.rootBargain.bargainId=:id order by b.bargainVer");
 		q.setParameter("id", id);
+		@SuppressWarnings("unchecked")
 		List<Bargain> list = q.list();
 		for (Bargain b : list) {
 			BargainShortInfo bsi = new BargainShortInfo(b.toClient());
@@ -345,6 +343,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 		if(cal!=null) {
 			Query q = sess.createQuery("from Task t where t.calendar.bargain.bargainId=:id order by t.taskDeadline");
 			q.setParameter("id", id);
+			@SuppressWarnings("unchecked")
 			List<Task> list = q.list();
 			for (Task task : list) 
 				bw.tasks.add(task.toClient());
@@ -537,6 +536,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
       		sql+=")";
 			Query q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(Customer.class));
 			q.setParameter("q", "%"+query.toUpperCase()+"%");
+			@SuppressWarnings("unchecked")
 			List<Customer> lc = q.list();
 			for (Customer customer : lc) 
 				list.add(customer.toClient());
@@ -559,6 +559,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
       		sql+=" order by C.costs_sortcode";
 			Query q = session.createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(Costs.class));
 			q.setParameter("q", "%"+query.toUpperCase()+"%");
+			@SuppressWarnings("unchecked")
 			List<Costs> lc = q.list();
 			for (Costs c : lc) 
 				list.add(c.toClient());
@@ -576,6 +577,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     	Session session = sessionFactory.openSession();
     	try {
 			Query q = session.createQuery("from Status");
+			@SuppressWarnings("unchecked")
 			List<Status> lc = q.list();
 			for (Status st : lc) 
 				list.add(st.toClient());
@@ -630,6 +632,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 
 	private HashMap<Integer, Bargain> getTempBargains() {
 		HttpSession sess = this.getSession();
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		HashMap<Integer, Bargain> bl =  (HashMap) sess.getAttribute("tmp_bargain_list");
 		if(bl==null) {
 			bl = new HashMap<Integer, Bargain>();
@@ -640,6 +643,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 	
 	private HashMap<Integer, Bargain> getSavedBargainChain() {
 		HttpSession sess = this.getSession();
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		HashMap<Integer, Bargain> bl =  (HashMap) sess.getAttribute("saved_bargain_list");
 		if(bl==null) {
 			bl = new HashMap<Integer, Bargain>();
@@ -653,7 +657,10 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 		PUserWrapper u = getLoginUser();
 		if (sess.isNew() || u==null ) {
 			// проводим проверку через сервер UP
-			String host = getServletContext().getInitParameter("loginCallBack");
+			String host = getServletContext().getInitParameter("ipplanHost");
+			if(host==null)
+				throw new Exception("Неверная кофигурация сервера. ipplanHost not found. ");
+			host+="/ipplan/";
 			LoginService login = (LoginService) SyncProxy.newProxyInstance(LoginService.class, host,"login");
 			u = login.isAccessDatabase(sessId);
 			if(u==null)
@@ -694,7 +701,6 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 	}
 
 	private String createDatabase(File root, String name) throws Exception {
-		final String TMPPATH = "/tmp/"; 
 		try {
 			String dbname = getCurrentDBName(root, name);
 			BackupManager restoreManager = new FBBackupManager(GDSType.getType("PURE_JAVA"));
@@ -830,26 +836,6 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     	}
 	}
 	
-	private void updateGoogleLastSync() throws Exception {
-		checkAccess();
-		SessionFactory sessionFactory = getSessionFactory();
-    	Session session = sessionFactory.openSession();
-    	try {
-			Transaction tx = session.beginTransaction();
-			try {
-				PUserIdent user = getUser();
-				user.setPuserContactLastsync(new Date());
-				tx.commit();
-			} catch (Exception e) {
-				tx.rollback();
-				throw e;
-			}
-    		
-    	} finally {
-    		session.close();
-    	}
-	}	
-
 	public void saveToken(OAuthToken token) throws Exception {
 		checkAccess();
 		SessionFactory sessionFactory = getSessionFactory();
@@ -1246,18 +1232,21 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 		HashMap<String, Customer> map = new HashMap<String, Customer>();
 		String hsq = "select c from Customer c where c.customerLookupKey is not null";
 		Query q = sess.createQuery(hsq);
+		@SuppressWarnings("unchecked")
 		List<Customer> l = q.list();
 		for (Customer customer : l) 
 			map.put(customer.getCustomerLookupKey(), customer);
 		return map;
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<Customer> getCustomersToGoogle(Session sess) {
    		String hsq = "select c from Customer c where c.customerVisible=1 and (c.customerLookupKey is null or c.customerLastupdate is not null)";
    		Query q = sess.createQuery(hsq);
    		return q.list();
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<Task> getTasksToGoogle(Session sess) {
    		String hsq = "from Task t where (t.taskLastupdate is not null)";
    		Query q = sess.createQuery(hsq);
@@ -1545,6 +1534,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     	}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public List<BargainWrapper> findBargain(String text, Date finish,
 			boolean allUser, boolean[] stats) throws Exception {
@@ -1618,7 +1608,8 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 				}	
 			}	
     		
-    		List<Bargain> bargains = q.list();
+    		@SuppressWarnings("unchecked")
+			List<Bargain> bargains = q.list();
     		for (Bargain b : bargains) {
     			BargainWrapper wrap = b.toClient();
     			wrap.attention =  b.makeAttention();
@@ -1730,7 +1721,8 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     	Session session = sessionFactory.openSession();
     	try {
     		Query q = session.createQuery("from Tasktype tt order by tt.tasktypeId");
-    		List<Tasktype> list = q.list();
+    		@SuppressWarnings("unchecked")
+			List<Tasktype> list = q.list();
     		for (Tasktype tt : list) 
 				result.add(tt.toClient());
 			return result;
@@ -1748,7 +1740,8 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     	try {
     		Query q = session.createQuery("from Task t where t.calendar.bargain.bargainId=:id order by t.taskDeadline");
     		q.setParameter("id", bargainId);
-    		List<Task> list = q.list();
+    		@SuppressWarnings("unchecked")
+			List<Task> list = q.list();
     		for (Task tt : list) 
 				result.add(tt.toClient());
 			return result;
@@ -1890,7 +1883,16 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
 	@Override
 	public String getConfig(String name) throws Exception {
 		// вним! не давать доступ на прямую! В конексте могут быть секретные параметры
-		if(name.equals("IpplanHost")) return getServletContext().getInitParameter("IpplanHost");
+		if(name.equals("IpplanHost")) {
+			ServletContext ctx = getServletContext();
+			String host = ctx.getInitParameter("ipplanHost");
+			if(host==null)
+				throw new Exception("Неверная кофигурация сервера. ipplanHost not found. ");
+			host+="/Ipplan.html";
+			String debugpar = getServletContext().getInitParameter("debugParam");
+			if(debugpar!=null) host+="?"+debugpar;
+			return host;
+		}
 		return null;
 	}
 

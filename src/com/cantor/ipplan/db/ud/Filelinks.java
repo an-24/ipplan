@@ -15,7 +15,6 @@ import javax.persistence.Table;
 import org.hibernate.Hibernate;
 
 import com.cantor.ipplan.core.DataBridge;
-import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.FileLinksWrapper;
 
 /**

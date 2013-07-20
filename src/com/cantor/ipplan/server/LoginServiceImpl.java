@@ -197,9 +197,13 @@ public class LoginServiceImpl extends RemoteServiceServlet  implements LoginServ
     				if(user.getOwner()!=null)
     					user.setPuserDbname(user.getOwner().getPuserDbname());
     			}
-    			String host = getServletConfig().getInitParameter("dataServer");
-    			if(host==null)
-    				throw new Exception("Неверная кофигурация сервера. dataServer not found. ");
+    			
+    			String host = getServletContext().getInitParameter("defaultHost");
+    			if(host==null) throw new Exception("Неверная кофигурация сервера. defaultHost not found. ");
+    			host+="/Main.html";
+    			String debugpar = getServletContext().getInitParameter("debugParam");
+    			if(debugpar!=null) host+="?"+debugpar;
+    			
     			String redirectUrl = host+"#session="+getThreadLocalRequest().getSession().getId();
     			tx.commit();
     			return redirectUrl;

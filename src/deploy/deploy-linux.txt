@@ -37,7 +37,13 @@ sudo apt-get update
 	sudo dpkg-reconfigure tzdata
 
 
-1) sudo apt-get install openssh-server
+1) Установка SSH
+	на сервере
+	sudo apt-get install openssh-server
+
+	на клиенте установить PuTTY. Настроить тунель 
+	4L3051 192.168.0.104:3050
+	для работы IBExpert. Соединения в IBExpert с сервером 127.0.0.1/3051
 
 2) sudo apt-get install firebird2.5-super
 

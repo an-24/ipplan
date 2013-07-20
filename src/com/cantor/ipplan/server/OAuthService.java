@@ -22,16 +22,15 @@ import com.google.gson.Gson;
 public class OAuthService extends HttpServlet {
 	
 	private static String GOOGLE_CLIENT_SECRET;
-	private static String GOOGLE_CLIENT_REDIRECTURI;
 	
 	@Override
 	public void init() {
 		GOOGLE_CLIENT_SECRET = getServletContext().getInitParameter("GoogleSecretKey");
-		GOOGLE_CLIENT_REDIRECTURI = getServletContext().getInitParameter("GoogleRedirectUri");
 	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	         throws IOException,ServletException {
+		
 		String code = request.getParameter("code");
 		String state = request.getParameter("state");
 		PrintWriter writer = response.getWriter();
@@ -42,10 +41,11 @@ public class OAuthService extends HttpServlet {
 				HttpURLConnection conn = newConnection(Utils.GOOGLE_TOKEN_URL);
 				try {
 					conn.setConnectTimeout(10000);
+					String redirectUrl = getRequestURL(request)+"/main/auth";
 					String message =new StringBuilder("code").append('=').append(URLEncoder.encode(code, "utf-8"))
 							.append("&").append("client_id").append('=').append(URLEncoder.encode(Utils.GOOGLE_CLIENT_ID, "utf-8"))
 							.append("&").append("client_secret").append('=').append(URLEncoder.encode(GOOGLE_CLIENT_SECRET, "utf-8"))
-							.append("&").append("redirect_uri").append('=').append(URLEncoder.encode(GOOGLE_CLIENT_REDIRECTURI, "utf-8"))
+							.append("&").append("redirect_uri").append('=').append(URLEncoder.encode(redirectUrl, "utf-8"))
 							.append("&").append("grant_type=authorization_code")
 							.toString();
 					
@@ -82,6 +82,21 @@ public class OAuthService extends HttpServlet {
 		writer.append("window.close();</script></head><body></body></html>");
 		writer.flush();
 	}
+
+    private static String getRequestURL(HttpServletRequest req) {
+    	StringBuffer url = new StringBuffer ();
+    	String scheme = req.getScheme();
+    	int port = req.getServerPort();
+    	url.append(scheme);		// http, https
+    	url.append("://");
+    	url.append(req.getServerName());
+    	if ((scheme.equals ("http") && port != 80)
+    			|| (scheme.equals ("https") && port != 443)) {
+    		url.append(':');
+    		url.append(req.getServerPort());
+    	}
+    	return url.toString();
+    }
 	
 	public OAuthToken refreshToken(OAuthToken token) throws Exception {
 		HttpURLConnection conn = newConnection(Utils.GOOGLE_TOKEN_URL);

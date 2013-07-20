@@ -4,16 +4,12 @@ package com.cantor.ipplan.client.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cantor.ipplan.client.UserAgent;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.dom.client.OptionElement;
-import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Text;
@@ -33,7 +29,6 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.HasDirection.Direction;
-import com.google.gwt.i18n.shared.BidiFormatter;
 import com.google.gwt.i18n.shared.DirectionEstimator;
 import com.google.gwt.i18n.shared.HasDirectionEstimator;
 import com.google.gwt.i18n.shared.WordCountDirectionEstimator;
@@ -43,11 +38,13 @@ import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.HasName;
 import com.google.gwt.user.client.ui.ListenerWrapper;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SourcesChangeEvents;
+import com.google.gwt.user.client.ui.Widget;
 
 @SuppressWarnings("deprecation")
 public class ComboBox extends FocusWidget implements SourcesChangeEvents,
@@ -56,7 +53,6 @@ public class ComboBox extends FocusWidget implements SourcesChangeEvents,
 	public static final DirectionEstimator DEFAULT_DIRECTION_ESTIMATOR = WordCountDirectionEstimator
 			.get();
 
-	private static final String BIDI_ATTR_NAME = "bidiwrapped";
 	private static final int INSERT_AT_END = -1;
 
 

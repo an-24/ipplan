@@ -2,6 +2,7 @@ package com.cantor.ipplan.shared;
 
 import java.util.Date;
 
+@SuppressWarnings("serial")
 public class SyncWrapper implements java.io.Serializable,com.google.gwt.user.client.rpc.IsSerializable  {
 	private Integer id;
 	private String imei;

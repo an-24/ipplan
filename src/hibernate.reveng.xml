@@ -18,4 +18,5 @@
   <table-filter match-name="TASKTYPE"/>
   <table-filter match-name="FILELINKS"/>
   <table-filter match-name="PROVIDER"/>
+  <table-filter match-name="DBCONFIG"/>
 </hibernate-reverse-engineering>

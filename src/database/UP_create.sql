@@ -1,8 +1,22 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     19.07.2013 13:44:53                          */
+/* Created on:     20.07.2013 12:24:19                          */
 /*==============================================================*/
 
+
+/*==============================================================*/
+/* Table: dbconfig                                              */
+/*==============================================================*/
+create table dbconfig (
+dbconfig_id          INTEGER                        not null,
+dbconfig_name        VARCHAR(100)                   not null,
+dbconfig_value       VARCHAR(255),
+constraint PK_DBCONFIG primary key (dbconfig_id),
+constraint AK_KEY_2_DBCONFIG unique (dbconfig_name)
+);
+
+insert into dbconfig values (1,'version','0.9');
+commit;
 
 /*==============================================================*/
 /* Table: messages                                              */
@@ -53,8 +67,8 @@ constraint PK_PUSER primary key (puser_id),
 constraint AK_KEY_2_PUSER unique (puser_email)
 );
 
-insert into puser values (-2,NULL,'ipp@rbc.vrt.hbo.com','Норинский Альберт','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,0,0,1,15);
 insert into puser values (-1,NULL,'ipplan2013@gmail.com','ipplan2013','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,1,0,2,15);
+insert into puser values (-2,-1,'ipp@rbc.vrt.hbo.com','Норинский Альберт','875b854107b408d2899cce9dff917e70','',0,'NOW','NOW',NULL,0,NULL,0,0,1,15);
 commit;
 
 /*==============================================================*/

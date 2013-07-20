@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 public class AnalyticalServiceImpl extends BaseServiceImpl implements
 		AnalyticalService {
 	
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	@Override
 	public List<DynamicMonthSeries> dynamicMonthData(Date start, Date finish, Integer[] statuses, ChartOptions options) throws Exception {
 		checkAccess();
@@ -148,7 +149,8 @@ public class AnalyticalServiceImpl extends BaseServiceImpl implements
       		q.setParameter("dfinish", finish);
       		q.setParameter("status", status);
       		
-      		List<DistributeStaff> series = q.list();
+      		@SuppressWarnings("unchecked")
+			List<DistributeStaff> series = q.list();
       		return series;
       		
     	} finally {
@@ -156,6 +158,7 @@ public class AnalyticalServiceImpl extends BaseServiceImpl implements
     	}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<DistributeStaff> effectiveSales(Date start, Date finish,
 			ChartOptions options) throws Exception {
@@ -183,7 +186,7 @@ public class AnalyticalServiceImpl extends BaseServiceImpl implements
       		q.setParameter("dstart", start);
       		q.setParameter("dfinish", finish);
       		
-      		HashMap<Integer, DistributeStaff> seriesExecution = makeDistributeHash(q.list());
+			HashMap<Integer, DistributeStaff> seriesExecution = makeDistributeHash(q.list());
       		
     		// fault
     		sql = "select count(DISTINCT rb.bargain_id) \"int\", b.puser_id \"userId\", u.puser_login \"userLogin\" "+
@@ -202,7 +205,7 @@ public class AnalyticalServiceImpl extends BaseServiceImpl implements
         		q.setParameter("dstart", start);
         		q.setParameter("dfinish", finish);
       		
-        	HashMap<Integer, DistributeStaff> seriesFault = makeDistributeHash(q.list());
+			HashMap<Integer, DistributeStaff> seriesFault = makeDistributeHash(q.list());
         	
         	
     		// primary
@@ -272,6 +275,7 @@ public class AnalyticalServiceImpl extends BaseServiceImpl implements
       		q.setParameter("dstart", start);
       		q.setParameter("dfinish", finish);
       		
+      		@SuppressWarnings("unchecked")
       		List<DistributeCost> series = q.list();
       		return series;
       		

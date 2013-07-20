@@ -27,6 +27,7 @@ public class PoolConnection implements ConnectionProvider {
 	}
 	
 	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean isUnwrappableAs(Class unwrapType) {
 		// TODO Auto-generated method stub

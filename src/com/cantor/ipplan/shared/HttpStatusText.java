@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class HttpStatusText {
 
-    private static final HashMap map = new HashMap();
+    private static final HashMap<Integer,String> map = new HashMap<Integer,String>();
 
     private static void set(int status, String phrase) {
         map.put(status, phrase);

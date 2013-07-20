@@ -16,11 +16,9 @@ import java.util.TimerTask;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
-import javax.servlet.ServletConfig;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
@@ -204,7 +202,7 @@ public class UserTask extends TimerTask {
 		}
 
 		@Override
-		public Enumeration getAttributeNames() {
+		public Enumeration<String> getAttributeNames() {
 			return attributes.keys();
 		}
 

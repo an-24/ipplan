@@ -1,6 +1,6 @@
 /*==============================================================*/
 /* DBMS name:      InterBase 6.x                                */
-/* Created on:     16.07.2013 11:14:10                          */
+/* Created on:     20.07.2013 12:24:32                          */
 /*==============================================================*/
 
 
@@ -126,6 +126,20 @@ constraint PK_CUSTOMER primary key (customer_id)
 );
 
 /*==============================================================*/
+/* Table: dbconfig                                              */
+/*==============================================================*/
+create table dbconfig (
+dbconfig_id          INTEGER                        not null,
+dbconfig_name        VARCHAR(100)                   not null,
+dbconfig_value       VARCHAR(255),
+constraint PK_DBCONFIG primary key (dbconfig_id),
+constraint AK_KEY_2_DBCONFIG unique (dbconfig_name)
+);
+
+insert into dbconfig values (1,'version','0.9');
+commit;
+
+/*==============================================================*/
 /* Table: filelinks                                             */
 /*==============================================================*/
 create table filelinks (
@@ -162,7 +176,7 @@ create table puser (
 puser_id             INTEGER                        not null,
 owner_puser_id       INTEGER,
 puser_login          VARCHAR(60)                    not null,
-puser_email          VARCHAR(320)                   not null,
+puser_email          VARCHAR(210)                   not null,
 puser_taxtype        INTEGER                        not null,
 puser_taxpercent     INTEGER                        not null,
 puser_google_token   VARCHAR(100),

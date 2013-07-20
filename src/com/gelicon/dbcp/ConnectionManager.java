@@ -67,9 +67,9 @@ public class ConnectionManager {
 
     private void close(boolean clear) {
         synchronized (this) {
-            Enumeration e = map.elements();
+            Enumeration<ConnectionPool> e = map.elements();
             while (e.hasMoreElements())
-                ((ConnectionPool) e.nextElement()).close();
+                (e.nextElement()).close();
             if (clear) map.clear();
         }
     }

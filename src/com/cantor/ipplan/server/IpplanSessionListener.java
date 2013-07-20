@@ -9,7 +9,7 @@ import com.cantor.ipplan.db.up.PUser;
 
 public class IpplanSessionListener implements HttpSessionAttributeListener {
 
-	private static HashMap<String,PUser> authSessions = new HashMap();
+	private static HashMap<String,PUser> authSessions = new HashMap<String, PUser>();
 	
 	@Override
 	public void attributeAdded(HttpSessionBindingEvent e) {
