@@ -18,16 +18,17 @@
 		<copy todir="${distrib}/WEB-INF/lib">
 			<fileset dir="${lib}"/>
 		</copy>
-		<!-- так как build делается в ipplan то нужно скопировать -->
+		<!-- так как build делается в ipplan то нужно скопировать 
 		<delete dir="${distrib}/main"/>
 		<copydir dest="${distrib}/main" src="war-ipplan/main"/>
 		<delete dir="${distrib}/WEB-INF/deploy/main"/>
 		<copydir dest="${distrib}/WEB-INF/deploy/main" src="war-ipplan/WEB-INF/deploy/main"/>
+                -->
 		<!-- ==================================================== -->
 	</target>
     <target name="buildwar" depends="copy">
 		<echo>archive...</echo>
-        <war basedir="${distrib}" destfile="${warname}" webxml="${src}/deploy/test/${webxml}">
+        <war basedir="${distrib}" destfile="${warname}" webxml="${src}/deploy/test-timeweb/${webxml}">
             <exclude name="WEB-INF/**" />
             <webinf dir="${distrib}/WEB-INF/">
                 <include name="lib/**/*.jar" />

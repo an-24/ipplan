@@ -13,6 +13,7 @@ import com.cantor.ipplan.client.widgets.CurrencyBox;
 import com.cantor.ipplan.client.widgets.CustomerBox;
 import com.cantor.ipplan.client.widgets.FileBox;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.MainTabPanel;
 import com.cantor.ipplan.client.widgets.RadioButton;
 import com.cantor.ipplan.client.widgets.StatusBox;
 import com.cantor.ipplan.client.widgets.StatusBox.StatusChangeEventListiner;

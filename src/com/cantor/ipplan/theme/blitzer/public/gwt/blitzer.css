@@ -216,22 +216,11 @@ a:hover {
   margin: -10px -3px -18px auto\0/;
 }
 
-/* hack Opera */
-noindex:-o-prefocus,.gwt-ComboBox-button {
-  margin: -1px -4px -18px auto;
-}
-
 
 .gwt-ComboBox-button-img {
   background: url(images/ui-icons_cc0000_256x240.png) no-repeat -62px -14px;
   height:100%;
   width:100%;
-}
-
-@-moz-document url-prefix() {
-.gwt-ComboBox-button {
- margin: -1px -4px -18px auto;
-}
 }
 
 .gwt-ComboBox-popup {

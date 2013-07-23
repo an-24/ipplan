@@ -76,6 +76,7 @@ public class FormTask extends Dialog {
 		phDeadline.add(tbDeadline);
 		phDeadline.add(cbDeadlineTime);
 		table.setWidget(row, col+1,  phDeadline);
+		cbDeadlineTime.setWidth("60px");
 		
 		row++;
 		
@@ -98,6 +99,7 @@ public class FormTask extends Dialog {
 		ph.add(cbDurationUnit);
 		
 		table.setWidget(row, col+1,  ph);
+		cbDurationUnit.setWidth("60px");
 		
 		row++;
 		
@@ -118,8 +120,7 @@ public class FormTask extends Dialog {
 		ph.add(cbAfterStatus);
 		
 		table.setWidget(row, col+1,  ph);
-		
-		
+		cbAfterStatus.setWidth("90px");
 		
 		if(task!=null) {
 			this.task = task.copy();

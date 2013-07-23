@@ -170,6 +170,8 @@ public class DatabaseServiceImpl extends BaseServiceImpl implements DatabaseServ
     		for (Bargain b : bargains) {
     			BargainWrapper wrap = b.toClient();
     			wrap.attention =  b.makeAttention();
+    			// task deadline
+    			//TODO
     			list.add(wrap);
     		}
     		return list;

@@ -6,6 +6,7 @@ import com.cantor.ipplan.client.widgets.CellTable;
 import com.cantor.ipplan.client.widgets.CellTable.ChangeCheckListEvent;
 import com.cantor.ipplan.client.widgets.CheckBox;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
+import com.cantor.ipplan.client.widgets.MainTabPanel;
 import com.cantor.ipplan.client.widgets.MonthPicker;
 import com.cantor.ipplan.client.widgets.VerticalPanel;
 import com.cantor.ipplan.db.ud.PUserIdent;

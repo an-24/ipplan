@@ -1,0 +1,74 @@
+body, html {
+  width:100%;
+  height:100%;
+  margin:0px;
+  padding:0px;
+  font-family: Geneva, Calibri,'Arial Unicode MS', Arial, sans-serif;
+}
+
+.logo {
+  left: 50%;
+  margin-left: -122px;
+  position: relative;
+  top: 120px;
+  width: 245px;
+}
+
+.hline {
+  left: 50%;
+  margin-left: -400px;
+  position: relative;
+  width: 800px;
+  top:130px;
+}
+
+.hline div{
+  display: inline-block;
+  height: 3px;
+  float: left;
+}
+
+.hline div.l{
+  background: url("../images/hl.png") no-repeat scroll 0 0 transparent;
+  width:80px;
+}
+
+.hline div.m{
+  background: url("../images/hm.png") repeat-x scroll 0 0 transparent;
+  width:640px;
+}
+
+.hline div.r{
+  background: url("../images/hr.png") no-repeat scroll 0 0 transparent;
+  width:80px;
+}
+
+
+div.message {
+  padding: 5px 180px;
+  position: relative;
+  text-align: center;
+  top: 138px;
+  color:#004276;
+}
+
+.mainCommand {
+    padding:10px;
+    font-weight: bold;
+    background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent !important;
+    /* MSIE */
+    filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#D80000', endColorstr='#880000');
+    color: whitesmoke;
+    padding: 1em 2.5em;
+    border-radius: 6px;
+    border: 1px solid #D8DCDF;
+    cursor: pointer;
+}
+
+.mainCommand:focus{
+    outline: none; 
+}
+
+.mainCommand:hover {
+    color: red;
+}

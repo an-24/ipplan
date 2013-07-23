@@ -23,7 +23,7 @@
   <!-- TODO: будет переписано. Будет определятся динамически из определенного пула -->
   <context-param>
     <param-name>defaultHost</param-name>
-    <param-value>http://192.168.0.104/main</param-value>
+    <param-value>http://www.ipplan.ru/main</param-value>
   </context-param>
 
   <!-- Servlets -->

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+              http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5"
+         xmlns="http://java.sun.com/xml/ns/javaee">
+
+  <!-- for master: БД для профиля -->
+  <context-param>
+    <param-name>profileDBUrl</param-name> 
+<!--    <param-value>jdbc:firebirdsql:localhost:D:\Database\IPPLAN_UP.FDB</param-value>-->
+    <param-value>jdbc:firebirdsql:localhost:/var/local/ipplan/database/ipplan_up.fdb</param-value>
+  </context-param>
+  <context-param>
+    <param-name>user</param-name>
+    <param-value>SYSDBA</param-value>
+  </context-param>
+  <context-param>
+    <param-name>password</param-name>
+    <param-value>Rolling1</param-value>
+  </context-param>
+  <!--  for master: Url для точки входа в основную программу -->
+  <!-- TODO: будет переписано. Будет определятся динамически из определенного пула -->
+  <context-param>
+    <param-name>defaultHost</param-name>
+    <param-value>http://www.ipplan.ru/main</param-value>
+  </context-param>
+
+  <!-- Servlets -->
+  <servlet>
+    <servlet-name>loginServlet</servlet-name>
+    <servlet-class>com.cantor.ipplan.server.LoginServiceImpl</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>profileServlet</servlet-name>
+    <servlet-class>com.cantor.ipplan.server.ProfileServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>loginServlet</servlet-name>
+    <url-pattern>/ipplan/login/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>profileServlet</servlet-name>
+    <url-pattern>/ipplan/profile/*</url-pattern>
+  </servlet-mapping>
+
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>Ipplan.html</welcome-file>
+  </welcome-file-list>
+
+  <listener>
+    <listener-class>com.cantor.ipplan.server.IpplanSessionListener</listener-class>
+  </listener>
+  
+</web-app>

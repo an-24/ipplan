@@ -23,7 +23,7 @@
 
   <context-param>
     <param-name>ipplanHost</param-name>
-    <param-value>http://192.168.0.104</param-value>
+    <param-value>http://www.ipplan.ru/ipplan</param-value>
   </context-param>
   <!-- секретный ключ в Google Apis Console-->
   <context-param>

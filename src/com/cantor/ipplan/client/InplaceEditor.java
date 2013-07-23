@@ -131,8 +131,8 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		
 	    if (viewData != null) {
 	      if (viewData.isEditing) {
-	    	  com.google.gwt.user.client.Element e = this.widget.getElement();
-	    	  sb.appendHtmlConstant(e.toString());
+	    	  com.google.gwt.dom.client.Element e = this.widget.getElement();
+	    	  sb.appendHtmlConstant(e.getPropertyString("outerHTML"));
 	        return;
 	      } else {
 	    	  C v = (C) viewData.value;

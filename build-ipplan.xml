@@ -21,7 +21,7 @@
 	</target>
     <target name="buildwar" depends="copy">
 		<echo>archive...</echo>
-        <war basedir="${distrib}" destfile="${warname}" webxml="${src}/deploy/test/${webxml}">
+        <war basedir="${distrib}" destfile="${warname}" webxml="${src}/deploy/test-timeweb/${webxml}">
             <exclude name="WEB-INF/**" />
             <webinf dir="${distrib}/WEB-INF/">
                 <include name="lib/**/*.jar" />

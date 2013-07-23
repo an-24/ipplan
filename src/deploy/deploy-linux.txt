@@ -85,6 +85,11 @@ JkUnMount /*.ico ajp13_worker
 JkUnMount /*.png ajp13_worker
 JkUnMount /*.css ajp13_worker
 JkUnMount /*.html ajp13_worker
+JkUnMount /*.js ajp13_worker
+JkUnMount /*.gif ajp13_worker
+
+в /var/lib/tomcat6/conf/server.xml
+открыть AJP connector, 8080 закрыть
 
 8) Права
 sudo groupadd store-man

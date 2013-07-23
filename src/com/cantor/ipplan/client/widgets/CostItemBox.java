@@ -35,7 +35,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplaceEdit {
 
 	
-	private CostsWrapper cost =  null;
+	private CostsWrapper cost = null;
 	private Element btnPlace;
 	private DatabaseServiceAsync dbservice;
 	private Element outerDiv = null;
@@ -43,7 +43,6 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 	public CostItemBox(DatabaseServiceAsync dbservice) {
 		this(dbservice, new TextBox());
 	}
-    
 
 	public CostItemBox(DatabaseServiceAsync dbservice, TextBox textBox) {
 		super(new CustomerSuggestOracle(dbservice),textBox, new HelperSuggestionDisplay());
@@ -108,7 +107,6 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 		if(outerDiv==null) return super.getStyleElement();
 					  else return outerDiv;
 	}
-
 
 	public CostsWrapper getCost() {
 		return cost;
@@ -228,12 +226,6 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 	@Override
 	public Widget wrapElement(com.google.gwt.dom.client.Element e) {
 	    assert Document.get().getBody().isOrHasChild(e);
-
-	    class HelperTextBox extends TextBox {
-	    	public HelperTextBox(com.google.gwt.dom.client.Element e) {
-	    		super(e);
-	    	}
-	    }
 	    CostItemBox box = new CostItemBox(dbservice, new HelperTextBox(e));
 	    box.onAttach();
 	    return box;
@@ -252,4 +244,9 @@ public class CostItemBox extends SuggestBox implements HasBlurHandlers,HasInplac
 		return getCost();
 	}
 	
+    class HelperTextBox extends TextBox {
+    	public HelperTextBox(com.google.gwt.dom.client.Element e) {
+    		super(e);
+    	}
+    }
 }

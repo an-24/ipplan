@@ -41,10 +41,10 @@ public class FormLogin extends Form implements ValueChangeHandler<String> {
 	public FormLogin(Ipplan main, RootPanel root) {
 		super(main,root);
 		final FormPanel form = new FormPanel();
-		form.setEncoding(FormPanel.ENCODING_MULTIPART);
+		//form.setEncoding(FormPanel.ENCODING_MULTIPART);
 		form.setMethod(FormPanel.METHOD_POST);
 		form.setWidth("600px");
-		form.setAction("/login");
+		form.setAction("login");
 		
 		initWidget(form);
 		

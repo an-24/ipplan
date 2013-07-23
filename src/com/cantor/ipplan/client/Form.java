@@ -18,12 +18,15 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusWidget;
@@ -48,11 +51,37 @@ public class Form extends Composite {
 	protected void onLoad() {
 		// для выравнивания по центру
 		// корректируем размеры в formContainer
-		Element container = getElement().getOwnerDocument().getElementById("formContainer");
-		container.getStyle().setMarginLeft(-container.getOffsetWidth()/2, Unit.PX);
-		container.getStyle().setMarginTop(-container.getOffsetHeight()/2, Unit.PX);
+		Window.addResizeHandler(new ResizeHandler() {
+			  Timer resizeTimer = new Timer() {  
+			    @Override
+			    public void run() {
+			    	recalcPlacementForm();
+			    }
+			  };
+			  @Override
+			  public void onResize(ResizeEvent event) {
+			    resizeTimer.cancel();
+			    resizeTimer.schedule(250);
+			  }
+		});		
+		recalcPlacementForm();
+		
 		// удаляем лоадер
 		try {DOM.getElementById("apploader").removeFromParent(); } catch (Exception e) {};
+	}
+
+	private void recalcPlacementForm() {
+		int screenw = Window.getClientWidth();		
+		int screenh = Window.getClientHeight();		
+		Element container = getElement().getOwnerDocument().getElementById("formContainer");
+		
+		int w = container.getOffsetWidth()/2;
+		if(w>screenw/2) w = screenw/2;
+		container.getStyle().setMarginLeft(-w, Unit.PX);
+		
+		int h = container.getOffsetHeight()/2;
+		if(h>screenh/2) h = screenh/2;
+		container.getStyle().setMarginTop(-h, Unit.PX);
 	}
 	
 	public Form(Ipplan main,RootPanel root) {
