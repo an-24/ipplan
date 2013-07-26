@@ -109,7 +109,7 @@ public class FormCost extends Dialog {
 		CostItemBox tb = new CostItemBox(dbservice);
 		tb.getElement().setAttribute("placeholder", "Введите расходную статью");
 		
-		Column<BargaincostsWrapper,CostsWrapper> c1 = new Column<BargaincostsWrapper,CostsWrapper>(new InplaceEditor(tb,mainTable, 
+		Column<BargaincostsWrapper,CostsWrapper> c1 = new Column<BargaincostsWrapper,CostsWrapper>(new InplaceEditor<CostsWrapper>(tb,mainTable, 
 				new DisplayValueFormatter<CostsWrapper>(){
 					@Override
 					public String format(CostsWrapper value) {
@@ -136,7 +136,7 @@ public class FormCost extends Dialog {
 			}
 		};
 		
-		Column<BargaincostsWrapper, Integer> c2 = new Column<BargaincostsWrapper, Integer>(new InplaceEditor(new CurrencyBox(),mainTable,currFormater)) {
+		Column<BargaincostsWrapper, Integer> c2 = new Column<BargaincostsWrapper, Integer>(new InplaceEditor<Integer>(new CurrencyBox(),mainTable,currFormater)) {
 			@Override
 			public Integer getValue(BargaincostsWrapper object) {
 				return (object==null)?null:object.bargaincostsValue;
@@ -148,7 +148,7 @@ public class FormCost extends Dialog {
 				object.bargaincostsValue = value;
 			}
 		});
-		Column<BargaincostsWrapper, Integer> c3 = new Column<BargaincostsWrapper, Integer>(new InplaceEditor(new CurrencyBox(),mainTable,currFormater))  {
+		Column<BargaincostsWrapper, Integer> c3 = new Column<BargaincostsWrapper, Integer>(new InplaceEditor<Integer>(new CurrencyBox(),mainTable,currFormater))  {
 			@Override
 			public Integer getValue(BargaincostsWrapper object) {
 				return (object==null)?null:object.bargaincostsPayment;
@@ -160,7 +160,7 @@ public class FormCost extends Dialog {
 				object.bargaincostsPayment = value;
 			}
 		});
-		Column<BargaincostsWrapper,String> c4 = new Column<BargaincostsWrapper,String>(new InplaceEditor(new TextBox(),mainTable)) {
+		Column<BargaincostsWrapper,String> c4 = new Column<BargaincostsWrapper,String>(new InplaceEditor<String>(new TextBox(),mainTable)) {
 			@Override
 			public String getValue(BargaincostsWrapper object) {
 				return (object==null || object.bargaincostsNote==null)?"":object.bargaincostsNote;

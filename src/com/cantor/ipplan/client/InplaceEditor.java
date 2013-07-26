@@ -135,7 +135,8 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 	    	  sb.appendHtmlConstant(e.getPropertyString("outerHTML"));
 	        return;
 	      } else {
-	    	  C v = (C) viewData.value;
+	    	  @SuppressWarnings("unchecked")
+			  C v = (C) viewData.value;
 	    	  if(v!=null)
 	    		  toRender = formatter==null?v.toString():formatter.format(v);
 	      }  
@@ -157,7 +158,6 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 	    	editEvent(context, parent, value, viewData, event, updater);
 	    } else {
 	    	String type = event.getType();
-	    	int keyCode = event.getKeyCode();
 	    	//boolean editPressed = KEYUP.equals(type) && keyCode == 113;
 	    	if (CLICK.equals(type)/* || editPressed*/) {
 	    		// запустим процесс первода в фокус
@@ -194,6 +194,7 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void setEditMode(boolean v) {
 		if (isEditing()!=v)
 		if(v) {
@@ -235,6 +236,7 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 	}
 
 	
+	@SuppressWarnings("unchecked")
 	private void startEdit(Context context, Element parent,C value, ValueUpdater<C> updater) {
 		Object key = context.getKey();
 		ViewData viewData = getViewData(key);
@@ -334,6 +336,7 @@ public class InplaceEditor<C> extends AbstractEditableCell<C,InplaceEditor.ViewD
 		((HasInplaceEdit)viewData.editor).setEditValue(viewData.original);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void commit(ViewData viewData, ValueUpdater<C> updater) {
 		updater.update((C) ((HasInplaceEdit)viewData.editor).getEditValue());
 	}

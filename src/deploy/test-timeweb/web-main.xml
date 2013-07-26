@@ -59,7 +59,7 @@
 
   <servlet-mapping>
     <servlet-name>OAuthService</servlet-name>
-    <url-pattern>/main/auth</url-pattern>
+    <url-pattern>/auth</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>

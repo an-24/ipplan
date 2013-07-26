@@ -60,7 +60,6 @@ public class FileSearchBox extends SuggestBox {
 			@Override
 			public void onAttachOrDetach(AttachEvent event) {
 				if(event.isAttached()) {
-					int w = getElement().getOffsetWidth();
 					com.google.gwt.dom.client.Element parent = getElement().getParentElement();
 					parent.appendChild(div);
 					div.appendChild(getElement());

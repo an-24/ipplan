@@ -89,6 +89,11 @@ h1 {
 
 
 .baloonPanel {
+
+    background: -webkit-gradient(linear, center top, center bottom, from(#F9D835), to(#F3961C));
+    background: -webkit-linear-gradient(#F9D835, #F3961C);
+    background: -moz-linear-gradient(#F9D835, #F3961C);
+    background: -ms-linear-gradient(#F9D835, #F3961C);
     background: linear-gradient(#F9D835, #F3961C) repeat scroll 0 0 transparent;
     /* MSIE */
     filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#F9D835', endColorstr='#F3961C');
@@ -279,13 +284,17 @@ noindex:-o-prefocus,.errorHint:before {
 .mainCommand {
     padding:10px  !important;
     font-weight: bold !important;
+
+    background: -webkit-gradient(linear, center top, center bottom, from(#D80000), to(#880000)) !important;
+    background: -webkit-linear-gradient(#D80000, #880000) !important;
+    background: -moz-linear-gradient(#D80000, #880000) !important;
+    background: -ms-linear-gradient(#D80000, #880000) !important;
     background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent !important;
     /* MSIE */
     filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#D80000', endColorstr='#880000');
 
     color: whitesmoke !important;
 }
-
 
 .auto-width {
   display:inline-block;
@@ -432,6 +441,7 @@ img#apploader {
   z-index:888;
   top: 50%;
   margin-top: -10px;
+  cursor:pointer;
 }
 
 .timeline-scroll-left:hover {
@@ -447,6 +457,7 @@ img#apploader {
   z-index:888;
   top: 50%;
   margin-top: -10px;
+  cursor:pointer;
 }
 
 .timeline-scroll-right:hover {
@@ -464,4 +475,9 @@ img#apploader {
   border: 1px solid #939393;
   border-radius:2px;
   margin-top: 1px;
+}
+
+.soc-block {
+  width:100px;
+  text-align: right;
 }

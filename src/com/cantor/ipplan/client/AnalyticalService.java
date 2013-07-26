@@ -6,7 +6,6 @@ import java.util.List;
 import com.cantor.ipplan.shared.ChartOptions;
 import com.cantor.ipplan.shared.DistributeCost;
 import com.cantor.ipplan.shared.DistributeStaff;
-import com.cantor.ipplan.shared.DynamicMonthData;
 import com.cantor.ipplan.shared.DynamicMonthSeries;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

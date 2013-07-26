@@ -14,7 +14,6 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.text.shared.AbstractRenderer;
 import com.google.gwt.text.shared.Parser;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ValueBox;
 import com.google.gwt.user.client.ui.Widget;
 

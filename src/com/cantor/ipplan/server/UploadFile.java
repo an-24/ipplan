@@ -41,6 +41,7 @@ public class UploadFile extends UploadAction {
 			throw new UploadActionException("Не указан тип диска");
 		
 		SearchInfo si = getTokenDrive(request, typedrive);
+		
 		if(si!= null) 
 			return new Gson().toJson(si);
 		

@@ -134,6 +134,7 @@ public class Form extends Composite {
 		return dataProvider;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T> void setSortingColumns(AbstractCellTable<T> grid, List<T> list) {
 	    ListHandler<T> columnSortHandler = new ListHandler<T>(list);
 		for (int i = 0; i < grid.getColumnCount(); i++) {
@@ -145,6 +146,7 @@ public class Form extends Composite {
 			Comparator<T> cmpr = null;
 			if(c instanceof SortedColumn) {
 				cmpr = new Comparator<T>(){
+					@SuppressWarnings("rawtypes")
 					@Override
 					public int compare(T o1, T o2) {
 			            if (o1 == o2) {
@@ -153,7 +155,7 @@ public class Form extends Composite {
 				            // Compare the name columns.
 				            if (o1 != null) {
 				            	Comparable s1 = (Comparable) ((SortedColumn)c).getSortedValue(o1);
-				            	Comparable s2 = (Comparable)((SortedColumn)c).getSortedValue(o2);
+								Comparable s2 = (Comparable)((SortedColumn)c).getSortedValue(o2);
 				            	return (o2 != null) ? s1.compareTo(s2) : 1;
 				            }
 				            return -1;
@@ -197,6 +199,7 @@ public class Form extends Composite {
 				};
 			} else
 				cmpr = new Comparator<T>(){
+					@SuppressWarnings("rawtypes")
 					@Override
 					public int compare(T o1, T o2) {
 			            if (o1 == o2) {

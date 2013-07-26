@@ -20,6 +20,7 @@
 
 @xcopy /E %source%\resources\*.* %dest%\main\resources\
 @xcopy /E %source%\main\gwt\*.* %dest%\main\main\gwt\
+@xcopy /E %source%\main\images\*.* %dest%\main\main\images\
 @copy %source%\main\*.gif %dest%\main\main\
 @copy %source%\main\*.js %dest%\main\main\
 @copy %source%\main\*.css %dest%\main\main\

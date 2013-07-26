@@ -229,7 +229,7 @@ public abstract class AbstractPanel extends ComplexPanel  implements HasAlignmen
 	public void setCellHeight(Widget w, String height) {
 	    Element td = getWidgetTd(w);
 	    if (td != null) {
-	      td.setPropertyString("height", height);
+			td.getStyle().setProperty("height", height);
 	    }
 	}
 	  
@@ -252,7 +252,7 @@ public abstract class AbstractPanel extends ComplexPanel  implements HasAlignmen
 	public void setCellWidth(Widget w, String width) {
 		Element td = getWidgetTd(w);
 		if (td != null) {
-	      td.setPropertyString("width", width);
+			td.getStyle().setProperty("width", width);
 	    }
 	}
 	  

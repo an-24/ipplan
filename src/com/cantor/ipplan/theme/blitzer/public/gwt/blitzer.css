@@ -366,10 +366,20 @@ a:hover {
 .gwt-DialogBox {
   width: 400px;
   z-index:999;
+  border-radius: 6px;
+  -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow:    4px 4px 10px rgba(0, 0, 0, 0.75);
+  box-shadow:         4px 4px 10px rgba(0, 0, 0, 0.75);  
+  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#736F6E')";
+  background: white;
 }
 
 .gwt-DialogBox .Caption {
   
+  background: -webkit-gradient(linear, center top, center bottom, from(#D80000), to(#880000));
+  background: -webkit-linear-gradient(#D80000, #880000);
+  background: -moz-linear-gradient(#D80000, #880000);
+  background: -ms-linear-gradient(#D80000, #880000);
   background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent;
   /* MSIE */
   filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#D80000', endColorstr='#880000');
@@ -390,6 +400,7 @@ a:hover {
   width: 16px;
   margin-left: 5px;
   float:right;
+  cursor: pointer;
 }
 
 .gwt-Close-Dialog:hover {
@@ -398,14 +409,14 @@ a:hover {
 
 
 .gwt-DialogBox .dialogTopCenter {
-  background: white;
+  background: transparent;
 }
 
 .gwt-DialogBox .dialogContent {
 }
 .gwt-DialogBox .dialogMiddleCenter {
   padding: 3px;
-  background: white;
+  background: transparent;
 }
 .gwt-DialogBox .dialogBottomCenter {
   background: url(images/hborder.png) repeat-x 0px -2945px;
@@ -419,22 +430,22 @@ a:hover {
   -background: url(images/vborder_ie6.png) repeat-y -32px 0px;
 }
 .gwt-DialogBox .dialogTopLeftInner {
-  width: 10px;
-  height: 8px;
+  width: 1px;
+  height: 1px;
   zoom: 1;
 }
 .gwt-DialogBox .dialogTopRightInner {
-  width: 12px;
+  width: 1px;
   zoom: 1;
 }
 .gwt-DialogBox .dialogBottomLeftInner {
-  width: 10px;
-  height: 12px;
+  width: 1px;
+  height: 1px;
   zoom: 1;
 }
 .gwt-DialogBox .dialogBottomRightInner {
-  width: 12px;
-  height: 12px;
+  width: 1px;
+  height: 1px;
   zoom: 1;
 }
 .gwt-DialogBox .dialogTopLeft {
@@ -454,21 +465,21 @@ a:hover {
   -background: url(images/circles_ie6.png) no-repeat -8px -36px;
 }
 * html .gwt-DialogBox .dialogTopLeftInner {
-  width: 10px;
+  width: 1px;
   overflow: hidden;
 }
 * html .gwt-DialogBox .dialogTopRightInner {
-  width: 12px;
+  width: 1px;
   overflow: hidden;
 }
 * html .gwt-DialogBox .dialogBottomLeftInner {
-  width: 10px;
-  height: 12px;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
 }
 * html .gwt-DialogBox .dialogBottomRightInner {
-  width: 12px;
-  height: 12px;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
 }
 
@@ -1202,6 +1213,7 @@ a:hover {
     vertical-align: middle;
     width: 16px;
     margin-left: 5px;
+    cursor:pointer;
 }
 
 .gwt-TabBarItem-CloseBtn {
@@ -1667,6 +1679,7 @@ td.datePickerMonth {
   min-height:16px;
   background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -224px -192px transparent;
   margin-right:8px;
+  cursor:pointer;
 }
 
 .gwt-StatusBox-pause-inv {
@@ -1674,6 +1687,7 @@ td.datePickerMonth {
   min-height:16px;
   background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -224px -192px transparent;
   margin-right:8px;
+  cursor:pointer;
 }
 
 .gwt-StatusBox-pause:hover {
@@ -1694,6 +1708,7 @@ td.datePickerMonth {
   min-height:16px;
   background: url("images/ui-icons_004276_256x240.png") no-repeat scroll -46px -192px transparent;
   margin-left:8px;
+  cursor:pointer;
 }
 
 .gwt-StatusBox-next-inv {
@@ -1701,6 +1716,7 @@ td.datePickerMonth {
   min-height:16px;
   background: url("images/ui-icons_ffffff_256x240.png") no-repeat scroll -46px -192px transparent;
   margin-left:8px;
+  cursor:pointer;
 }
 
 .gwt-StatusBox-next:hover {
@@ -1777,6 +1793,7 @@ noindex:-o-prefocus,.gwt-CustomerBox {
 .gwt-SuggestBox div {
     width:20px;
     height:20px;
+    cursor:pointer;
 }
 
 .Customer-bind {

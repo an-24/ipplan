@@ -11,7 +11,6 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 public class HelperSuggestionDisplay extends DefaultSuggestionDisplay {
 	
-	private SuggestBox box = null;
 	
 	public HelperSuggestionDisplay() {
 		super();

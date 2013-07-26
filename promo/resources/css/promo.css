@@ -55,9 +55,15 @@ div.message {
 .mainCommand {
     padding:10px;
     font-weight: bold;
+
+    background: -webkit-gradient(linear, center top, center bottom, from(#D80000), to(#880000)) !important;
+    background: -webkit-linear-gradient(#D80000, #880000) !important;
+    background: -moz-linear-gradient(#D80000, #880000) !important;
+    background: -ms-linear-gradient(#D80000, #880000) !important;
     background: linear-gradient(#D80000, #880000) repeat scroll 0 0 transparent !important;
     /* MSIE */
     filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#D80000', endColorstr='#880000');
+
     color: whitesmoke;
     padding: 1em 2.5em;
     border-radius: 6px;

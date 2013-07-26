@@ -457,7 +457,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
 		        if (CLICK.equals(type)) {
 		        	selectionModel.setSelected(event.getValue(), true);
 		        	if(!((RecordSelectionModel)selectionModel).isChanged()) {
-			        	CellTable table = (CellTable) event.getDisplay();
+			        	CellTable<?> table = (CellTable<?>) event.getDisplay();
 			        	if(!table.isEditorMode()) {
 			        		currentValue = event.getValue();
 			        		table.setEditorMode(true);
@@ -526,7 +526,7 @@ public class CellTable<T> extends com.google.gwt.user.cellview.client.CellTable<
     	  private T newSelectedItem = null;
     	  private boolean newSelectedPending;
     	  
-    	  private CanSelection canSelect =  null;
+    	  private CanSelection<T> canSelect =  null;
 		  private boolean changed = false;
 
     	  public RecordSelectionModel(ProvidesKey<T> keyProvider, CanSelection<T> canSelect) {

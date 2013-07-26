@@ -164,7 +164,7 @@ public class FormFileLink extends Dialog {
 				if(uploader.getStatus()==Status.SUCCESS) {
 					// проверяем на token
 					JSONObject jsnobj = JSONParser.parseStrict(uploader.getServerInfo().message).isObject();
-					SearchInfo result = new SearchInfo(jsnobj);
+					SearchInfo result = SearhInfoParser.parse(jsnobj);
 					if(result.error!=0) { 
 						FileSearchBox.tokenNeeded(result.error, getTypeDrive(), btnUpload, new NotifyHandler<SingleUploader>(){
 							@Override

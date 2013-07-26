@@ -6,10 +6,8 @@ import com.google.gwt.user.client.ui.FocusListener;
 import com.google.gwt.user.client.ui.HasFocus;
 import com.google.gwt.user.client.ui.KeyboardListener;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.datepicker.client.CalendarModel;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 import com.google.gwt.user.datepicker.client.CalendarView;
-import com.google.gwt.user.datepicker.client.MonthSelector;
 
 @SuppressWarnings("deprecation")
 public class MonthPicker extends DatePicker implements HasFocus {

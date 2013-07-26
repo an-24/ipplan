@@ -460,6 +460,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler {
 	/**
 	 * Когда tab полностью включен в TabPanel. Все необходимые структуры  подготовлены 
 	 */
+	@SuppressWarnings("unchecked")
 	public void init() {
 		dbStart.addValueChangeHandler(this);
 		dbFinish.addValueChangeHandler(this);
@@ -564,6 +565,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler {
 		loadCounter--;
 	}
 
+	@SuppressWarnings("deprecation")
 	protected void bargainToFormField(BargainWrapper bw) {
 		lTitle.setText(bw.getFullName());
 		lVersion.setText("Версия "+(bw.bargainVer+1));
@@ -636,6 +638,7 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler {
 		
 	}
 
+	@SuppressWarnings("deprecation")
 	private void fillTimeline(BargainWrapper bw) {
 		Widget selectBox = null;
 		HorizontalPanel hp = (HorizontalPanel) spTimeline.getWidget();
@@ -671,10 +674,6 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler {
 		if(selectBox!=null) selectBox.getElement().scrollIntoView();
 	}
 	
-	private int intValue(Integer v) {
-		return (v==null)?0:v;
-	}
-
 	private void formFieldToBargain(BargainWrapper bw) {
 		bw.customer = eCustomer.getCustomer();
 		// TODO ссылки на документы
@@ -689,19 +688,15 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler {
 	}
 
 	private void validate() {
-		int offs =0;
 		// ! обязательно по порядку сверху вниз
 		if(dbFinish.getValue().getTime() - dbStart.getValue().getTime()<0) {
 			showError(bargainFragment,dbFinish,"Дата окончания не может быть меньше даты начала");
-			offs++;
 		}	
 		if(eCustomer.getCustomer()==null) {
 			showError(bargainFragment,pCustomer,"Необходимо определить клиента");
-			offs++;
 		}	
 		if(eRevenue.getValue()==null) {
 			showError(bargainFragment,eRevenue,"Необходимо определить плановую выручку");
-			offs++;
 		}
 		
 	}
@@ -711,14 +706,15 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler {
 		db.dropTemporalyBargain(bargain.bargainId, new AsyncCallback<Void>() {
 			@Override
 			public void onSuccess(Void result) {
-				tabPanel.remove(FormBargain.this);
-				History.back();
+				// nothing
 			}
 			@Override
 			public void onFailure(Throwable caught) {
 				// since
 			}
 		});
+		tabPanel.remove(FormBargain.this);
+		History.back();
 	}
 
 	private void setAttention() {
@@ -735,8 +731,6 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler {
 			lAttention.removeStyleName("Attention2");
 			lAttention.removeStyleName("Attention3");
 		}
-		int prePay = bargain.bargainPrepayment==null?0:bargain.bargainPrepayment;
-		int cost = bargain.bargainPaymentCosts==null?0:bargain.bargainPaymentCosts;
 			
 	}
 
@@ -975,19 +969,9 @@ public class FormBargain extends InplaceForm implements ValueChangeHandler {
 		}
 	}
 
-	private NumberLabel<Double> newDeltaNumberLabel(int value) {
-		return new NumberLabel<Double>(NumberFormat.getFormat("(#,##0.00)"));
-	}
-
 	private NumberLabel<Double> newNumberLabel() {
 		NumberLabel<Double> l = new NumberLabel<Double>(NumberFormat.getFormat("#,##0.00"));
 		l.setStyleName("gwt-CurrencyLabel");
-		return l; 
-	}
-
-	private NumberLabel<Double> newNumberLabel(Integer v) {
-		NumberLabel<Double> l = newNumberLabel();
-		l.setValue(v!=null?v/100.0:0);
 		return l; 
 	}
 

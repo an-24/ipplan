@@ -9,9 +9,14 @@ import com.cantor.ipplan.shared.BargainTotals;
 import com.cantor.ipplan.shared.BargainWrapper;
 import com.cantor.ipplan.shared.StatusWrapper;
 import com.cantor.ipplan.shared.Utils;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -19,9 +24,13 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.cantor.ipplan.client.widgets.HorizontalPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.InlineHyperlink;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.NumberLabel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -50,12 +59,14 @@ public class TabMain extends InplaceForm {
 	private SimplePanel divDecMake;
 	private Widget divAgreement;
 	private SimplePanel divExecution;
+	private ScrollPanel spNews;
 
 	public TabMain(FormMain form,DatabaseServiceAsync dbservice) {
 		super();
 		this.form = form;
 		this.dbservice = dbservice;
-		setSize("100%", "3cm");
+		//setSize("100%", "3cm");
+		setSize("auto","auto");
 		init();
 		// слушатели изменений
 		NotifyHandler<BargainWrapper> notify = new NotifyHandler<BargainWrapper>() {
@@ -123,8 +134,98 @@ public class TabMain extends InplaceForm {
 		form.makeBargainColumns(form.tableAttention);
 		
 		getFlexCellFormatter().setColSpan(4, 0, 3);
+		
+		// новости
+		Label l = new Label("Новости");
+		setWidget(5, 0, l);
+		getCellFormatter().setHeight(5, 0, "50px");
+		l.addStyleName("bold-text");
+		HorizontalPanel spNewsContainer = new HorizontalPanel();
+		spNewsContainer.setStyleName("simplebox");
+		getFlexCellFormatter().setColSpan(6, 0, 3);
+		setWidget(6, 0, spNewsContainer);
+		initNews(spNewsContainer);
+		
 		getCellFormatter().setVerticalAlignment(1, 0, HasVerticalAlignment.ALIGN_BOTTOM);
 		getCellFormatter().setVerticalAlignment(3, 0, HasVerticalAlignment.ALIGN_BOTTOM);
+		getCellFormatter().setVerticalAlignment(5, 0, HasVerticalAlignment.ALIGN_BOTTOM);
+		
+		// footer
+		HorizontalPanel hp;
+		hp = new HorizontalPanel();
+		hp.setSpacing(5);
+		InlineHyperlink hyplink = new InlineHyperlink("О проекте", false, "about");
+		hp.add(hyplink);
+		hp.setCellWidth(hyplink, "70px");
+		hp.add(new InlineHyperlink("Пользовательское соглашение", false, "agreement"));
+		hp.add(new InlineHyperlink("Часто задаваемые вопросы", false, "knowledgebase"));
+		setWidget(7, 0, hp);
+		getCellFormatter().setHeight(7, 0, "30px");
+		hp = new HorizontalPanel();
+		hp.add(new Label("Техническая поддержка:"));
+		hp.add(new HTML("<a href=\"mailto:support@ipplan2013.ru\">support@ipplan2013.ru</a>, +79108006767"));
+		setWidget(7, 1, hp);
+		
+		HTML soc = new HTML("<a style=\"margin-right:5px;\" href=\"#\"><img width=\"20\" height=\"20\" src=\"resources/images/facebook.png\" title=\"Страница в Facebook\"></a>"+
+							"<a style=\"margin-right:5px;\" href=\"#\"><img width=\"20\" height=\"20\" src=\"resources/images/twitter.png\" title=\"Страница в Twitter\"></a>"+
+							"<a style=\"margin-right:5px;\" href=\"#\"><img width=\"20\" height=\"20\" src=\"resources/images/vkontakte.png\" title=\"Страница в ВКонтакте\"></a>"
+							);
+		soc.setStyleName("soc-block");
+		setWidget(7, 2, soc);
+	}
+
+	private void initNews(HorizontalPanel spNewsContainer) {
+		Style stylecell;
+		spNewsContainer.setWidth("747px");
+		
+		stylecell = spNewsContainer.getElement().getStyle();
+		stylecell.setProperty("minHeight", "80px");
+		stylecell.setHeight(80, Unit.PX);
+		stylecell = spNewsContainer.getElement().getStyle();
+		stylecell.setPosition(Position.RELATIVE);
+		spNews = new ScrollPanel();
+		
+		stylecell = spNews.getElement().getStyle(); 
+		stylecell.setOverflow(Overflow.HIDDEN);
+		spNews.setWidth("732px");
+		spNews.setHeight("auto");
+		stylecell.setPaddingLeft(20, Unit.PX);
+		stylecell.setPaddingRight(20, Unit.PX);
+		HorizontalPanel hp = new HorizontalPanel();
+		spNews.setWidget(hp);
+		
+		HTML wbefore = new HTML("&nbsp;");
+		wbefore.setStyleName("timeline-scroll-left");
+		wbefore.addMouseDownHandler(new MouseDownHandler() {
+			@Override
+			public void onMouseDown(MouseDownEvent event) {
+				ScrollAnimation anim = new ScrollAnimation(spNews,-149,0);
+				anim.run(800);
+				event.preventDefault();
+				event.stopPropagation();
+			}
+		});
+		spNewsContainer.add(wbefore);
+		
+		spNewsContainer.add(spNews);
+		
+		HTML wafter = new HTML("&nbsp;");
+		wafter.setStyleName("timeline-scroll-right");
+		wafter.addMouseDownHandler(new MouseDownHandler() {
+			@Override
+			public void onMouseDown(MouseDownEvent event) {
+				ScrollAnimation anim = new ScrollAnimation(spNews,149,0);
+				anim.run(800);
+				event.preventDefault();
+				event.stopPropagation();
+			}
+		});
+		spNewsContainer.add(wafter);
+		
+	}
+	
+	private void fillNews() {
+		//TODO
 	}
 
 	private void initSalesStats() {

@@ -198,6 +198,7 @@ public class FormTask extends Dialog {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	protected void fromEditFields() {
 		task.taskName = tbName.getText();
 		task.tasktype = types.get(cbTasktype.getSelectedIndex()+1);
@@ -212,7 +213,7 @@ public class FormTask extends Dialog {
 			task.taskWarningUnit = cbDurationUnit.getSelectedIndex();
 		task.taskExecuted = cbExecuted.getValue()?1:0;
 		int idx = cbAfterStatus.getSelectedIndex();
-		task.afterStatus = idx==0?null:StatusWrapper.getStatus(new Integer(cbAfterStatus.getValue(idx)));
+		task.afterStatus = idx<0?null:StatusWrapper.getStatus(new Integer(cbAfterStatus.getValue(idx)));
 	}
 
 	protected boolean validate() {

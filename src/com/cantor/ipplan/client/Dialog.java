@@ -37,10 +37,15 @@ public class Dialog extends DialogBox {
 	private boolean canceled;
 	private List<Integer> errorList = new ArrayList<Integer>();
 
+	
+/* TODO Анимация	
+	// PopupPanel ставит clip, мешает тени
+	getElement().getStyle().setProperty("clip", "auto");
+*/	
 	public Dialog(String caption, boolean noPanelButton) {
 		super();
 		setText(caption);
-		setAnimationEnabled(true);
+		//setAnimationEnabled(true);
 		setGlassEnabled(true);
 		
 		Element ecapt = getCaption().asWidget().getElement();
@@ -134,7 +139,7 @@ public class Dialog extends DialogBox {
 	public Button getButtonCancel() {
 		return buttonCancel;
 	}
-
+	
 	public void setButtonCancel(Button buttonCancel) {
 		this.buttonCancel = buttonCancel;
 	}
